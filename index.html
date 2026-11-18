@@ -557,7 +557,7 @@
              </div>
              
              <!-- Stats Grid 4 ช่อง -->
-             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center mb-6">
+             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center mb-4">
                 <div class="p-4 rounded-xl" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
                    <p class="text-xs text-emerald-500 mb-1 font-bold">รายได้รวม</p>
                    <p class="text-xl sm:text-2xl font-bold text-emerald-500">฿<span id="stat-rev-total">0</span></p>
@@ -573,6 +573,30 @@
                 <div class="p-4 rounded-xl" style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3);">
                    <p class="text-xs text-purple-500 mb-1 font-bold">ส่งงานแล้ว</p>
                    <p class="text-xl sm:text-2xl font-bold text-purple-500"><span id="stat-completed-jobs">0</span> <span class="text-sm font-normal text-purple-500/70">งาน</span></p>
+                </div>
+             </div>
+             <!-- 📊 ระบบบันทึกรายจ่าย & คำนวณกำไรสุทธิหลังบ้าน (Expense & Net Profit Tracker) + ปุ่ม Export CSV -->
+             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div class="p-4 rounded-xl flex items-center justify-between" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.28);">
+                   <div>
+                      <p class="text-xs text-red-500 font-bold">รายจ่าย / ต้นทุนเดือนนี้</p>
+                      <p class="text-lg sm:text-xl font-bold text-red-500">฿<span id="stat-expense-total">0</span></p>
+                   </div>
+                   <button type="button" onclick="openExpenseManagerModal()" class="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-600 shadow-sm flex items-center gap-1"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> บันทึกรายจ่าย</button>
+                </div>
+                <div class="p-4 rounded-xl flex items-center justify-between" style="background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.4);">
+                   <div>
+                      <p class="text-xs text-emerald-600 font-bold">กำไรสุทธิจริง (Net Profit)</p>
+                      <p class="text-lg sm:text-xl font-bold text-emerald-600">฿<span id="stat-net-profit">0</span></p>
+                   </div>
+                   <span class="text-[11px] opacity-75">หักต้นทุนแล้ว</span>
+                </div>
+                <div class="p-4 rounded-xl flex items-center justify-between gap-2" style="background: rgba(0,0,0,0.04); border: 1px solid var(--border-color);">
+                   <div>
+                      <p class="text-xs font-bold">ส่งออกข้อมูลทำบัญชี</p>
+                      <p class="text-[11px]" style="color: var(--text-muted);">ตารางคิวงาน & สรุปกำไร</p>
+                   </div>
+                   <button type="button" onclick="exportBookingsToCSV()" class="px-3.5 py-2 rounded-xl btn-accent text-xs font-bold shadow-md flex items-center gap-1.5 shrink-0"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Export CSV / Excel</button>
                 </div>
              </div>
              <!-- Details Grid 2 ช่อง -->
@@ -4322,10 +4346,305 @@
     if (window.lucide) lucide.createIcons();
   }
 
+  // =========================================================
+  // 💬 4. ปุ่ม Floating Quick Chat (LINE / Facebook / โทรด่วน พร้อมแนบแพ็กเกจที่กำลังดู)
+  // 📊 5. ระบบบันทึกรายจ่าย & คำนวณกำไรสุทธิหลังบ้าน (Expense & Net Profit Tracker)
+  // ⏳ 6. ป้ายนับถอยหลังวันถ่ายทำ (Shoot Day Countdown + Golden Hour)
+  // 📤 7. ระบบ Export ตารางคิวงานและสรุปบัญชีเป็นไฟล์ CSV / Excel
+  // =========================================================
+  function getExpensesList() {
+    try {
+      const raw = SafeStorage.getItem('tg_standalone_expenses');
+      return raw ? (JSON.parse(raw) || []) : [];
+    } catch (e) { return []; }
+  }
+
+  function saveExpensesList(list) {
+    SafeStorage.setItem('tg_standalone_expenses', JSON.stringify(list || []));
+  }
+
+  const origUpdateDashboardStats = window.updateDashboardStats;
+  window.updateDashboardStats = function() {
+    if (origUpdateDashboardStats) origUpdateDashboardStats();
+    const monthInput = document.getElementById('revenue-month')?.value || '';
+    if (!monthInput) return;
+    const revTotalText = (document.getElementById('stat-rev-total')?.innerText || '0').replace(/,/g, '');
+    const revTotal = Number(revTotalText) || 0;
+    const expenses = getExpensesList().filter(ex => String(ex.month || '').startsWith(monthInput));
+    const totalExp = expenses.reduce((sum, ex) => sum + (Number(ex.amount) || 0), 0);
+    const netProfit = revTotal - totalExp;
+    const expEl = document.getElementById('stat-expense-total');
+    const netEl = document.getElementById('stat-net-profit');
+    if (expEl) expEl.innerText = totalExp.toLocaleString();
+    if (netEl) netEl.innerText = netProfit.toLocaleString();
+  };
+
+  window.openExpenseManagerModal = function() {
+    let modal = document.getElementById('expense-manager-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'expense-manager-modal';
+      modal.className = 'edit-modal';
+      modal.style.zIndex = '1095';
+      modal.innerHTML = `
+        <div class="glass-card p-6 sm:p-8 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl">
+          <div class="flex justify-between items-center mb-4 border-b pb-3" style="border-color: var(--border-color);">
+            <h3 class="text-lg sm:text-xl font-bold flex items-center gap-2"><i data-lucide="wallet" class="w-5 h-5 text-red-500"></i> บันทึกต้นทุน / รายจ่ายประจำเดือน</h3>
+            <button onclick="document.getElementById('expense-manager-modal').classList.remove('show')" class="p-1.5 rounded-lg input-field"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+          <form onsubmit="handleAddExpenseItem(event)" class="space-y-3 text-xs sm:text-sm mb-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs mb-1 opacity-80">ประจำเดือน *</label>
+                <input type="month" id="exp-month" required class="w-full input-field rounded-xl px-3 py-2 text-xs">
+              </div>
+              <div>
+                <label class="block text-xs mb-1 opacity-80">จำนวนเงิน (บาท) *</label>
+                <input type="number" id="exp-amount" required min="1" placeholder="เช่น 800" class="w-full input-field rounded-xl px-3 py-2 text-xs">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs mb-1 opacity-80">รายการต้นทุน / ค่าใช้จ่าย (เช่น ค่าน้ำมันเดินทาง, ค่าผู้ช่วยช่างภาพ) *</label>
+              <input type="text" id="exp-title" required placeholder="เช่น ค่าน้ำมันไป อ.ปัว จ.น่าน / ค่าผู้ช่วยช่างภาพ" class="w-full input-field rounded-xl px-3 py-2 text-xs">
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-xs shadow-md">+ เพิ่มรายการรายจ่าย</button>
+          </form>
+          <div class="border-t pt-4" style="border-color: var(--border-color);">
+            <h4 class="text-xs font-bold mb-2 opacity-80">รายการรายจ่ายที่บันทึกไว้ในเดือนที่เลือก</h4>
+            <div id="exp-items-list" class="space-y-2 text-xs"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    const curMonth = document.getElementById('revenue-month')?.value || new Date().toISOString().slice(0, 7);
+    document.getElementById('exp-month').value = curMonth;
+    renderExpenseItemsList();
+    modal.classList.add('show');
+    if (window.lucide) lucide.createIcons();
+  };
+
+  window.handleAddExpenseItem = function(e) {
+    e.preventDefault();
+    const month = document.getElementById('exp-month').value;
+    const amount = Number(document.getElementById('exp-amount').value) || 0;
+    const title = document.getElementById('exp-title').value.trim();
+    if (!month || !amount || !title) return;
+    const list = getExpensesList();
+    list.unshift({ id: 'EXP-' + Date.now(), month, amount, title, createdAt: formatThaiDateFull(new Date()) });
+    saveExpensesList(list);
+    document.getElementById('exp-amount').value = '';
+    document.getElementById('exp-title').value = '';
+    renderExpenseItemsList();
+    window.updateDashboardStats();
+  };
+
+  window.deleteExpenseItem = function(id) {
+    const list = getExpensesList().filter(x => String(x.id) !== String(id));
+    saveExpensesList(list);
+    renderExpenseItemsList();
+    window.updateDashboardStats();
+  };
+
+  function renderExpenseItemsList() {
+    const box = document.getElementById('exp-items-list');
+    if (!box) return;
+    const curMonth = document.getElementById('exp-month')?.value || document.getElementById('revenue-month')?.value || '';
+    const items = getExpensesList().filter(x => !curMonth || x.month === curMonth);
+    if (items.length === 0) {
+      box.innerHTML = `<p class="text-xs py-3 text-center" style="color: var(--text-muted);">ยังไม่มีรายการรายจ่ายในเดือน ${curMonth}</p>`;
+      return;
+    }
+    box.innerHTML = items.map(x => `
+      <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);">
+        <div class="min-w-0">
+          <span class="font-bold block truncate">${x.title}</span>
+          <span class="text-[10px] opacity-60">${x.month} • ${x.createdAt || ''}</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="font-bold text-red-500">-฿${Number(x.amount).toLocaleString()}</span>
+          <button type="button" onclick="deleteExpenseItem('${x.id}')" class="px-2 py-1 rounded bg-red-500/15 text-red-500 text-[10px] font-bold hover:bg-red-500/25">ลบ</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 📤 7. ระบบ Export ตารางคิวงานและสรุปบัญชีเป็นไฟล์ CSV / Excel
+  window.exportBookingsToCSV = function() {
+    const monthFilter = adminTableMonthFilter || '';
+    const rows = (monthFilter
+      ? allBookings.filter(b => typeof b.date === 'string' && b.date.startsWith(monthFilter))
+      : [...allBookings]
+    ).sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+
+    const escCsv = val => `"${String(val ?? '').replace(/"/g, '""')}"`;
+    const headers = ['รหัสคิว', 'วันที่ถ่ายทำ', 'ช่วงเวลา', 'ชื่อลูกค้า', 'เบอร์โทรศัพท์', 'แพ็กเกจ', 'สถานที่', 'ราคาเต็ม (บาท)', 'รับชำระแล้ว (บาท)', 'คงเหลือ (บาท)', 'สถานะ', 'หมายเหตุ/บรีฟ', 'ลิงก์ Google Drive', 'ลิงก์ Google Photos'];
+    const csvLines = [headers.map(escCsv).join(',')];
+
+    rows.forEach(b => {
+      const price = Number(b.price) || 0;
+      const paid = Number(b.depositAmount) || 0;
+      const bal = Math.max(0, price - paid);
+      csvLines.push([
+        b.id, b.date, b.timeSlot, b.customerName, formatPhone(b.tel),
+        b.packageName, b.location, price, paid, bal, b.status,
+        b.notes || '', b.driveLink || '', b.photosLink || ''
+      ].map(escCsv).join(','));
+    });
+
+    const curYm = document.getElementById('revenue-month')?.value || '';
+    const expList = getExpensesList().filter(x => !monthFilter || x.month === monthFilter);
+    const totalExp = expList.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+    const totalRev = rows.filter(b => b.status === 'ยืนยันแล้ว' || b.status === 'เสร็จสิ้น').reduce((s, b) => s + (Number(b.price) || 0), 0);
+    csvLines.push('');
+    csvLines.push([escCsv('สรุปบัญชี'), escCsv(monthFilter || 'ทุกเดือนรวม'), escCsv(`รายได้รวม: ${totalRev}`), escCsv(`รายจ่ายรวม: ${totalExp}`), escCsv(`กำไรสุทธิ: ${totalRev - totalExp}`)].join(','));
+
+    const csvContent = '\uFEFF' + csvLines.join('\r\n');
+    try {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `ToyGallery_Bookings_${monthFilter || curYm || 'All'}.csv`;
+      link.click();
+    } catch (e) {}
+
+    copyTextSafe(csvLines.join('\n'), `สร้างไฟล์ CSV (${rows.length} คิวงาน) และคัดลอกข้อมูลตารางลงคลิปบอร์ดเรียบร้อยแล้ว! (สามารถนำไปวาง Ctrl+V ใน Excel หรือ Google Sheets ได้ทันที)`);
+  };
+
+  // ⏳ 6. อัปเกรดหน้าเช็คสถานะลูกค้าให้แสดงป้ายนับถอยหลังวันถ่ายทำ (Shoot Day Countdown + Golden Hour)
+  function getCountdownAndGoldenHourHtml(b) {
+    if (!b || !b.date || !/^\d{4}-\d{2}-\d{2}$/.test(b.date) || b.status === 'ยกเลิก') return '';
+    const now = new Date();
+    const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const [y, m, d] = b.date.split('-').map(Number);
+    const shootMs = new Date(y, m - 1, d).getTime();
+    const diffDays = Math.round((shootMs - todayMs) / 86400000);
+
+    const slot = String(b.timeSlot || '');
+    let goldenTip = 'แสงธรรมชาติช่วงเช้า 07:30–10:00 น. และช่วงเย็น Golden Hour 16:00–17:45 น. จะได้โทนฟิล์มละมุนที่สุด';
+    if (slot.includes('เช้า')) goldenTip = 'แนะนำเริ่มถ่ายช่วง 07:30–10:30 น. เพื่อให้ได้แสงเช้าที่นุ่มละมุนและไม่ร้อนจนเกินไป';
+    else if (slot.includes('บ่าย')) goldenTip = 'ไฮไลต์แสงสวย (Golden Hour) จะอยู่ในช่วง 15:45–17:45 น. แสงสีทองจะขับโทนภาพฟิล์มให้ดูโรแมนติกมากครับ';
+
+    let headline = '';
+    if (diffDays > 0) headline = `⏳ อีก <b>${diffDays} วัน</b> จะถึงวันถ่ายภาพสำคัญของคุณ (${formatThaiDateFull(new Date(y, m - 1, d))})`;
+    else if (diffDays === 0) headline = `🎉 <b>วันนี้คือวันถ่ายภาพสำคัญของคุณ!</b> ขอให้มีความสุขและได้ภาพที่สวยงามน่าประทับใจครับ`;
+    else headline = `✨ ผ่านวันถ่ายทำมาแล้ว ${Math.abs(diffDays)} วัน • ขอบคุณที่ให้ Toy Gallery 2000's บันทึกความทรงจำครับ`;
+
+    return `
+      <div class="p-4 rounded-2xl border space-y-1.5" style="border-color: var(--border-color); background: rgba(156, 140, 116, 0.08);">
+        <div class="text-xs sm:text-sm font-medium">${headline}</div>
+        <div class="text-[11px] flex items-start gap-1.5" style="color: var(--text-muted);">
+          <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5"></i>
+          <span><b>คำแนะนำช่วงเวลาแสงสวย (Golden Hour):</b> ${goldenTip}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const origHandleTrackSearch = window.handleTrackSearch;
+  window.handleTrackSearch = function(e) {
+    if (origHandleTrackSearch) origHandleTrackSearch(e);
+    const rawQ = (document.getElementById('track-query')?.value || '').trim();
+    const area = document.getElementById('track-results-area');
+    if (!rawQ || !area) return;
+    const qLower = rawQ.toLowerCase();
+    const qDigits = rawQ.replace(/\D/g, '');
+    const qTail = qDigits.length >= 8 ? qDigits.slice(-8) : '';
+    const matches = allBookings.filter(b => {
+      const idMatch = String(b.id || '').toLowerCase().includes(qLower);
+      const bDigits = String(b.tel || '').replace(/\D/g, '');
+      const bTail = bDigits.length >= 8 ? bDigits.slice(-8) : '';
+      const telMatch = (qTail && bTail && qTail === bTail) || (qDigits.length >= 6 && bDigits.includes(qDigits));
+      return idMatch || telMatch;
+    });
+    const cards = area.querySelectorAll('.glass-card.rounded-3xl');
+    matches.forEach((b, idx) => {
+      const card = cards[idx];
+      if (card && !card.querySelector('.shoot-countdown-banner')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'shoot-countdown-banner';
+        wrapper.innerHTML = getCountdownAndGoldenHourHtml(b);
+        const gridEl = card.querySelector('.grid');
+        if (gridEl) card.insertBefore(wrapper, gridEl);
+        else card.appendChild(wrapper);
+      }
+    });
+    if (window.lucide) lucide.createIcons();
+  };
+
+  // 💬 4. สร้างปุ่ม Floating Quick Chat มุมขวาล่างของจอ
+  function injectFloatingQuickChat() {
+    if (document.getElementById('floating-chat-widget')) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'floating-chat-widget';
+    wrap.className = 'fixed bottom-24 md:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end gap-2.5 no-print';
+    wrap.innerHTML = `
+      <div id="quick-chat-menu" class="hidden flex-col gap-2 p-3 rounded-2xl glass-card shadow-2xl border w-64 text-xs" style="border-color: var(--border-color);">
+        <div class="font-bold text-sm pb-2 border-b flex items-center justify-between" style="border-color: var(--border-color);">
+          <span>💬 ติดต่อด่วน Toy Gallery</span>
+          <button type="button" onclick="toggleQuickChatMenu()" class="opacity-60 hover:opacity-100"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+        </div>
+        <button type="button" onclick="quickContactChannel('line')" class="w-full p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-2.5 transition-all text-left">
+          <i data-lucide="message-circle" class="w-4 h-4 shrink-0"></i>
+          <div>
+            <span class="block">ทักแชท LINE: toyporawat</span>
+            <span class="text-[10px] opacity-80 font-normal">คัดลอกไอดี + ข้อความแพ็กเกจอัตโนมัติ</span>
+          </div>
+        </button>
+        <button type="button" onclick="quickContactChannel('facebook')" class="w-full p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center gap-2.5 transition-all text-left">
+          <i data-lucide="facebook" class="w-4 h-4 shrink-0"></i>
+          <div>
+            <span class="block">เพจ: Toy Gallery 2000’s</span>
+            <span class="text-[10px] opacity-80 font-normal">FB: Porawat Sanyai (คัดลอกข้อความทัก)</span>
+          </div>
+        </button>
+        <button type="button" onclick="quickContactChannel('phone')" class="w-full p-2.5 rounded-xl input-field hover:opacity-80 font-bold flex items-center gap-2.5 transition-all text-left">
+          <i data-lucide="phone-call" class="w-4 h-4 text-accent shrink-0"></i>
+          <div>
+            <span class="block">โทรด่วน: 062-607-9030</span>
+            <span class="text-[10px] opacity-70 font-normal">คลิกเพื่อคัดลอกเบอร์โทรศัพท์</span>
+          </div>
+        </button>
+      </div>
+      <button type="button" onclick="toggleQuickChatMenu()" class="w-13 h-13 px-4 py-3.5 rounded-full btn-accent font-bold shadow-2xl flex items-center gap-2 hover:scale-105 transition-transform text-xs sm:text-sm">
+        <i data-lucide="message-circle-heart" class="w-5 h-5"></i>
+        <span class="hidden sm:inline">แชท / ติดต่อด่วน</span>
+      </button>
+    `;
+    document.body.appendChild(wrap);
+    if (window.lucide) lucide.createIcons();
+  }
+
+  window.toggleQuickChatMenu = function() {
+    const menu = document.getElementById('quick-chat-menu');
+    if (!menu) return;
+    menu.classList.toggle('hidden');
+    menu.classList.toggle('flex');
+  };
+
+  window.quickContactChannel = function(channel) {
+    const pkg = document.getElementById('b-package')?.value || 'แพ็กเกจถ่ายภาพ';
+    const shootDate = document.getElementById('b-date')?.value || '';
+    const autoMsg = `สวัสดีครับ/ค่ะ สนใจสอบถามคิวถ่ายภาพ Toy Gallery 2000's แพ็กเกจ: "${pkg}"${shootDate ? ` (วันที่สนใจ: ${shootDate})` : ''}`;
+    if (channel === 'line') {
+      copyTextSafe(`toyporawat`, `คัดลอก LINE ID: "toyporawat" เรียบร้อยแล้ว!\n\nข้อความสำหรับส่งให้ช่างภาพ:\n"${autoMsg}"`);
+    } else if (channel === 'facebook') {
+      copyTextSafe(autoMsg, `คัดลอกข้อความสอบถามเรียบร้อยแล้ว!\nสามารถทักเพจ "Toy Gallery 2000’s" หรือ Facebook "Porawat Sanyai" แล้ววางข้อความได้เลยครับ:\n\n"${autoMsg}"`);
+    } else {
+      copyTextSafe('0626079030', 'คัดลอกเบอร์โทรศัพท์ 062-607-9030 เรียบร้อยแล้ว!');
+    }
+  };
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectUpgradedFeaturesUI);
+    document.addEventListener('DOMContentLoaded', () => {
+      injectUpgradedFeaturesUI();
+      injectFloatingQuickChat();
+      setTimeout(() => window.updateDashboardStats(), 400);
+    });
   } else {
     injectUpgradedFeaturesUI();
+    injectFloatingQuickChat();
+    setTimeout(() => window.updateDashboardStats(), 400);
   }
   </script>
 </body>
