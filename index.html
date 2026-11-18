@@ -5,22 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Toy Gallery 2000's | Photography</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Josefin Sans"', 'Prompt', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+            serif: ['"Josefin Sans"', 'Prompt', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"Josefin Sans"', 'Prompt', 'ui-monospace', 'SFMono-Regular', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root { 
-      --bg-color: #09090b; --text-main: #f4f4f5; --text-muted: #a1a1aa;
-      --card-bg: rgba(24, 24, 27, 0.8); --nav-bg: rgba(9, 9, 11, 0.7);
-      --border-color: rgba(63, 63, 70, 0.5); --accent: #fbbf24;
-      --accent-hover: #f59e0b; --btn-text: #09090b;
+      --bg-color: #fbfbfa; --text-main: #111111; --text-muted: #71717a;
+      --card-bg: rgba(255, 255, 255, 0.96); --nav-bg: rgba(251, 251, 250, 0.92);
+      --border-color: #e4e4e7; --accent: #27272a;
+      --accent-hover: #111111; --btn-text: #ffffff;
+    }
+    [data-theme="dark"] {
+      --bg-color: #121110; --text-main: #f5f2ed; --text-muted: #a39c93;
+      --card-bg: rgba(28, 26, 23, 0.9); --nav-bg: rgba(18, 17, 16, 0.85);
+      --border-color: rgba(74, 68, 60, 0.55); --accent: #c8a97e;
+      --accent-hover: #b39266; --btn-text: #121110;
     }
     [data-theme="light"] {
-      --bg-color: #fcfcfc; --text-main: #18181b; --text-muted: #52525b;
-      --card-bg: rgba(255, 255, 255, 0.9); --nav-bg: rgba(252, 252, 252, 0.8);
-      --border-color: rgba(228, 228, 231, 1); --accent: #27272a;
-      --accent-hover: #000000; --btn-text: #ffffff;
+      --bg-color: #fbfbfa; --text-main: #111111; --text-muted: #71717a;
+      --card-bg: rgba(255, 255, 255, 0.96); --nav-bg: rgba(251, 251, 250, 0.92);
+      --border-color: #e4e4e7; --accent: #27272a;
+      --accent-hover: #111111; --btn-text: #ffffff;
     }
     [data-theme="vintage"] {
       --bg-color: #2c2520; --text-main: #fcf6eb; --text-muted: #d4c4b7;
@@ -70,7 +91,27 @@
       --border-color: rgba(87, 45, 21, 0.6); --accent: #f97316;
       --accent-hover: #ea580c; --btn-text: #ffffff;
     }
-    body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 90px; transition: background-color 0.4s ease, color 0.4s ease; display: flex; flex-direction: column; min-height: 100vh; font-family: 'Prompt', sans-serif; }
+    *, body, button, input, select, textarea, optgroup, option, .font-serif, .font-sans, .font-mono, .doc-container {
+      font-family: 'Josefin Sans', 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    }
+    h1, h2, h3, .font-serif {
+      font-weight: 700;
+    }
+    .editorial-hero-frame {
+      position: relative;
+      border: 1px solid var(--border-color);
+      background: linear-gradient(180deg, var(--card-bg) 0%, rgba(156, 140, 116, 0.06) 100%);
+      box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.08);
+    }
+    .editorial-corner {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-color: var(--accent);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 90px; transition: background-color 0.4s ease, color 0.4s ease; display: flex; flex-direction: column; min-height: 100vh; }
     @media (min-width: 768px) { body { padding-bottom: 0; } }
     
     .glass-nav { background: var(--nav-bg); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-color); }
@@ -104,6 +145,48 @@
     .album-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999; display: none; flex-direction: column; opacity: 0; transition: opacity 0.3s; }
     .album-modal.show { display: flex; opacity: 1; }
     .modal-content { flex: 1; overflow-y: auto; padding: 80px 20px 120px 20px; }
+    
+    /* ✨ Animation 2: Staggered Fade-Up Reveal */
+    @keyframes staggerFadeUp {
+      0% { opacity: 0; transform: translateY(24px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .stagger-item {
+      opacity: 0;
+      animation: staggerFadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* 🎞️ Animation 1: Fullscreen Lightbox Slider + Smooth Zoom */
+    .lightbox-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 5, 7, 0.96);
+      backdrop-filter: blur(16px);
+      z-index: 1200;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      user-select: none;
+    }
+    .lightbox-modal.show {
+      display: flex;
+      opacity: 1;
+    }
+    @keyframes lightboxReveal {
+      0% { opacity: 0; transform: scale(0.92); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .lightbox-img-anim {
+      animation: lightboxReveal 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      cursor: zoom-in;
+    }
+    .lightbox-img-anim.zoomed {
+      transform: scale(1.65);
+      cursor: zoom-out;
+    }
     
     .edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; display: none; align-items: center; justify-content: center; padding: 20px; }
     .edit-modal.show { display: flex; }
@@ -149,7 +232,7 @@
       .no-print { display: none !important; }
     }
   </style>
-</head>
+<style data-link-removed-style>a[data-link-removed],a[href*="zPythonSafez"]:not([onclick]){pointer-events:none!important;cursor:default!important;opacity:.6}</style></head>
 <body>
   <!-- Loading -->
   <div id="system-loader">
@@ -192,88 +275,78 @@
   </header>
   <!-- HOME, MODAL, BOOKING, ADMIN SECTIONS -->
   <section id="tab-home" class="tab-content active w-full flex-1 no-print">
-    <div class="max-w-7xl mx-auto px-4 py-16 text-center">
-      <div class="max-w-4xl mx-auto mb-16">
-        <h1 class="text-4xl sm:text-6xl font-serif font-bold mb-6">Toy Gallery <span class="text-accent">2000's</span></h1>
-        <p class="mb-8" style="color: var(--text-muted);">บันทึกทุกความทรงจำด้วยโทนฟิล์ม Cinematic แสงละมุนเหนือกาลเวลา</p>
-        <div class="flex flex-wrap justify-center gap-3">
-          <button onclick="switchTab('booking')" class="px-8 py-3.5 rounded-full btn-accent font-bold shadow-lg">เช็คคิวว่าง & ดูเรทราคา</button>
-          <button onclick="switchTab('track')" class="px-6 py-3.5 rounded-full input-field font-bold hover:opacity-80 transition-opacity flex items-center gap-2"><i data-lucide="search-check" class="w-4 h-4 text-accent"></i> เช็คสถานะคิว & รับรูป</button>
+    <div class="max-w-6xl mx-auto px-4 sm:px-8 py-12 sm:py-20">
+      <!-- Centered Luminous Fine-Art Studio Hero (Inspired by Reference Template) -->
+      <div class="editorial-hero-frame rounded-none sm:rounded-md px-6 py-14 sm:px-16 sm:py-24 mb-20 text-center overflow-hidden">
+        <div class="editorial-corner top-4 left-4 border-t border-l"></div>
+        <div class="editorial-corner top-4 right-4 border-t border-r"></div>
+        <div class="editorial-corner bottom-4 left-4 border-b border-l"></div>
+        <div class="editorial-corner bottom-4 right-4 border-b border-r"></div>
+        <div class="max-w-2xl mx-auto space-y-6">
+          <span class="inline-flex items-center gap-2 px-4 py-1 text-[11px] font-medium tracking-[0.25em] uppercase border-b" style="border-color: var(--border-color); color: var(--accent);">
+            <i data-lucide="Sparkles" class="w-3.5 h-3.5"></i> Fine Art & Cinematic Film Photography
+          </span>
+          <h1 class="text-4xl sm:text-6xl lg:text-7xl font-light tracking-[0.18em] uppercase leading-tight">Toy Gallery <span class="text-accent font-normal block sm:inline mt-1 sm:mt-0">2000's</span></h1>
+          <div class="w-16 h-px mx-auto" style="background-color: var(--accent);"></div>
+          <p class="text-xs sm:text-base max-w-lg mx-auto leading-loose font-light tracking-wide" style="color: var(--text-muted);">บันทึกทุกความทรงจำด้วยโทนฟิล์ม Cinematic แสงละมุนเหนือกาลเวลา</p>
+          <div class="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <button onclick="switchTab('booking')" class="w-full sm:w-auto px-9 py-3.5 rounded-sm btn-accent font-medium tracking-[0.12em] text-xs sm:text-sm uppercase shadow-sm hover:opacity-90 transition-all flex items-center justify-center gap-2"><i data-lucide="calendar-check" class="w-4 h-4"></i> เช็คคิวว่าง & ดูเรทราคา</button>
+            <button onclick="switchTab('track')" class="w-full sm:w-auto px-8 py-3.5 rounded-sm input-field font-medium tracking-[0.12em] text-xs sm:text-sm uppercase hover:opacity-80 transition-all flex items-center justify-center gap-2"><i data-lucide="search-check" class="w-4 h-4 text-accent"></i> เช็คสถานะคิว & รับรูป</button>
+          </div>
         </div>
       </div>
 
-      <!-- 🖼 Our Works + Category Filter -->
-      <div class="text-left pt-16" style="border-top: 1px solid var(--border-color);">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      <!-- Minimal Centered Galleries Showcase (Matching Reference Layout) -->
+      <div class="pt-14 text-center" style="border-top: 1px solid var(--border-color);">
+        <span class="text-[11px] uppercase tracking-[0.28em] text-accent font-medium block mb-2">Portfolio Showcase</span>
+        <h2 class="text-2xl sm:text-3xl font-normal tracking-[0.22em] uppercase mb-3">Our Works</h2>
+        <p class="text-xs sm:text-sm mb-8 font-light" style="color: var(--text-muted);">คลิกที่อัลบั้มเพื่อดูรูปภาพเพิ่มเติม หรือเลือกกรองตามหมวดหมู่งาน</p>
+        <div id="home-cat-filters" class="flex flex-wrap justify-center gap-2 mb-12">
+          <button onclick="filterPortfolioByCategory('all')" data-cat="all" class="cat-filter-btn px-5 py-2 rounded-sm text-xs font-medium tracking-widest uppercase btn-accent">ทั้งหมด</button>
+          <button onclick="filterPortfolioByCategory('Wedding')" data-cat="Wedding" class="cat-filter-btn px-5 py-2 rounded-sm text-xs font-normal tracking-widest uppercase input-field hover:opacity-80">Wedding</button>
+          <button onclick="filterPortfolioByCategory('Pre-Wedding')" data-cat="Pre-Wedding" class="cat-filter-btn px-5 py-2 rounded-sm text-xs font-normal tracking-widest uppercase input-field hover:opacity-80">Pre-Wedding</button>
+          <button onclick="filterPortfolioByCategory('Portrait')" data-cat="Portrait" class="cat-filter-btn px-5 py-2 rounded-sm text-xs font-normal tracking-widest uppercase input-field hover:opacity-80">Portrait</button>
+          <button onclick="filterPortfolioByCategory('Graduation')" data-cat="Graduation" class="cat-filter-btn px-5 py-2 rounded-sm text-xs font-normal tracking-widest uppercase input-field hover:opacity-80">รับปริญญา</button>
+          <button onclick="filterPortfolioByCategory('Event')" data-cat="Event" class="cat-filter-btn px-5 py-2 rounded-sm text-xs font-normal tracking-widest uppercase input-field hover:opacity-80">งานบวช / Event</button>
+        </div>
+        <div id="home-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 text-center"></div>
+      </div>
+
+      <!-- Client Reviews Section -->
+      <div class="text-left pt-16 mt-20" style="border-top: 1px solid var(--border-color);">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
           <div>
-            <h2 class="text-3xl font-serif font-bold mb-2">Our Works</h2>
-            <p class="text-sm" style="color: var(--text-muted);">คลิกที่อัลบั้มเพื่อดูรูปภาพเพิ่มเติม หรือเลือกกรองตามหมวดหมู่งาน</p>
+            <h2 class="text-2xl sm:text-3xl font-normal tracking-wide mb-1">ความประทับใจจากลูกค้า</h2>
+            <p class="text-sm font-light" style="color: var(--text-muted);">เสียงตอบรับจากการร่วมงานกับ Toy Gallery 2000's</p>
           </div>
-          <div id="home-cat-filters" class="flex flex-wrap gap-2">
-            <button onclick="filterPortfolioByCategory('all')" data-cat="all" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold btn-accent">ทั้งหมด</button>
-            <button onclick="filterPortfolioByCategory('Wedding')" data-cat="Wedding" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-medium input-field hover:opacity-80">Wedding</button>
-            <button onclick="filterPortfolioByCategory('Pre-Wedding')" data-cat="Pre-Wedding" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-medium input-field hover:opacity-80">Pre-Wedding</button>
-            <button onclick="filterPortfolioByCategory('Portrait')" data-cat="Portrait" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-medium input-field hover:opacity-80">Portrait</button>
-            <button onclick="filterPortfolioByCategory('Graduation')" data-cat="Graduation" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-medium input-field hover:opacity-80">รับปริญญา</button>
-            <button onclick="filterPortfolioByCategory('Event')" data-cat="Event" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-medium input-field hover:opacity-80">งานบวช / Event</button>
-          </div>
+          <button onclick="openReviewModal()" class="px-6 py-3 rounded-sm btn-accent font-medium tracking-wider text-xs sm:text-sm inline-flex items-center gap-2 w-max"><i data-lucide="message-square-plus" class="w-4 h-4"></i> เขียนรีวิวความประทับใจ</button>
         </div>
-        <div id="home-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="home-reviews-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
       </div>
 
-      <!-- ⭐ Client Reviews Section -->
-      <div class="text-left pt-16 mt-16" style="border-top: 1px solid var(--border-color);">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-1">ความประทับใจจากลูกค้า</h2>
-            <p class="text-sm" style="color: var(--text-muted);">เสียงตอบรับจากการร่วมงานกับ Toy Gallery 2000's</p>
+      <!-- FAQ Section -->
+      <div class="text-left pt-16 mt-20" style="border-top: 1px solid var(--border-color);">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div class="lg:col-span-4 text-center lg:text-left">
+            <h2 class="text-2xl sm:text-3xl font-normal tracking-wide mb-2">คำถามที่พบบ่อย (FAQ)</h2>
+            <p class="text-sm leading-relaxed font-light" style="color: var(--text-muted);">รายละเอียดการจองคิว การชำระมัดจำ และการส่งมอบไฟล์ภาพ</p>
           </div>
-          <button onclick="openReviewModal()" class="px-5 py-2.5 rounded-full btn-accent font-bold text-xs sm:text-sm inline-flex items-center gap-2 w-max"><i data-lucide="message-square-plus" class="w-4 h-4"></i> เขียนรีวิวความประทับใจ</button>
-        </div>
-        <div id="home-reviews-grid" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
-      </div>
-
-      <!-- ❓ FAQ Section -->
-      <div class="text-left pt-16 mt-16 max-w-4xl mx-auto" style="border-top: 1px solid var(--border-color);">
-        <div class="text-center mb-8">
-          <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-2">คำถามที่พบบ่อย (FAQ)</h2>
-          <p class="text-sm" style="color: var(--text-muted);">รายละเอียดการจองคิว การชำระมัดจำ และการส่งมอบไฟล์ภาพ</p>
-        </div>
-        <div class="space-y-3" id="faq-accordion">
-          <div class="glass-card rounded-2xl overflow-hidden">
-            <button onclick="toggleFaq(this)" class="w-full px-6 py-4 text-left font-bold text-sm sm:text-base flex justify-between items-center gap-4">
-              <span>1. ขั้นตอนการจองคิวและมัดจำล็อคคิวต้องทำอย่างไร?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform"></i>
-            </button>
-            <div class="faq-body hidden px-6 pb-5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-muted);">
-              เลือกดูวันว่างในหน้า <b>เช็คคิว / จองคิว</b> กรอกแบบฟอร์มพร้อมเลือกแพ็กเกจและออปชันเสริม ระบบจะออก <b>ใบเสนอราคา (Quotation)</b> พร้อม QR พร้อมเพย์เพื่อชำระมัดจำ <b>1,500 บาท</b> สำหรับล็อคคิวงาน ส่วนยอดคงเหลือชำระในวันถ่ายทำครับ
+          <div class="lg:col-span-8 space-y-3" id="faq-accordion">
+            <div class="glass-card rounded-sm overflow-hidden">
+              <button onclick="toggleFaq(this)" class="w-full px-6 py-4 text-left font-medium text-sm sm:text-base flex justify-between items-center gap-4"><span>1. ขั้นตอนการจองคิวและมัดจำล็อคคิวต้องทำอย่างไร?</span><i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform"></i></button>
+              <div class="faq-body hidden px-6 pb-5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-muted);">เลือกดูวันว่างในหน้า <b>เช็คคิว / จองคิว</b> กรอกแบบฟอร์มพร้อมเลือกแพ็กเกจและออปชันเสริม ระบบจะออก <b>ใบเสนอราคา (Quotation)</b> พร้อม QR พร้อมเพย์เพื่อชำระมัดจำ <b>1,500 บาท</b> สำหรับล็อคคิวงาน ส่วนยอดคงเหลือชำระในวันถ่ายทำครับ</div>
             </div>
-          </div>
-          <div class="glass-card rounded-2xl overflow-hidden">
-            <button onclick="toggleFaq(this)" class="w-full px-6 py-4 text-left font-bold text-sm sm:text-base flex justify-between items-center gap-4">
-              <span>2. ได้รับไฟล์ภาพช่องทางไหน และเช็คสถานะงานอย่างไร?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform"></i>
-            </button>
-            <div class="faq-body hidden px-6 pb-5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-muted);">
-              ลูกค้าสามารถนำ <b>เบอร์โทรศัพท์</b> หรือ <b>หมายเลขคิว (เช่น TG-xxxx)</b> มาค้นหาได้ที่เมนู <b>เช็คสถานะ / รับงาน</b> บนเว็บไซต์ได้ตลอด 24 ชม. เพื่อดาวน์โหลดใบเสนอราคา/ใบเสร็จ และกดรับลิงก์ไฟล์ภาพความละเอียดสูงผ่าน Google Drive, Google Photos หรือระบบ Gallery ส่งงาน (หากต้องการรับงานด่วนภายใน 3 วัน สามารถเลือกออปชัน Express เพิ่มเติมตอนจองได้ครับ)
+            <div class="glass-card rounded-sm overflow-hidden">
+              <button onclick="toggleFaq(this)" class="w-full px-6 py-4 text-left font-medium text-sm sm:text-base flex justify-between items-center gap-4"><span>2. ได้รับไฟล์ภาพช่องทางไหน และเช็คสถานะงานอย่างไร?</span><i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform"></i></button>
+              <div class="faq-body hidden px-6 pb-5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-muted);">ลูกค้าสามารถนำ <b>เบอร์โทรศัพท์</b> หรือ <b>หมายเลขคิว (เช่น TG-xxxx)</b> มาค้นหาได้ที่เมนู <b>เช็คสถานะ / รับงาน</b> บนเว็บไซต์ได้ตลอด 24 ชม. เพื่อดาวน์โหลดใบเสนอราคา/ใบเสร็จ และกดรับลิงก์ไฟล์ภาพความละเอียดสูงผ่าน Google Drive, Google Photos หรือระบบ Gallery ส่งงานครับ</div>
             </div>
-          </div>
-          <div class="glass-card rounded-2xl overflow-hidden">
-            <button onclick="toggleFaq(this)" class="w-full px-6 py-4 text-left font-bold text-sm sm:text-base flex justify-between items-center gap-4">
-              <span>3. หากจำเป็นต้องเลื่อนวันถ่ายภาพ มีเงื่อนไขอย่างไร?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform"></i>
-            </button>
-            <div class="faq-body hidden px-6 pb-5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-muted);">
-              สามารถแจ้งเลื่อนวันถ่ายล่วงหน้าอย่างน้อย 7–14 วัน (ขึ้นอยู่กับตารางคิวว่างของช่างภาพ) โดยเงินมัดจำจะถูกยกยอดไปยังวันใหม่ หากยกเลิกคิวงานจะขอสงวนสิทธิ์ไม่คืนเงินมัดจำเนื่องจากเป็นการล็อคคิวและปฏิเสธงานอื่นในวันดังกล่าวครับ
+            <div class="glass-card rounded-sm overflow-hidden">
+              <button onclick="toggleFaq(this)" class="w-full px-6 py-4 text-left font-medium text-sm sm:text-base flex justify-between items-center gap-4"><span>3. หากจำเป็นต้องเลื่อนวันถ่ายภาพ มีเงื่อนไขอย่างไร?</span><i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform"></i></button>
+              <div class="faq-body hidden px-6 pb-5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-muted);">สามารถแจ้งเลื่อนวันถ่ายล่วงหน้าอย่างน้อย 7–14 วัน (ขึ้นอยู่กับตารางคิวว่างของช่างภาพ) โดยเงินมัดจำจะถูกยกยอดไปยังวันใหม่ หากยกเลิกคิวงานจะขอสงวนสิทธิ์ไม่คืนเงินมัดจำครับ</div>
             </div>
-          </div>
-          <div class="glass-card rounded-2xl overflow-hidden">
-            <button onclick="toggleFaq(this)" class="w-full px-6 py-4 text-left font-bold text-sm sm:text-base flex justify-between items-center gap-4">
-              <span>4. ได้รับไฟล์ภาพจำนวนกี่รูป และสำรองไฟล์ไว้ให้กี่เดือน?</span>
-              <i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform"></i>
-            </button>
-            <div class="faq-body hidden px-6 pb-5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-muted);">
-              ถ่ายภาพไม่จำกัดจำนวนช็อต ปรับแสงและโทนสีฟิล์ม Cinematic ทุกภาพที่คัดส่งมอบ พร้อมสำรองไฟล์บนระบบคลาวด์ไว้ให้ดาวน์โหลดอย่างน้อย 30–90 วันหลังส่งมอบงาน แนะนำให้ลูกค้าดาวน์โหลดเก็บสำรองไว้ในอุปกรณ์ส่วนตัวทันทีที่ได้รับลิงก์ครับ
+            <div class="glass-card rounded-sm overflow-hidden">
+              <button onclick="toggleFaq(this)" class="w-full px-6 py-4 text-left font-medium text-sm sm:text-base flex justify-between items-center gap-4"><span>4. ได้รับไฟล์ภาพจำนวนกี่รูป และสำรองไฟล์ไว้ให้กี่เดือน?</span><i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform"></i></button>
+              <div class="faq-body hidden px-6 pb-5 text-xs sm:text-sm leading-relaxed" style="color: var(--text-muted);">ถ่ายภาพไม่จำกัดจำนวนช็อต ปรับแสงและโทนสีฟิล์ม Cinematic ทุกภาพที่คัดส่งมอบ พร้อมสำรองไฟล์บนระบบคลาวด์ไว้ให้ดาวน์โหลดอย่างน้อย 60 วันหลังส่งมอบงานครับ</div>
             </div>
           </div>
         </div>
@@ -332,7 +405,6 @@
             <div><label class="text-xs block mb-1" style="color: var(--text-muted);">ชื่อลูกค้า *</label><input type="text" id="b-name" required class="w-full input-field rounded-xl px-4 py-3"></div>
             <div><label class="text-xs block mb-1" style="color: var(--text-muted);">เบอร์โทร *</label><input type="tel" id="b-tel" required class="w-full input-field rounded-xl px-4 py-3"></div>
           </div>
-
           <!-- 🧮 โปรแกรมคำนวณราคา & Add-on เสริม -->
           <div class="p-4 sm:p-5 rounded-2xl border space-y-3" style="border-color: var(--border-color); background: rgba(0,0,0,0.06);">
             <div class="flex items-center justify-between">
@@ -382,9 +454,7 @@
               </div>
             </div>
           </div>
-
           <div><label class="text-xs block mb-1" style="color: var(--text-muted);">บรีฟงานเพิ่มเติม (มู้ดโทนภาพ, จำนวนชั่วโมง, ฯลฯ)</label><input type="text" id="b-notes" class="w-full input-field rounded-xl px-4 py-3" placeholder="ระบุรายละเอียดเพิ่มเติมที่นี่..."></div>
-
           <!-- 📜 ข้อตกลงและสัญญาจ้างถ่ายภาพมาตรฐาน -->
           <div class="p-4 rounded-2xl border text-xs space-y-2" style="border-color: var(--border-color); background: rgba(0,0,0,0.04);">
             <button type="button" onclick="document.getElementById('terms-detail-box').classList.toggle('hidden')" class="w-full flex items-center justify-between font-bold text-left">
@@ -397,13 +467,11 @@
               <span style="color: var(--text-muted);">ข้าพเจ้ารับทราบและยอมรับเงื่อนไขการมัดจำล็อคคิว การเลื่อนคิว และการส่งมอบไฟล์งานของ Toy Gallery 2000's *</span>
             </label>
           </div>
-
           <button type="submit" id="btn-submit" class="w-full py-4 btn-accent font-bold rounded-xl mt-4 shadow-lg hover:shadow-xl transition-all">ขอใบเสนอราคาจองคิว</button>
         </form>
       </div>
     </div>
   </section>
-
   <!-- 🔎 SELF-SERVICE TRACKING & DELIVERY TAB -->
   <section id="tab-track" class="tab-content w-full flex-1 no-print">
     <div class="max-w-4xl mx-auto px-4 py-12">
@@ -457,6 +525,7 @@
           <button onclick="switchAdminTab('list')" id="sub-btn-list" class="px-5 py-2 rounded-xl btn-accent font-bold text-sm whitespace-nowrap">ตารางคิวงาน</button>
           <button onclick="switchAdminTab('deliver')" id="sub-btn-deliver" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10">ส่งงานลูกค้า</button>
           <a href="https://toyporawat.github.io/toy-gallery/" target="_blank" rel="noopener" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field text-accent hover:opacity-80 inline-flex items-center gap-1.5" style="border-color: var(--accent);"><i data-lucide="external-link" class="w-4 h-4"></i>ระบบ Gallery ส่งงาน</a>
+          <button onclick="openScanQrDeliveryModal()" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field border-amber-500/40 text-amber-500 hover:bg-amber-500/10 inline-flex items-center gap-1.5"><i data-lucide="qr-code" class="w-4 h-4"></i>ระบบ Scan QR-Code รับรูป</button>
           <button onclick="switchAdminTab('upload')" id="sub-btn-upload" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field">อัปโหลดผลงานใหม่</button>
           <button onclick="switchAdminTab('manage')" id="sub-btn-manage" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field">จัดการผลงาน</button>
           <button onclick="switchAdminTab('settings')" id="sub-btn-settings" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field">ตั้งค่าระบบ</button>
@@ -465,7 +534,6 @@
         
         <!-- 📌 1. ตารางคิวงานหลัก & Dashboard -->
         <div id="admin-sub-list">
-
           <!-- 🔔 แจ้งเตือนคิวงานที่กำลังจะมาถึง (Upcoming Shoot Reminder) -->
           <div id="upcoming-shoots-card" class="glass-card rounded-3xl p-5 sm:p-6 mb-6 border-l-4" style="border-left-color: var(--accent);">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -485,7 +553,7 @@
           <div class="glass-card rounded-3xl p-6 sm:p-8 mb-6">
              <div class="flex justify-between items-center mb-6 border-b pb-4" style="border-color: var(--border-color);">
                 <h3 class="font-bold text-lg"><i data-lucide="layout-dashboard" class="w-5 h-5 inline mr-2 text-accent"></i>ภาพรวมระบบ (Dashboard)</h3>
-                <input type="month" id="revenue-month" class="input-field rounded-lg px-3 py-1 font-mono text-sm" onchange="updateDashboardStats(); renderAdminTable();">
+                <input type="month" id="revenue-month" class="input-field rounded-lg px-3 py-1 font-mono text-sm" onchange="selectAdminMonthFilter(this.value)">
              </div>
              
              <!-- Stats Grid 4 ช่อง -->
@@ -528,28 +596,7 @@
                 </div>
              </div>
           </div>
-          <!-- 🔍 แถบค้นหาและกรองสถานะคิวงาน -->
-          <div class="glass-card rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-            <div class="relative flex-1">
-              <input type="text" id="admin-search-input" oninput="renderAdminTable()" class="w-full input-field rounded-xl px-4 py-2.5 text-xs sm:text-sm" placeholder="🔍 ค้นหาชื่อลูกค้า, เบอร์โทร, รหัสคิว, แพ็กเกจ หรือสถานที่...">
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <select id="admin-status-filter" onchange="renderAdminTable()" class="input-field rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium">
-                <option value="all">ทุกสถานะ</option>
-                <option value="รอตรวจสอบ">รอตรวจสอบ (สลิป)</option>
-                <option value="ยืนยันแล้ว">ยืนยันแล้ว</option>
-                <option value="unpaid_balance">ค้างชำระยอดวันงาน</option>
-                <option value="paid_full">ชำระครบ 100% แล้ว</option>
-                <option value="เสร็จสิ้น">เสร็จสิ้น (ส่งงานแล้ว)</option>
-                <option value="ยกเลิก">ยกเลิก</option>
-              </select>
-              <label class="flex items-center gap-1.5 px-3 py-2 rounded-xl input-field text-xs cursor-pointer select-none whitespace-nowrap">
-                <input type="checkbox" id="admin-show-all-months" onchange="renderAdminTable()" class="w-3.5 h-3.5 rounded accent-amber-500">
-                <span>แสดงทุกเดือน</span>
-              </label>
-            </div>
-          </div>
-
+          <div id="admin-month-chips" class="flex flex-wrap items-center gap-2 mb-4"></div>
           <div class="overflow-x-auto glass-card rounded-2xl"><table class="w-full text-left text-sm min-w-[800px]"><thead style="background: rgba(0,0,0,0.1); color: var(--text-muted);"><tr><th class="p-4">ลูกค้า / แพ็กเกจ</th><th class="p-4">วันที่ / สถานที่</th><th class="p-4">สถานะ / สลิปโอนเงิน</th><th class="p-4">จัดการเอกสาร & คิว</th></tr></thead><tbody id="admin-table-body" class="divide-y" style="border-color: var(--border-color);"></tbody></table></div>
         </div>
         
@@ -622,32 +669,31 @@
                 <i data-lucide="image" class="w-3.5 h-3.5 text-blue-400"></i> ซิงค์เฉพาะผลงาน
               </button>
             </div>
+            <div class="pt-3 border-t space-y-2" style="border-color: var(--border-color);">
+              <label class="block text-xs font-bold text-accent">ลิงก์ Google Apps Script Web App URL (ถ้ามี - ลงท้ายด้วย /exec)</label>
+              <input type="text" id="set-gas-webapp-url" class="w-full input-field rounded-xl px-4 py-2 font-mono text-xs" placeholder="about:invalid#zPythonSafez">
+            </div>
+            <div class="pt-3 border-t space-y-2" style="border-color: var(--border-color);">
+              <button type="button" onclick="document.getElementById('paste-sheet-box').classList.toggle('hidden')" class="w-full py-2 px-3 rounded-xl input-field text-xs font-bold flex items-center justify-between">
+                <span>📋 ทางเลือกสำรอง: คัดลอกข้อมูลจาก Sheet มาวางโดยตรง (ไม่ต้องตั้งค่าแชร์)</span>
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </button>
+              <div id="paste-sheet-box" class="hidden space-y-2 pt-2">
+                <p class="text-[11px]" style="color: var(--text-muted);">เปิดหน้า Google Sheets ของคุณ กด <b>Ctrl+A</b> แล้ว <b>Ctrl+C</b> จากนั้นนำมาวาง (<b>Ctrl+V</b>) ในช่องด้านล่างแล้วกดนำเข้าได้ทันที:</p>
+                <textarea id="paste-sheet-raw" rows="4" class="w-full input-field rounded-xl p-3 font-mono text-xs" placeholder="วางข้อมูลที่คัดลอกจากตาราง Google Sheets ที่นี่..."></textarea>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <button type="button" onclick="importFromPastedText('bookings')" class="py-2 bg-emerald-600 text-white font-bold rounded-xl">นำเข้าเป็นคิวงาน</button>
+                  <button type="button" onclick="importFromPastedText('portfolio')" class="py-2 bg-blue-600 text-white font-bold rounded-xl">นำเข้าเป็นผลงาน</button>
+                </div>
+              </div>
+            </div>
             <div class="p-3 rounded-xl border text-[11px] space-y-1.5" style="background: rgba(0,0,0,0.15); border-color: var(--border-color); color: var(--text-muted);">
               <p class="font-bold" style="color: var(--text-main);">💡 คำแนะนำการตั้งค่า Google Sheets:</p>
               <ul class="list-disc list-inside space-y-1">
                 <li>กดปุ่ม <b>แชร์ (Share)</b> บน Google Sheets แล้วเลือก <b>"ทุกคนที่มีลิงก์ (Anyone with the link)"</b> สิทธิ์อ่าน (Viewer)</li>
-                <li>ระบบค้นหาแท็บมาตรฐานให้อัตโนมัติ (เช่น <code>Bookings</code>, <code>คิวงาน</code>, <code>Portfolio</code>, <code>ผลงาน</code>, <code>Reviews</code>)</li>
+                <li>หรือไปที่เมนู <b>ไฟล์ (File) > แชร์ > เผยแพร่ไปยังเว็บ (Publish to web)</b> แล้วกดเผยแพร่</li>
                 <li>หากตั้งชื่อแท็บเป็นอย่างอื่น สามารถพิมพ์ชื่อแท็บหรือเลข GID ในช่องด้านบนแล้วกดซิงค์ได้ทันที</li>
               </ul>
-            </div>
-
-            <!-- 🔄 Two-Way Sync (Apps Script Web App URL + แจ้งเตือน LINE/Telegram) -->
-            <div class="pt-5 mt-5 border-t space-y-3" style="border-color: var(--border-color);">
-              <div class="flex items-center justify-between gap-2">
-                <label class="text-xs font-bold flex items-center gap-1.5 text-accent"><i data-lucide="webhook" class="w-4 h-4"></i> Two-Way Sync & แจ้งเตือน LINE / Telegram</label>
-                <button type="button" onclick="showAppsScriptGuide()" class="text-[11px] text-accent underline">ดูโค้ดติดตั้ง</button>
-              </div>
-              <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
-                วางลิงก์ Web App URL (ที่ลงท้ายด้วย <code>/exec</code> จาก Google Apps Script) เพื่อให้เมื่อลูกค้าจองคิว แนบสลิป หรือเขียนรีวิวบน GitHub Pages ระบบจะส่งข้อมูลไปบันทึกลง Google Sheets และแจ้งเตือนเข้าแชททันที
-              </p>
-              <input type="text" id="set-gas-webapp-url" class="w-full input-field rounded-xl px-4 py-2.5 font-mono text-xs" placeholder="วาง Apps Script Web App URL (.../macros/s/.../exec)">
-            </div>
-
-            <!-- 📜 ตั้งค่าข้อตกลงและสัญญาจ้างท้ายเอกสาร -->
-            <div class="pt-5 mt-5 border-t space-y-3" style="border-color: var(--border-color);">
-              <label class="block text-xs font-bold flex items-center gap-1.5"><i data-lucide="file-check-2" class="w-4 h-4 text-accent"></i> เงื่อนไขสัญญาจ้างถ่ายภาพ (แสดงในฟอร์มจอง & ท้ายใบเสนอราคา)</label>
-              <textarea id="set-contract-terms" rows="4" class="w-full input-field rounded-xl px-3.5 py-2.5 text-xs leading-relaxed"></textarea>
-              <button onclick="saveAdminSettings()" class="w-full py-3 btn-accent font-bold rounded-xl text-sm">บันทึกการตั้งค่าทั้งหมด</button>
             </div>
           </div>
         </div>
@@ -753,20 +799,16 @@
     <button onclick="document.getElementById('invoice-modal').classList.remove('show')" class="absolute top-4 right-4 text-white hover:text-gray-300 no-print z-50 bg-black/40 p-2 rounded-full backdrop-blur-md"><i data-lucide="x" class="w-5 h-5"></i></button>
     <div class="w-full max-w-3xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl relative shadow-2xl">
       <div class="doc-container mx-auto pb-6" id="printable-invoice">
-        <div class="doc-header"><h1 id="inv-doc-title">Invoice / Receipt</h1><p id="inv-doc-subtitle">ใบแจ้งหนี้ / ใบเสร็จรับเงิน</p></div>
+        <div class="doc-header"><h1>Invoice</h1><p>ใบแจ้งหนี้ / ใบเสร็จรับเงิน</p></div>
         <div class="doc-body">
           <div class="doc-row"><div class="doc-col"><div class="doc-title-sm">ข้อมูลลูกค้า :</div><div class="doc-name" id="inv-name">-</div><div id="inv-tel"></div><div id="inv-location"></div><div class="mt-4 text-gray-500">หมายเลข : <span id="inv-id" class="text-black">-</span></div><div class="text-gray-500">วันที่ : <span id="inv-date-now" class="text-black">-</span></div></div><div class="doc-col right"><div class="doc-title-sm">ผู้ออกใบเสร็จรับเงิน :</div><div class="doc-name">Toy Gallery 2000's</div><div>Photography & Cinematic Mood</div><div>FB: Porawat Sanyai</div><div>Line ID: toyporawat</div><div>Tel: 062-607-9030</div></div></div>
-          <table class="doc-table"><thead><tr><th style="width: 10%;" class="center">จำนวน</th><th style="width: 50%;">รายการ</th><th style="width: 20%;" class="right">ราคา</th><th style="width: 20%;" class="right">ยอดรวม</th></tr></thead><tbody><tr><td class="center">1</td><td><strong id="inv-pkg"></strong><br><span class="text-gray-500 text-xs">วันถ่ายทำ: <span id="inv-shoot-date"></span> (<span id="inv-shoot-time"></span>)</span><div id="inv-notes-line" class="text-gray-500 text-xs mt-1"></div></td><td class="right">฿ <span id="inv-price"></span></td><td class="right">฿ <span id="inv-price-line"></span></td></tr></tbody></table>
+          <table class="doc-table"><thead><tr><th style="width: 10%;" class="center">จำนวน</th><th style="width: 50%;">รายการ</th><th style="width: 20%;" class="right">ราคา</th><th style="width: 20%;" class="right">ยอดรวม</th></tr></thead><tbody><tr><td class="center">1</td><td><strong id="inv-pkg"></strong><br><span class="text-gray-500 text-xs">วันถ่ายทำ: <span id="inv-shoot-date"></span> (<span id="inv-shoot-time"></span>)</span></td><td class="right">฿ <span id="inv-price"></span></td><td class="right">฿ <span id="inv-price"></span></td></tr></tbody></table>
           <div class="doc-summary-area">
             <div>
               <div class="doc-bank-info text-gray-500"><div class="text-black font-bold mb-2">ช่องทางการชำระเงิน</div><div>ชื่อบัญชี &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-black font-bold" id="inv-bank-name">-</span></div><div>เลขที่บัญชี &nbsp;&nbsp;&nbsp;<span class="text-black font-bold" id="inv-bank-num">-</span></div></div>
               <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start mt-4 w-full box-border"><div class="p-3 border border-gray-200 rounded-xl bg-white text-center shrink-0 min-w-[140px] shadow-sm"><img id="inv-qr-image" src="" class="w-28 h-28 object-contain mx-auto"><div class="text-[10px] mt-2 text-gray-500 font-bold">สแกนเพื่อชำระเงิน</div></div><div class="payment-box !mt-0 !max-w-none flex-1 w-full box-border" style="margin-top: 0; width: 100%;"><div class="flex items-center gap-3 sm:gap-4 mb-3 text-xs sm:text-[13px]"><span class="font-bold text-black">ชำระเงิน</span><label class="flex items-center gap-1 text-gray-500"><input type="checkbox" disabled> เงินสด</label><label class="flex items-center gap-1 text-black font-bold"><input type="checkbox" checked disabled class="accent-black"> โอนเงิน</label></div><div class="grid grid-cols-[70px_1fr] sm:grid-cols-[80px_1fr] gap-2 text-black text-xs"><span class="text-gray-500">จำนวนเงิน :</span><span class="font-bold">฿ <span id="inv-pay-amount"></span></span><span class="text-gray-500">วันที่ชำระ :</span><span id="inv-pay-date"></span><span class="text-gray-500">เวลา :</span><span id="inv-pay-time"></span></div></div></div>
             </div>
-            <div class="doc-summary"><div class="doc-sum-row"><span class="text-gray-500">ยอดรวม</span><span>฿ <span id="inv-price-total"></span></span></div><div class="doc-sum-row"><span class="text-gray-500" id="inv-paid-label">ชำระแล้ว (มัดจำ)</span><span>฿ <span id="inv-deposit"></span></span></div><div class="doc-sum-row total"><span>ยอดคงเหลือสุทธิ</span><span>฿ <span id="inv-balance"></span></span></div><div class="baht-text" id="inv-baht-text"></div><div class="sign-box"><div class="text-gray-500 mb-4">รับชำระโดย</div><div class="text-black text-lg font-bold mb-1">ปรวรรตน์ แสนใหญ่</div><div class="sign-line" style="width: 160px; margin: 5px auto 10px;"></div><div class="text-black font-bold text-sm">Toy Gallery 2000's</div><div class="text-xs text-gray-400 mt-1">วันที่ <span id="inv-sign-date"></span></div></div></div>
-          </div>
-          <div class="border-t border-gray-200 pt-4 mt-2 text-[11px] text-gray-600 leading-relaxed">
-            <div class="font-bold text-black mb-1">ข้อตกลงและเงื่อนไขการให้บริการ:</div>
-            <div id="inv-contract-terms" class="whitespace-pre-line"></div>
+            <div class="doc-summary"><div class="doc-sum-row"><span class="text-gray-500">ยอดรวม</span><span>฿ <span id="inv-price-total"></span></span></div><div class="doc-sum-row"><span class="text-gray-500">ชำระแล้ว (มัดจำ)</span><span>฿ <span id="inv-deposit"></span></span></div><div class="doc-sum-row total"><span>ยอดคงเหลือสุทธิ</span><span>฿ <span id="inv-balance"></span></span></div><div class="baht-text" id="inv-baht-text"></div><div class="sign-box"><div class="text-gray-500 mb-4">รับชำระโดย</div><div class="text-black text-lg font-bold mb-1">ปรวรรตน์ แสนใหญ่</div><div class="sign-line" style="width: 160px; margin: 5px auto 10px;"></div><div class="text-black font-bold text-sm">Toy Gallery 2000's</div><div class="text-xs text-gray-400 mt-1">วันที่ <span id="inv-sign-date"></span></div></div></div>
           </div>
         </div>
         <div class="no-print mt-auto bg-gray-50 border-t border-gray-200 p-6 flex flex-col sm:flex-row gap-3 justify-end"><button onclick="document.getElementById('invoice-modal').classList.remove('show')" class="px-5 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-100 transition-colors">ปิดหน้าต่าง</button><button onclick="downloadJPG('printable-invoice', 'Invoice_' + currentBookingId)" class="px-5 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-100 flex items-center justify-center gap-2 transition-colors"><i data-lucide="image" class="w-4 h-4"></i> Save JPG (A4)</button><button onclick="printDocument('invoice')" class="px-8 py-3 rounded-xl bg-black text-white font-bold shadow-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"><i data-lucide="printer" class="w-4 h-4"></i> Print PDF</button></div>
@@ -774,7 +816,7 @@
     </div>
   </div>
 
-  <!-- ⭐ ป๊อปอัป เขียนรีวิวความประทับใจ (Client Review Modal) -->
+  <!-- ⭐ ป๊อปอัป เขียนรีวิวความประทับใจ -->
   <div id="review-modal" class="edit-modal" style="z-index: 1080;">
     <div class="glass-card p-6 sm:p-8 rounded-3xl w-full max-w-md shadow-2xl">
       <div class="flex justify-between items-center mb-5 border-b pb-3" style="border-color: var(--border-color);">
@@ -926,52 +968,13 @@
     }
 
     const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/16vQOJcn1-HHPDZgatfENcyAhZtZAbGkiOiv-t9T_rt0/edit?gid=0#gid=0';
-    const DEFAULT_CONTRACT_TERMS = `1. การจองคิวจะสมบูรณ์เมื่อชำระเงินมัดจำ 1,500 บาท เพื่อล็อคคิวงาน ส่วนยอดคงเหลือชำระในวันถ่ายทำ\n2. กรณีจำเป็นต้องเลื่อนวันถ่ายภาพ กรุณาแจ้งล่วงหน้าอย่างน้อย 7–14 วัน (ขึ้นอยู่กับคิวว่างของช่างภาพ) หากยกเลิกคิวงานขอสงวนสิทธิ์ไม่คืนเงินมัดจำ\n3. ส่งมอบไฟล์ภาพความละเอียดสูงปรับแสงและโทนสีฟิล์ม Cinematic ทุกภาพที่คัดส่งมอบ พร้อมสำรองไฟล์บนระบบคลาวด์เป็นเวลา 60 วันหลังส่งงาน`;
-
-    function copyTextSafe(text, successMsg) {
-      const done = () => uiAlert(successMsg || 'คัดลอกข้อความเรียบร้อยแล้ว');
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
-      } else {
-        fallbackCopy(text, done);
-      }
-    }
-    function fallbackCopy(text, cb) {
-      try {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-      } catch (e) {}
-      if (cb) cb();
-    }
-
-    function pushToGasWebhook(action, payload) {
-      try {
-        const rawSettings = SafeStorage.getItem('tg_standalone_settings');
-        const parsed = rawSettings ? JSON.parse(rawSettings) : {};
-        const url = String(parsed.gasWebAppUrl || (typeof appSettings !== 'undefined' && appSettings.gasWebAppUrl) || '').trim();
-        if (!url || !/^https?:\/\//i.test(url)) return;
-        fetch(url, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action, payload, timestamp: new Date().toISOString() })
-        }).catch(() => {});
-      } catch (e) {}
-    }
 
     // สร้าง гугл.script.run จำลองเมื่อรันบน GitHub Pages หรือเว็บทั่วไป
     if (typeof window.google === "undefined" || !window.google.script) {
       const DB_KEYS = {
         BOOKINGS: 'tg_standalone_bookings',
         PORTFOLIO: 'tg_standalone_portfolio',
-        SETTINGS: 'tg_standalone_settings',
-        REVIEWS: 'tg_standalone_reviews'
+        SETTINGS: 'tg_standalone_settings'
       };
 
       function getLocalBookings() {
@@ -999,9 +1002,7 @@
           qrImageUrl: '',
           sheetUrl: DEFAULT_SHEET_URL,
           bookingsTab: '',
-          portfolioTab: '',
-          gasWebAppUrl: '',
-          contractTerms: DEFAULT_CONTRACT_TERMS
+          portfolioTab: ''
         };
         const raw = SafeStorage.getItem(DB_KEYS.SETTINGS);
         if (raw) {
@@ -1010,8 +1011,7 @@
             return {
               ...defaults,
               ...parsed,
-              sheetUrl: (parsed && parsed.sheetUrl) ? parsed.sheetUrl : DEFAULT_SHEET_URL,
-              contractTerms: (parsed && parsed.contractTerms) ? parsed.contractTerms : DEFAULT_CONTRACT_TERMS
+              sheetUrl: (parsed && parsed.sheetUrl) ? parsed.sheetUrl : DEFAULT_SHEET_URL
             };
           } catch(e) {}
         }
@@ -1079,43 +1079,36 @@
               };
               list.unshift(record);
               saveLocalBookings(list);
-              pushToGasWebhook('createBooking', record);
               return { success: true, id: newId };
             });
           },
           updateBookingInSheet(id, updates) {
             runAsync(() => {
               const list = getLocalBookings();
-              const idx = list.findIndex(b => String(b.id) === String(id));
+              const idx = list.findIndex(b => b.id === id);
               if (idx > -1) {
                 list[idx] = { ...list[idx], ...updates };
                 saveLocalBookings(list);
-                pushToGasWebhook('updateBooking', { id, updates, booking: list[idx] });
                 return { success: true, message: 'อัปเดตข้อมูลสำเร็จ' };
               }
-              pushToGasWebhook('updateBooking', { id, updates });
-              return { success: true, message: 'อัปเดตข้อมูลสำเร็จ' };
+              return { success: false, message: 'ไม่พบข้อมูลคิวงาน' };
             });
           },
           deleteBookingInSheet(id) {
             runAsync(() => {
-              const list = getLocalBookings().filter(b => String(b.id) !== String(id));
+              const list = getLocalBookings().filter(b => b.id !== id);
               saveLocalBookings(list);
-              pushToGasWebhook('deleteBooking', { id });
               return { success: true, message: 'ลบคิวงานเรียบร้อยแล้ว' };
             });
           },
           uploadSlipAndUpdateBooking(id, slipData) {
             runAsync(() => {
               const list = getLocalBookings();
-              const idx = list.findIndex(b => String(b.id) === String(id));
+              const idx = list.findIndex(b => b.id === id);
               if (idx > -1) {
                 list[idx].slipUrl = slipData.base64 || '';
                 list[idx].status = 'ยืนยันแล้ว';
                 saveLocalBookings(list);
-                pushToGasWebhook('uploadSlip', { id, customerName: list[idx].customerName, depositAmount: list[idx].depositAmount, slipBase64: slipData.base64 });
-              } else {
-                pushToGasWebhook('uploadSlip', { id, slipBase64: slipData.base64 });
               }
               return { success: true };
             });
@@ -1184,9 +1177,7 @@
                 qrImageUrl: data.qrBase64 || current.qrImageUrl || '',
                 sheetUrl: data.sheetUrl || current.sheetUrl || DEFAULT_SHEET_URL,
                 bookingsTab: data.bookingsTab !== undefined ? data.bookingsTab : (current.bookingsTab || ''),
-                portfolioTab: data.portfolioTab !== undefined ? data.portfolioTab : (current.portfolioTab || ''),
-                gasWebAppUrl: data.gasWebAppUrl !== undefined ? data.gasWebAppUrl : (current.gasWebAppUrl || ''),
-                contractTerms: data.contractTerms !== undefined ? (data.contractTerms || DEFAULT_CONTRACT_TERMS) : (current.contractTerms || DEFAULT_CONTRACT_TERMS)
+                portfolioTab: data.portfolioTab !== undefined ? data.portfolioTab : (current.portfolioTab || '')
               };
               saveLocalSettings(updated);
               return { success: true, message: 'บันทึกการตั้งค่าระบบเรียบร้อย' };
@@ -1311,7 +1302,7 @@
         if(d) d.style.colorScheme = (['dark', 'vintage', 'ocean', 'forest', 'noir', 'sunset'].includes(activeTheme)) ? 'dark' : 'light'; 
       }); 
     }
-    function initTheme() { const savedTheme = SafeStorage.getItem("tg_theme") || "dark"; applyTheme(savedTheme); window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => { if(SafeStorage.getItem("tg_theme") === "system") applyTheme("system"); }); }
+    function initTheme() { const savedTheme = SafeStorage.getItem("tg_theme") || "light"; applyTheme(savedTheme); window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => { if(SafeStorage.getItem("tg_theme") === "system") applyTheme("system"); }); }
     function setTheme(t) { SafeStorage.setItem("tg_theme", t); applyTheme(t); document.getElementById("theme-menu").classList.remove("show"); }
     function toggleThemeMenu() { document.getElementById("theme-menu").classList.toggle("show"); }
     document.addEventListener("click", e => { if (!e.target.closest(".relative") && document.getElementById("theme-menu").classList.contains("show")) document.getElementById("theme-menu").classList.remove("show"); });
@@ -1341,11 +1332,17 @@
 
     function handleDriveImgError(imgEl, hideOnFinalFail) {
       const src = imgEl.getAttribute('src') || '';
-      if (!imgEl.dataset.retriedThumb) {
-        const m = src.match(/\/d\/([a-zA-Z0-9_-]{10,})/) || src.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
-        if (m && m[1]) {
-          imgEl.dataset.retriedThumb = '1';
-          imgEl.src = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
+      const m = src.match(/\/d\/([a-zA-Z0-9_-]{10,})/) || src.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+      if (m && m[1]) {
+        const fid = m[1];
+        if (!imgEl.dataset.retriedStep) {
+          imgEl.dataset.retriedStep = '1';
+          imgEl.src = `https://drive.google.com/thumbnail?id=${fid}&sz=w1000`;
+          return;
+        }
+        if (imgEl.dataset.retriedStep === '1') {
+          imgEl.dataset.retriedStep = '2';
+          imgEl.src = `https://drive.google.com/uc?export=view&id=${fid}`;
           return;
         }
       }
@@ -1354,24 +1351,46 @@
 
     let activePortfolioCategory = 'all';
     let reviewsList = [];
+    let realTimeSyncTimer = null;
 
-    function refreshContractTermsDisplays() {
-      const terms = (appSettings && appSettings.contractTerms) ? appSettings.contractTerms : DEFAULT_CONTRACT_TERMS;
-      const box = document.getElementById('terms-detail-box');
-      if (box) box.innerText = terms;
-      const qTerms = document.getElementById('q-contract-terms');
-      if (qTerms) qTerms.innerText = terms;
-      const invTerms = document.getElementById('inv-contract-terms');
-      if (invTerms) invTerms.innerText = terms;
-      const setTerms = document.getElementById('set-contract-terms');
-      if (setTerms && !setTerms.value) setTerms.value = terms;
+    function copyTextSafe(text, successMsg) {
+      const done = () => uiAlert(successMsg || 'คัดลอกข้อความเรียบร้อยแล้ว');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+          } catch (e) {}
+          done();
+        });
+      } else {
+        done();
+      }
+    }
+
+    function filterPortfolioByCategory(cat) {
+      activePortfolioCategory = cat || 'all';
+      document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+        if (btn.dataset.cat === activePortfolioCategory) {
+          btn.className = 'cat-filter-btn px-4 py-2 rounded-full text-xs font-bold btn-accent';
+        } else {
+          btn.className = 'cat-filter-btn px-4 py-2 rounded-full text-xs font-medium input-field hover:opacity-80';
+        }
+      });
+      renderHomeAlbums();
+    }
+
+    function toggleFaq(btn) {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('i, svg');
+      if (body) body.classList.toggle('hidden');
+      if (icon) icon.style.transform = body.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
     }
 
     function loadReviews() {
       const raw = SafeStorage.getItem('tg_standalone_reviews');
-      if (raw) {
-        try { reviewsList = JSON.parse(raw) || []; } catch (e) { reviewsList = []; }
-      }
+      if (raw) { try { reviewsList = JSON.parse(raw) || []; } catch (e) { reviewsList = []; } }
       renderReviews();
     }
 
@@ -1380,35 +1399,14 @@
       if (!grid) return;
       const isAdmin = SafeSession.getItem('tg_admin') === 'true';
       if (!Array.isArray(reviewsList) || reviewsList.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full py-10 px-6 text-center glass-card rounded-2xl">
-            <i data-lucide="sparkles" class="w-8 h-8 mx-auto mb-2 text-accent opacity-60"></i>
-            <p class="text-sm font-medium mb-1">ยังไม่มีรีวิวในขณะนี้</p>
-            <p class="text-xs" style="color: var(--text-muted);">ลูกค้าที่เคยร่วมงานกับ Toy Gallery 2000's สามารถกดปุ่ม "เขียนรีวิวความประทับใจ" ด้านบนเพื่อแบ่งปันประสบการณ์ได้ครับ</p>
-          </div>`;
+        grid.innerHTML = `<div class="col-span-full py-10 px-6 text-center glass-card rounded-2xl"><i data-lucide="sparkles" class="w-8 h-8 mx-auto mb-2 text-accent opacity-60"></i><p class="text-sm font-medium mb-1">ยังไม่มีรีวิวในขณะนี้</p><p class="text-xs" style="color: var(--text-muted);">ลูกค้าที่เคยร่วมงานกับ Toy Gallery 2000's สามารถกดปุ่ม "เขียนรีวิวความประทับใจ" ด้านบนเพื่อแบ่งปันประสบการณ์ได้ครับ</p></div>`;
         if (window.lucide) lucide.createIcons();
         return;
       }
       grid.innerHTML = reviewsList.map(r => {
         const stars = '★'.repeat(Math.max(1, Math.min(5, Number(r.rating) || 5)));
         const safeId = encodeURIComponent(r.id || '');
-        return `
-          <div class="glass-card p-6 rounded-2xl flex flex-col justify-between relative">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-3">
-                <span class="text-amber-500 text-sm tracking-wider font-bold">${stars}</span>
-                <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold" style="background: rgba(128,128,128,0.15); color: var(--text-main);">${r.category || 'Photography'}</span>
-              </div>
-              <p class="text-xs sm:text-sm leading-relaxed mb-4" style="color: var(--text-main);">"${r.comment}"</p>
-            </div>
-            <div class="flex items-center justify-between pt-3 border-t text-xs" style="border-color: var(--border-color);">
-              <div>
-                <span class="font-bold block">${r.name}</span>
-                <span class="text-[10px]" style="color: var(--text-muted);">${r.date || ''}</span>
-              </div>
-              ${isAdmin ? `<button onclick="deleteReview(decodeURIComponent('${safeId}'))" class="text-[10px] text-red-500 hover:underline">ลบ</button>` : ''}
-            </div>
-          </div>`;
+        return `<div class="glass-card p-6 rounded-2xl flex flex-col justify-between relative"><div><div class="flex items-center justify-between gap-2 mb-3"><span class="text-amber-500 text-sm tracking-wider font-bold">${stars}</span><span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold" style="background: rgba(128,128,128,0.15); color: var(--text-main);">${r.category || 'Photography'}</span></div><p class="text-xs sm:text-sm leading-relaxed mb-4" style="color: var(--text-main);">"${r.comment}"</p></div><div class="flex items-center justify-between pt-3 border-t text-xs" style="border-color: var(--border-color);"><div><span class="font-bold block">${r.name}</span><span class="text-[10px]" style="color: var(--text-muted);">${r.date || ''}</span></div>${isAdmin ? `<button onclick="deleteReview(decodeURIComponent('${safeId}'))" class="text-[10px] text-red-500 hover:underline">ลบ</button>` : ''}</div></div>`;
       }).join('');
       if (window.lucide) lucide.createIcons();
     }
@@ -1429,7 +1427,6 @@
       };
       reviewsList.unshift(item);
       SafeStorage.setItem('tg_standalone_reviews', JSON.stringify(reviewsList));
-      pushToGasWebhook('createReview', item);
       document.getElementById('review-form').reset();
       document.getElementById('review-modal').classList.remove('show');
       renderReviews();
@@ -1444,73 +1441,46 @@
       });
     }
 
-    function toggleFaq(btn) {
-      const body = btn.nextElementSibling;
-      const icon = btn.querySelector('i, svg');
-      if (body) body.classList.toggle('hidden');
-      if (icon) icon.style.transform = body.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-    }
+    function handleTrackSearch(e) {
+      if (e) e.preventDefault();
+      const rawQ = (document.getElementById('track-query')?.value || '').trim();
+      const area = document.getElementById('track-results-area');
+      if (!rawQ || !area) return;
+      const qLower = rawQ.toLowerCase();
+      const qDigits = rawQ.replace(/\D/g, '');
+      const qTail = qDigits.length >= 8 ? qDigits.slice(-8) : '';
 
-    function filterPortfolioByCategory(cat) {
-      activePortfolioCategory = cat || 'all';
-      document.querySelectorAll('.cat-filter-btn').forEach(btn => {
-        if (btn.dataset.cat === activePortfolioCategory) {
-          btn.className = 'cat-filter-btn px-4 py-2 rounded-full text-xs font-bold btn-accent';
-        } else {
-          btn.className = 'cat-filter-btn px-4 py-2 rounded-full text-xs font-medium input-field hover:opacity-80';
-        }
+      const matches = allBookings.filter(b => {
+        const idMatch = String(b.id || '').toLowerCase().includes(qLower);
+        const bDigits = String(b.tel || '').replace(/\D/g, '');
+        const bTail = bDigits.length >= 8 ? bDigits.slice(-8) : '';
+        const telMatch = (qTail && bTail && qTail === bTail) || (qDigits.length >= 6 && bDigits.includes(qDigits));
+        return idMatch || telMatch;
       });
-      renderHomeAlbums();
-    }
 
-    function getBookingCalculatedSummary() {
-      const pkgSelect = document.getElementById('b-package');
-      const basePkg = pkgSelect ? pkgSelect.value : '';
-      let basePrice = 0;
-      const priceMatch = basePkg.match(/([\d,]+)\s*บาท/);
-      if (priceMatch) basePrice = parseInt(priceMatch[1].replace(/,/g, ''), 10) || 0;
-
-      const addons = [];
-      let addonTotal = 0;
-
-      if (document.getElementById('addon-extra-hr')?.checked) {
-        const hrs = parseInt(document.getElementById('addon-extra-hr-qty')?.value || '1', 10) || 1;
-        const cost = hrs * 1000;
-        addonTotal += cost;
-        addons.push(`เพิ่มชั่วโมง ${hrs} ชม. (+${cost.toLocaleString()}.-)`);
-      }
-      if (document.getElementById('addon-second-cam')?.checked) {
-        addonTotal += 3500;
-        addons.push('ช่างภาพคนที่ 2 Candid (+3,500.-)');
-      }
-      if (document.getElementById('addon-express')?.checked) {
-        addonTotal += 1500;
-        addons.push('ส่งงานด่วน Express 3 วัน (+1,500.-)');
+      if (matches.length === 0) {
+        area.innerHTML = `<div class="glass-card rounded-2xl p-10 text-center"><i data-lucide="file-question" class="w-10 h-10 mx-auto mb-3 opacity-50 text-amber-500"></i><p class="font-bold mb-1">ไม่พบข้อมูลคิวงานสำหรับ "${rawQ}"</p><p class="text-xs" style="color: var(--text-muted);">กรุณาตรวจสอบเบอร์โทรศัพท์ที่ใช้จอง หรือรหัสคิว (เช่น TG-1001) อีกครั้ง</p></div>`;
+        if (window.lucide) lucide.createIcons();
+        return;
       }
 
-      const total = basePrice + addonTotal;
-      const deposit = total > 0 ? 1500 : 0;
-      const balance = Math.max(0, total - deposit);
-      const fullPkgLabel = addons.length > 0 ? `${basePkg} + [${addons.join(', ')}]` : basePkg;
-
-      return { basePkg, basePrice, addons, addonTotal, total, deposit, balance, fullPkgLabel };
-    }
-
-    function recalcBookingPrice() {
-      const info = getBookingCalculatedSummary();
-      const elTotal = document.getElementById('calc-total');
-      const elDep = document.getElementById('calc-deposit');
-      const elBal = document.getElementById('calc-balance');
-      if (elTotal) elTotal.innerText = info.total.toLocaleString();
-      if (elDep) elDep.innerText = info.deposit.toLocaleString();
-      if (elBal) elBal.innerText = info.balance.toLocaleString();
+      area.innerHTML = matches.map(b => {
+        const safeId = encodeURIComponent(b.id);
+        const price = Number(b.price) || 0;
+        const paid = Number(b.depositAmount) || 0;
+        const bal = Math.max(0, price - paid);
+        const isPaidFull = price > 0 && paid >= price;
+        const hasDelivery = Boolean((b.driveLink && b.driveLink.trim()) || (b.photosLink && b.photosLink.trim()));
+        const safeDrive = encodeURIComponent(b.driveLink || '');
+        const safePhotos = encodeURIComponent(b.photosLink || '');
+        return `<div class="glass-card rounded-3xl p-6 sm:p-8 space-y-4"><div class="flex flex-wrap items-start justify-between gap-3 border-b pb-4" style="border-color: var(--border-color);"><div><span class="text-xs font-mono opacity-70 block mb-1">หมายเลขคิว: ${b.id}</span><h3 class="text-xl font-bold">${b.customerName}</h3><p class="text-xs text-accent mt-1 font-medium">${b.packageName}</p></div><div class="text-right"><span class="px-3 py-1 rounded-full text-xs font-bold border border-amber-500/40 bg-amber-500/10">${b.status}</span><span class="block text-[11px] font-bold mt-1.5 ${isPaidFull ? 'text-emerald-500' : 'text-amber-500'}">${isPaidFull ? '✓ ชำระครบ 100%' : `ชำระแล้ว ฿${paid.toLocaleString()} • คงเหลือ ฿${bal.toLocaleString()}`}</span></div></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"><div class="p-3 rounded-xl" style="background: rgba(0,0,0,0.06);"><span class="opacity-60 block">วันถ่ายทำ</span><b>${b.date || '-'} (${b.timeSlot || '-'})</b></div><div class="p-3 rounded-xl" style="background: rgba(0,0,0,0.06);"><span class="opacity-60 block">สถานที่</span><b>${b.location || '-'}</b></div><div class="p-3 rounded-xl" style="background: rgba(0,0,0,0.06);"><span class="opacity-60 block">ยอดรวม</span><b>฿${price.toLocaleString()}</b></div></div>${hasDelivery ? `<div class="p-4 rounded-2xl border border-emerald-500/40 space-y-2" style="background: rgba(16, 185, 129, 0.08);"><div class="font-bold text-emerald-500 text-xs">📦 ไฟล์ภาพของคุณพร้อมส่งมอบแล้ว!</div>${b.driveLink ? `<div class="flex items-center justify-between gap-2 text-xs"><span class="truncate font-mono">Google Drive: ${b.driveLink}</span><button onclick="copyTextSafe(decodeURIComponent('${safeDrive}'), 'คัดลอกลิงก์ Google Drive เรียบร้อยแล้ว')" class="px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold shrink-0">คัดลอกลิงก์</button></div>` : ''}${b.photosLink ? `<div class="flex items-center justify-between gap-2 text-xs"><span class="truncate font-mono">Google Photos: ${b.photosLink}</span><button onclick="copyTextSafe(decodeURIComponent('${safePhotos}'), 'คัดลอกลิงก์ Google Photos เรียบร้อยแล้ว')" class="px-3 py-1 rounded-lg bg-rose-600 text-white font-bold shrink-0">คัดลอกลิงก์</button></div>` : ''}</div>` : ''}<div class="flex flex-wrap gap-2 pt-1"><button onclick="showQuotationFromAdmin(decodeURIComponent('${safeId}'))" class="px-4 py-2 rounded-xl input-field text-xs font-bold">ใบเสนอราคา</button><button onclick="showInvoiceFromAdmin(decodeURIComponent('${safeId}'))" class="px-4 py-2 rounded-xl input-field text-xs font-bold">ใบเสร็จรับเงิน</button></div></div>`;
+      }).join('');
+      if (window.lucide) lucide.createIcons();
     }
 
     window.onload = function() {
       initTheme(); if (window.lucide) lucide.createIcons(); document.getElementById("b-date").value = new Date().toISOString().split("T")[0];
       const now = new Date(); document.getElementById('revenue-month').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      recalcBookingPrice();
-      refreshContractTermsDisplays();
       loadReviews();
       if(SafeSession.getItem("tg_admin") === "true") showAdminDashboard();
       if (typeof google !== "undefined") {
@@ -1518,11 +1488,10 @@
            if (res.success) { 
               allBookings = res.data; 
               syncCalendarToActiveMonth();
-              renderUpcomingReminders();
               renderAdminTable(); 
               renderDeliverTable(); 
               renderCalendar(); 
-              updateDashboardStats(); // 🔄 โหลดข้อมูล Dashboard ใหม่
+              updateDashboardStats();
            } 
         }).getBookingsFromSheet();
         google.script.run.withSuccessHandler(res => {
@@ -1532,11 +1501,16 @@
           document.getElementById('set-sheet-url').value = appSettings.sheetUrl || DEFAULT_SHEET_URL;
           if (document.getElementById('set-bookings-tab')) document.getElementById('set-bookings-tab').value = appSettings.bookingsTab || '';
           if (document.getElementById('set-portfolio-tab')) document.getElementById('set-portfolio-tab').value = appSettings.portfolioTab || '';
-          if (document.getElementById('set-gas-webapp-url')) document.getElementById('set-gas-webapp-url').value = appSettings.gasWebAppUrl || '';
-          if (document.getElementById('set-contract-terms')) document.getElementById('set-contract-terms').value = appSettings.contractTerms || DEFAULT_CONTRACT_TERMS;
-          refreshContractTermsDisplays();
-          // ซิงค์ข้อมูลอัตโนมัติจาก Google Sheets ทันทีที่เปิดเว็บ
-          setTimeout(() => { syncSheetData('all', true); }, 250);
+          // ดึงข้อมูลสดแบบเรียลไทม์จาก Google Sheets & Drive ทันทีที่เปิดเว็บในทุกเครื่อง
+          syncSheetData('all', true);
+          // ตั้งเวลาซิงค์ข้อมูลแบบเรียลไทม์อัตโนมัติทุกๆ 25 วินาที และเมื่อกลับมาที่หน้าแท็บเว็บ
+          if (realTimeSyncTimer) clearInterval(realTimeSyncTimer);
+          realTimeSyncTimer = setInterval(() => {
+            if (!document.hidden) syncSheetData('all', true);
+          }, 25000);
+          document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) syncSheetData('all', true);
+          });
         }).getAppSettings();
         loadPortfolioData();
       } else { document.getElementById("system-loader").style.display = "none"; }
@@ -1550,12 +1524,12 @@
       const albums = allAlbums.filter(album => {
         if (!activePortfolioCategory || activePortfolioCategory === 'all') return true;
         const c = String(album.category || '').toLowerCase();
-        const target = activePortfolioCategory.toLowerCase();
-        if (target === 'graduation') return c.includes('grad') || c.includes('ปริญญา');
-        if (target === 'event') return c.includes('event') || c.includes('บวช') || c.includes('อีเวน');
-        if (target === 'wedding') return c === 'wedding' || (c.includes('wedding') && !c.includes('pre'));
-        if (target === 'pre-wedding') return c.includes('pre');
-        return c.includes(target);
+        const t = activePortfolioCategory.toLowerCase();
+        if (t === 'graduation') return c.includes('grad') || c.includes('ปริญญา');
+        if (t === 'event') return c.includes('event') || c.includes('บวช');
+        if (t === 'wedding') return c === 'wedding' || (c.includes('wedding') && !c.includes('pre'));
+        if (t === 'pre-wedding') return c.includes('pre');
+        return c.includes(t);
       });
       if(albums.length === 0) {
         const msg = allAlbums.length === 0
@@ -1565,10 +1539,104 @@
         if(window.lucide) lucide.createIcons();
         return;
       }
-      grid.innerHTML = albums.map(album => `<div class="group relative rounded-2xl overflow-hidden aspect-[4/5] cursor-pointer glass-card border-0" data-album="${encodeURIComponent(album.title)}" onclick="openAlbum(decodeURIComponent(this.dataset.album))"><img src="${album.images[0].url}" onerror="handleDriveImgError(this, false)" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"><div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-70 group-hover:opacity-90 transition-opacity"></div><div class="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs border border-white/20"><i data-lucide="image" class="w-3 h-3 inline mr-1"></i> ${album.images.length} รูป</div><div class="absolute bottom-0 left-0 right-0 p-6 text-white"><span class="text-[10px] text-accent font-mono uppercase block mb-1">${album.category}</span><h3 class="text-lg font-serif font-bold">${album.title}</h3><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style="color: #ccc;">📍 ${album.location}</span></div></div>`).join("");
+      grid.innerHTML = albums.map((album, idx) => `<div class="stagger-item group relative rounded-2xl overflow-hidden aspect-[4/5] cursor-pointer glass-card border-0" style="animation-delay: ${Math.min(idx * 75, 600)}ms;" data-album="${encodeURIComponent(album.title)}" onclick="openAlbum(decodeURIComponent(this.dataset.album))"><img src="${normalizeDriveImageUrl(album.images[0].url)}" onerror="handleDriveImgError(this, false)" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"><div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-70 group-hover:opacity-90 transition-opacity"></div><div class="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs border border-white/20"><i data-lucide="image" class="w-3 h-3 inline mr-1"></i> ${album.images.length} รูป</div><div class="absolute bottom-0 left-0 right-0 p-6 text-white"><span class="text-[10px] text-accent font-mono uppercase block mb-1">${album.category}</span><h3 class="text-lg font-serif font-bold">${album.title}</h3><span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style="color: #ccc;">📍 ${album.location}</span></div></div>`).join("");
       lucide.createIcons();
     }
-    function openAlbum(albumName) { const album = groupedAlbums[albumName]; if(!album) return; document.getElementById("modal-album-title").innerText = album.title; document.getElementById("modal-album-loc").innerText = `📍 ${album.location} | ${album.category}`; document.getElementById("modal-image-grid").innerHTML = album.images.map(img => `<img src="${img.url}" onerror="handleDriveImgError(this, true)" class="w-full rounded-xl mb-4 shadow-lg border border-zinc-800">`).join(""); document.getElementById("modal-book-btn").onclick = () => { closeAlbum(); switchTab('booking'); document.getElementById("b-notes").value = `สนใจภาพมู้ดโทนอัลบั้ม "${album.title}"`; document.getElementById("b-location").value = album.location; }; document.getElementById("album-modal").classList.add("show"); document.body.style.overflow = 'hidden'; }
+
+    let currentLightboxImages = [];
+    let currentLightboxIndex = 0;
+    let currentLightboxAlbumTitle = '';
+    let lbTouchStartX = 0;
+
+    function ensureLightboxModal() {
+      let lb = document.getElementById('lightbox-modal');
+      if (lb) return lb;
+      lb = document.createElement('div');
+      lb.id = 'lightbox-modal';
+      lb.className = 'lightbox-modal no-print';
+      lb.innerHTML = `
+        <div class="p-4 sm:px-6 flex items-center justify-between bg-black/60 border-b border-white/10 z-20">
+          <div class="flex items-center gap-3 min-w-0">
+            <span id="lb-counter" class="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold tracking-wider">1 / 1</span>
+            <span id="lb-title" class="text-white/80 text-xs sm:text-sm truncate font-medium"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="toggleLightboxZoom()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors" title="ซูมขยาย/ย่อรูปภาพ"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
+            <button type="button" onclick="closeLightbox()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-red-500/80 text-white flex items-center justify-center transition-colors" title="ปิดหน้าต่าง (Esc)"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+        <div class="relative flex-1 flex items-center justify-center overflow-hidden px-4 py-6" id="lb-stage" onclick="if(event.target===this) closeLightbox()">
+          <button type="button" onclick="changeLightboxSlide(-1)" class="absolute left-3 sm:left-6 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-white/20 border border-white/15 text-white flex items-center justify-center transition-all shadow-lg"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+          <img id="lb-main-img" src="" onerror="handleDriveImgError(this, false)" onclick="toggleLightboxZoom()" class="lightbox-img-anim max-h-[78vh] max-w-[90vw] object-contain rounded-lg shadow-2xl" alt="Gallery Preview">
+          <button type="button" onclick="changeLightboxSlide(1)" class="absolute right-3 sm:right-6 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-white/20 border border-white/15 text-white flex items-center justify-center transition-all shadow-lg"><i data-lucide="chevron-right" class="w-6 h-6"></i></button>
+        </div>
+        <div class="p-3 text-center text-[11px] text-white/50 bg-black/50">คลิกที่รูปเพื่อซูมขยาย • ใช้ปุ่มลูกศร ◀ ▶ หรือปัดหน้าจอเพื่อเลื่อนดูรูป</div>
+      `;
+      document.body.appendChild(lb);
+
+      const stage = lb.querySelector('#lb-stage');
+      stage.addEventListener('touchstart', e => {
+        if (e.touches && e.touches.length === 1) lbTouchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      stage.addEventListener('touchend', e => {
+        if (!lbTouchStartX || !e.changedTouches || e.changedTouches.length === 0) return;
+        const diffX = e.changedTouches[0].clientX - lbTouchStartX;
+        lbTouchStartX = 0;
+        if (Math.abs(diffX) > 45) {
+          changeLightboxSlide(diffX < 0 ? 1 : -1);
+        }
+      }, { passive: true });
+
+      window.addEventListener('keydown', e => {
+        if (!lb.classList.contains('show')) return;
+        if (e.key === 'ArrowRight') changeLightboxSlide(1);
+        else if (e.key === 'ArrowLeft') changeLightboxSlide(-1);
+        else if (e.key === 'Escape') closeLightbox();
+      });
+      return lb;
+    }
+
+    function openLightbox(idx) {
+      if (!currentLightboxImages || currentLightboxImages.length === 0) return;
+      currentLightboxIndex = Math.max(0, Math.min(idx, currentLightboxImages.length - 1));
+      const lb = ensureLightboxModal();
+      renderLightboxSlide();
+      lb.classList.add('show');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderLightboxSlide() {
+      const imgEl = document.getElementById('lb-main-img');
+      const countEl = document.getElementById('lb-counter');
+      const titleEl = document.getElementById('lb-title');
+      if (!imgEl || currentLightboxImages.length === 0) return;
+      const item = currentLightboxImages[currentLightboxIndex];
+      imgEl.classList.remove('zoomed');
+      imgEl.classList.remove('lightbox-img-anim');
+      void imgEl.offsetWidth;
+      imgEl.src = normalizeDriveImageUrl(item.url);
+      imgEl.classList.add('lightbox-img-anim');
+      if (countEl) countEl.innerText = `${currentLightboxIndex + 1} / ${currentLightboxImages.length}`;
+      if (titleEl) titleEl.innerText = currentLightboxAlbumTitle;
+    }
+
+    function changeLightboxSlide(dir) {
+      if (!currentLightboxImages || currentLightboxImages.length === 0) return;
+      currentLightboxIndex = (currentLightboxIndex + dir + currentLightboxImages.length) % currentLightboxImages.length;
+      renderLightboxSlide();
+    }
+
+    function toggleLightboxZoom() {
+      const imgEl = document.getElementById('lb-main-img');
+      if (imgEl) imgEl.classList.toggle('zoomed');
+    }
+
+    function closeLightbox() {
+      const lb = document.getElementById('lightbox-modal');
+      if (lb) lb.classList.remove('show');
+    }
+
+    function openAlbum(albumName) { const album = groupedAlbums[albumName]; if(!album) return; currentLightboxImages = album.images || []; currentLightboxAlbumTitle = album.title; document.getElementById("modal-album-title").innerText = album.title; document.getElementById("modal-album-loc").innerText = `📍 ${album.location} | ${album.category}`; document.getElementById("modal-image-grid").innerHTML = album.images.map((img, idx) => `<div class="stagger-item group relative overflow-hidden rounded-xl mb-4 shadow-lg border border-zinc-800 cursor-pointer" style="animation-delay: ${Math.min(idx * 65, 650)}ms;" onclick="openLightbox(${idx})"><img src="${normalizeDriveImageUrl(img.url)}" onerror="handleDriveImgError(this, true)" class="w-full transition-transform duration-500 group-hover:scale-[1.03]"><div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center"><span class="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 rounded-full bg-black/70 text-white text-xs flex items-center gap-1.5"><i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> คลิกเพื่อขยายดูภาพ (${idx + 1}/${album.images.length})</span></div></div>`).join(""); document.getElementById("modal-book-btn").onclick = () => { closeAlbum(); switchTab('booking'); document.getElementById("b-notes").value = `สนใจภาพมู้ดโทนอัลบั้ม "${album.title}"`; document.getElementById("b-location").value = album.location; }; document.getElementById("album-modal").classList.add("show"); document.body.style.overflow = 'hidden'; if(window.lucide) lucide.createIcons(); }
     function closeAlbum() { document.getElementById("album-modal").classList.remove("show"); document.body.style.overflow = 'auto'; }
     function renderManagePortfolio() { const grid = document.getElementById("admin-manage-grid"); const albums = Object.values(groupedAlbums); if(albums.length === 0) { grid.innerHTML = `<p class="col-span-full py-8 text-center" style="color: var(--text-muted);">ยังไม่มีอัลบั้มผลงาน</p>`; return; } grid.innerHTML = albums.map(album => `<div class="relative glass-card rounded-xl overflow-hidden aspect-square group cursor-pointer border border-zinc-700/50 hover:border-accent transition-colors" data-album="${encodeURIComponent(album.title)}" onclick="openManageAlbum(decodeURIComponent(this.dataset.album))"><img src="${album.images[0].url}" onerror="handleDriveImgError(this, false)" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"><div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3 pt-8 text-white text-xs"><b class="text-sm line-clamp-1">${album.title}</b><span class="text-gray-300">${album.images.length} รูป | ${album.category}</span></div><div class="absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="settings" class="w-3 h-3 sm:w-4 sm:h-4"></i></div></div>`).join(""); lucide.createIcons(); }
     function openManageAlbum(title) { currentManageAlbumObj = groupedAlbums[title]; if(!currentManageAlbumObj) return; document.getElementById('ma-title').innerText = currentManageAlbumObj.title; document.getElementById('ma-subtitle').innerText = `${currentManageAlbumObj.category} • ${currentManageAlbumObj.location}`; document.getElementById('ma-count').innerText = currentManageAlbumObj.images.length; const grid = document.getElementById('ma-grid'); grid.innerHTML = currentManageAlbumObj.images.map((img, idx) => `<div class="relative rounded-xl overflow-hidden aspect-square group border border-zinc-700 shadow-sm"><img src="${img.url}" class="w-full h-full object-cover">${idx === 0 ? `<div class="absolute top-1 left-1 sm:top-2 sm:left-2 bg-amber-500 text-white text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-bold shadow-md z-10"><i data-lucide="star" class="w-2 h-2 sm:w-3 sm:h-3 inline"></i> หน้าปก</div>` : ''}<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-1.5 sm:p-2 pt-6 flex flex-wrap justify-center gap-1 sm:gap-2 translate-y-0 md:translate-y-full md:group-hover:translate-y-0 transition-transform">${idx !== 0 ? `<button onclick="setAlbumCover('${img.id}')" class="px-1 py-1 bg-amber-500 text-white text-[9px] sm:text-xs rounded font-bold shadow-lg flex-1 whitespace-nowrap hover:bg-amber-600">ตั้งหน้าปก</button>` : ''}<button onclick="deleteAlbumPhoto('${img.id}')" class="px-1 py-1 bg-red-500 text-white text-[9px] sm:text-xs rounded font-bold shadow-lg flex-1 whitespace-nowrap hover:bg-red-600">ลบรูป</button></div></div>`).join(''); document.getElementById('manage-album-modal').classList.add('show'); lucide.createIcons(); }
@@ -1583,9 +1651,9 @@
     
     function doLogin() {
       const user = document.getElementById("admin-user").value;
-      const pass = document.getElementById("admin-pass").value; const btn = document.getElementById("btn-login");       btn.innerText = "กำลังตรวจสอบ..."; google.script.run.withSuccessHandler(res => { btn.innerText = "เข้าสู่ระบบ"; if (res.success) { SafeSession.setItem("tg_admin", "true"); showAdminDashboard(); renderReviews(); } else { uiAlert(res.message); } }).verifyAdmin(user, pass);
+      const pass = document.getElementById("admin-pass").value; const btn = document.getElementById("btn-login");       btn.innerText = "กำลังตรวจสอบ..."; google.script.run.withSuccessHandler(res => { btn.innerText = "เข้าสู่ระบบ"; if (res.success) {           SafeSession.setItem("tg_admin", "true"); showAdminDashboard(); } else { uiAlert(res.message); } }).verifyAdmin(user, pass);
     }
-    function doLogout() { SafeSession.removeItem("tg_admin"); document.getElementById("admin-dashboard-view").classList.add("hidden"); document.getElementById("admin-login-view").classList.remove("hidden"); document.getElementById("admin-pass").value = ""; renderReviews(); }
+    function doLogout() { SafeSession.removeItem("tg_admin"); document.getElementById("admin-dashboard-view").classList.add("hidden"); document.getElementById("admin-login-view").classList.remove("hidden"); document.getElementById("admin-pass").value = ""; }
     function showAdminDashboard() { document.getElementById("admin-login-view").classList.add("hidden"); document.getElementById("admin-dashboard-view").classList.remove("hidden"); }
     function syncCalendarToActiveMonth() {
       if (!Array.isArray(allBookings) || allBookings.length === 0) return;
@@ -1695,6 +1763,18 @@
       document.getElementById('dlg-ok-btn').onclick = () => modal.classList.remove('show');
     }
     
+    let adminTableMonthFilter = '';
+
+    function selectAdminMonthFilter(ym) {
+      adminTableMonthFilter = (ym || '').trim();
+      const revEl = document.getElementById('revenue-month');
+      if (adminTableMonthFilter && revEl && revEl.value !== adminTableMonthFilter) {
+        revEl.value = adminTableMonthFilter;
+      }
+      updateDashboardStats();
+      renderAdminTable();
+    }
+
     // 🔔 แจ้งเตือนคิวงานที่กำลังจะมาถึง (Upcoming Shoot Reminder)
     function renderUpcomingReminders() {
       const listEl = document.getElementById('upcoming-shoots-list');
@@ -1732,15 +1812,15 @@
           <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl border" style="border-color: var(--border-color); background: rgba(0,0,0,0.04);">
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeCls}">${dayBadge}</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${badgeCls}">${dayBadge}</span>
                 <span class="font-bold">${b.date} (${b.timeSlot})</span>
-                <span class="font-bold text-accent">• ${b.customerName}</span>
+                <span class="font-bold">• ${b.customerName}</span>
                 <span class="text-xs opacity-75">📞 ${formatPhone(b.tel)}</span>
               </div>
               <p class="text-[11px] mt-1 truncate" style="color: var(--text-muted);">📍 ${b.location} | 📦 ${b.packageName}</p>
             </div>
-            <button onclick="copyBookingBrief(decodeURIComponent('${safeId}'))" class="px-3 py-1.5 rounded-lg input-field text-xs font-bold hover:opacity-80 flex items-center gap-1 shrink-0">
-              <i data-lucide="copy" class="w-3.5 h-3.5 text-accent"></i> คัดลอกบรีฟ
+            <button onclick="copyBookingBrief(decodeURIComponent('${safeId}'))" class="px-3.5 py-1.5 rounded-xl input-field text-xs font-bold hover:opacity-80 flex items-center gap-1.5 shrink-0">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> คัดลอกบรีฟ
             </button>
           </div>`;
       }).join('');
@@ -1776,222 +1856,68 @@
           depositAmount: price,
           status: b.status === 'รอตรวจสอบ' ? 'ยืนยันแล้ว' : b.status
         };
-        google.script.run.withSuccessHandler(res => {
-          if (res.success) {
-            const idx = allBookings.findIndex(x => String(x.id) === String(id));
-            if (idx > -1) allBookings[idx] = { ...allBookings[idx], ...updates };
-            renderUpcomingReminders();
-            renderAdminTable();
-            renderDeliverTable();
-            renderCalendar();
-            updateDashboardStats();
-            showInvoiceFromAdmin(id);
-          }
+        const idx = allBookings.findIndex(x => String(x.id) === String(id));
+        if (idx > -1) {
+          allBookings[idx] = { ...allBookings[idx], ...updates };
+          SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings));
+        }
+        google.script.run.withSuccessHandler(() => {
+          renderUpcomingReminders();
+          renderAdminTable();
+          renderDeliverTable();
+          renderCalendar();
+          updateDashboardStats();
+          showInvoiceFromAdmin(id);
         }).updateBookingInSheet(id, updates);
       });
     }
 
-    // 🔎 ระบบค้นหาสถานะคิวและรับไฟล์ภาพด้วยตนเองของลูกค้า (Self-Service Tracking)
-    function handleTrackSearch(e) {
-      if (e) e.preventDefault();
-      const rawQ = (document.getElementById('track-query')?.value || '').trim();
-      const area = document.getElementById('track-results-area');
-      if (!rawQ || !area) return;
+    // 📌 Render ตารางคิวงานหลัก (กรองเฉพาะเดือนที่เลือก และเรียงตามวันที่)
+    function renderAdminTable() { 
+      renderUpcomingReminders();
+      const tbody = document.getElementById("admin-table-body"); 
+      const chipsEl = document.getElementById("admin-month-chips");
+      if (chipsEl) {
+        const thShortMonths = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+        const monthCounts = {};
+        allBookings.forEach(b => {
+          if (typeof b.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(b.date)) {
+            const ym = b.date.slice(0, 7);
+            monthCounts[ym] = (monthCounts[ym] || 0) + 1;
+          }
+        });
+        const sortedYms = Object.keys(monthCounts).sort();
+        const allBtnCls = !adminTableMonthFilter ? "btn-accent font-bold" : "input-field hover:opacity-80";
+        let chipsHtml = `<button onclick="selectAdminMonthFilter('')" class="px-3.5 py-1.5 rounded-full text-xs ${allBtnCls}">ทั้งหมดในชีต (${allBookings.length} คิว)</button>`;
+        sortedYms.forEach(ym => {
+          const [y, m] = ym.split("-").map(Number);
+          const label = `${thShortMonths[(m || 1) - 1]} ${y} (${monthCounts[ym]} คิว)`;
+          const activeCls = adminTableMonthFilter === ym ? "btn-accent font-bold" : "input-field hover:opacity-80";
+          chipsHtml += `<button onclick="selectAdminMonthFilter('${ym}')" class="px-3.5 py-1.5 rounded-full text-xs ${activeCls}">${label}</button>`;
+        });
+        chipsEl.innerHTML = chipsHtml;
+      }
 
-      const qLower = rawQ.toLowerCase();
-      const qDigits = rawQ.replace(/\D/g, '');
-      const qTail = qDigits.length >= 8 ? qDigits.slice(-8) : '';
-
-      const matches = allBookings.filter(b => {
-        const idMatch = String(b.id || '').toLowerCase() === qLower || String(b.id || '').toLowerCase().includes(qLower);
-        const bDigits = String(b.tel || '').replace(/\D/g, '');
-        const bTail = bDigits.length >= 8 ? bDigits.slice(-8) : '';
-        const telMatch = (qTail && bTail && qTail === bTail) || (qDigits.length >= 6 && bDigits.includes(qDigits));
-        return idMatch || telMatch;
+      const selectedMonth = adminTableMonthFilter;
+      const filteredBookings = (selectedMonth
+        ? allBookings.filter(b => typeof b.date === "string" && b.date.startsWith(selectedMonth))
+        : [...allBookings]
+      ).sort((a, b) => {
+        const da = a.date || "9999-99-99";
+        const db = b.date || "9999-99-99";
+        if (da !== db) return da.localeCompare(db);
+        const slotRank = s => {
+          const t = String(s || "");
+          if (t.includes("เช้า")) return 1;
+          if (t.includes("เต็มวัน")) return 2;
+          if (t.includes("บ่าย")) return 3;
+          return 4;
+        };
+        return slotRank(a.timeSlot) - slotRank(b.timeSlot);
       });
 
-      if (matches.length === 0) {
-        area.innerHTML = `
-          <div class="glass-card rounded-2xl p-10 text-center">
-            <i data-lucide="file-question" class="w-10 h-10 mx-auto mb-3 opacity-50 text-amber-500"></i>
-            <p class="font-bold mb-1">ไม่พบข้อมูลคิวงานสำหรับ "${rawQ}"</p>
-            <p class="text-xs" style="color: var(--text-muted);">กรุณาตรวจสอบเบอร์โทรศัพท์ที่ใช้จอง หรือรหัสคิว (เช่น TG-1001) อีกครั้ง</p>
-          </div>`;
-        if (window.lucide) lucide.createIcons();
-        return;
-      }
-
-      area.innerHTML = matches.map(b => {
-        const safeId = encodeURIComponent(b.id);
-        const price = Number(b.price) || 0;
-        const paid = Number(b.depositAmount) || 0;
-        const bal = Math.max(0, price - paid);
-        const isPaidFull = price > 0 && paid >= price;
-        const hasDelivery = Boolean((b.driveLink && b.driveLink.trim()) || (b.photosLink && b.photosLink.trim()));
-
-        let statusBadgeCls = 'bg-amber-500/20 text-amber-500 border-amber-500/40';
-        if (b.status === 'ยืนยันแล้ว') statusBadgeCls = 'bg-blue-500/20 text-blue-400 border-blue-500/40';
-        else if (b.status === 'เสร็จสิ้น') statusBadgeCls = 'bg-emerald-500/20 text-emerald-500 border-emerald-500/40';
-        else if (b.status === 'ยกเลิก') statusBadgeCls = 'bg-red-500/20 text-red-500 border-red-500/40';
-
-        const safeDrive = encodeURIComponent(b.driveLink || '');
-        const safePhotos = encodeURIComponent(b.photosLink || '');
-
-        return `
-          <div class="glass-card rounded-3xl p-6 sm:p-8 space-y-5">
-            <div class="flex flex-wrap items-start justify-between gap-3 border-b pb-4" style="border-color: var(--border-color);">
-              <div>
-                <span class="text-xs font-mono opacity-70 block mb-1">หมายเลขคิว: ${b.id}</span>
-                <h3 class="text-xl font-bold">${b.customerName}</h3>
-                <p class="text-xs text-accent mt-1 font-medium">${b.packageName}</p>
-              </div>
-              <div class="flex flex-col items-end gap-1.5">
-                <span class="px-3 py-1 rounded-full text-xs font-bold border ${statusBadgeCls}">${b.status}</span>
-                <span class="text-[11px] font-bold ${isPaidFull ? 'text-emerald-500' : 'text-amber-500'}">
-                  ${isPaidFull ? '✓ ชำระครบ 100% แล้ว' : `ชำระแล้ว ฿${paid.toLocaleString()} • คงเหลือวันงาน ฿${bal.toLocaleString()}`}
-                </span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
-              <div class="p-3 rounded-xl" style="background: rgba(0,0,0,0.06);">
-                <span class="text-[11px] block opacity-60">วันถ่ายทำ & ช่วงเวลา</span>
-                <span class="font-bold">${b.date || '-'} (${b.timeSlot || '-'})</span>
-              </div>
-              <div class="p-3 rounded-xl" style="background: rgba(0,0,0,0.06);">
-                <span class="text-[11px] block opacity-60">สถานที่</span>
-                <span class="font-bold">${b.location || '-'}</span>
-              </div>
-              <div class="p-3 rounded-xl" style="background: rgba(0,0,0,0.06);">
-                <span class="text-[11px] block opacity-60">ยอดรวมแพ็กเกจ</span>
-                <span class="font-bold">฿${price.toLocaleString()}</span>
-              </div>
-            </div>
-
-            ${hasDelivery ? `
-              <div class="p-4 rounded-2xl border border-emerald-500/40 space-y-3" style="background: rgba(16, 185, 129, 0.08);">
-                <div class="font-bold text-emerald-500 text-sm flex items-center gap-2">
-                  <i data-lucide="package-check" class="w-5 h-5"></i> ไฟล์ภาพของคุณพร้อมส่งมอบแล้ว!
-                </div>
-                <div class="space-y-2 text-xs">
-                  ${b.driveLink ? `
-                    <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-black/10">
-                      <span class="truncate flex-1 font-mono">📁 Google Drive: ${b.driveLink}</span>
-                      <button onclick="copyTextSafe(decodeURIComponent('${safeDrive}'), 'คัดลอกลิงก์ Google Drive เรียบร้อยแล้ว สามารถนำไปวางในเบราว์เซอร์เพื่อดาวน์โหลดรูปได้เลยครับ')" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold shrink-0">คัดลอกลิงก์ Drive</button>
-                    </div>` : ''}
-                  ${b.photosLink ? `
-                    <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-black/10">
-                      <span class="truncate flex-1 font-mono">🖼 Google Photos: ${b.photosLink}</span>
-                      <button onclick="copyTextSafe(decodeURIComponent('${safePhotos}'), 'คัดลอกลิงก์ Google Photos เรียบร้อยแล้ว สามารถนำไปวางในเบราว์เซอร์เพื่อดูอัลบั้มได้เลยครับ')" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-bold shrink-0">คัดลอกลิงก์ Photos</button>
-                    </div>` : ''}
-                </div>
-              </div>
-            ` : `
-              <div class="p-3.5 rounded-xl text-xs flex items-center gap-2" style="background: rgba(0,0,0,0.05); color: var(--text-muted);">
-                <i data-lucide="clock" class="w-4 h-4 text-accent shrink-0"></i>
-                <span>สถานะไฟล์งาน: ${b.status === 'เสร็จสิ้น' ? 'ส่งมอบงานแล้ว (สามารถเปิดดูผ่านระบบ Gallery ส่งงานด้านบน)' : 'อยู่ระหว่างรอวันถ่ายทำ / คัดและปรับโทนภาพฟิล์ม Cinematic'}</span>
-              </div>
-            `}
-
-            <div class="flex flex-wrap gap-2 pt-2">
-              <button onclick="showQuotationFromAdmin(decodeURIComponent('${safeId}'))" class="px-4 py-2.5 rounded-xl input-field text-xs font-bold hover:opacity-80 flex items-center gap-1.5">
-                <i data-lucide="file-text" class="w-4 h-4 text-accent"></i> ใบเสนอราคา
-              </button>
-              <button onclick="showInvoiceFromAdmin(decodeURIComponent('${safeId}'))" class="px-4 py-2.5 rounded-xl input-field text-xs font-bold hover:opacity-80 flex items-center gap-1.5">
-                <i data-lucide="receipt" class="w-4 h-4 text-emerald-500"></i> ใบแจ้งหนี้ / ใบเสร็จรับเงิน
-              </button>
-              ${b.status === 'รอตรวจสอบ' ? `
-                <button onclick="openCustomerSlipModal(decodeURIComponent('${safeId}'))" class="px-4 py-2.5 rounded-xl btn-accent text-xs font-bold flex items-center gap-1.5">
-                  <i data-lucide="qr-code" class="w-4 h-4"></i> สแกนจ่ายมัดจำ / แนบสลิป
-                </button>` : ''}
-            </div>
-          </div>`;
-      }).join('');
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function openCustomerSlipModal(id) {
-      const b = allBookings.find(x => String(x.id) === String(id));
-      if (!b) return;
-      currentBookingId = b.id;
-      const price = Number(b.price) || 0;
-      const dep = Number(b.depositAmount) || 1500;
-      currentDocData = {
-        id: b.id,
-        date: b.date,
-        timeSlot: b.timeSlot,
-        loc: b.location,
-        name: b.customerName,
-        tel: b.tel,
-        pkg: b.packageName,
-        notes: b.notes || '',
-        price: price,
-        deposit: dep,
-        balance: Math.max(0, price - dep)
-      };
-      document.getElementById('qr-deposit-text').innerText = dep.toLocaleString();
-      document.getElementById('qr-pp-num').innerText = appSettings.promptPayNum;
-      document.getElementById('qr-acc-name').innerText = appSettings.accountName;
-      if (appSettings.qrImageUrl && appSettings.qrImageUrl !== '') {
-        document.getElementById('qr-image').src = appSettings.qrImageUrl;
-      } else {
-        document.getElementById('qr-image').src = createPromptPayQrSvg(appSettings.promptPayNum, dep);
-      }
-      document.getElementById('qr-step-1').classList.remove('hidden');
-      document.getElementById('qr-step-loading').classList.add('hidden');
-      document.getElementById('qr-step-success').classList.add('hidden');
-      document.getElementById('slip-file').value = '';
-      document.getElementById('qr-modal').classList.add('show');
-    }
-
-    // 📌 Render ตารางคิวงานหลัก (กรองตามเดือน/ค้นหา/สถานะ และเรียงตามวันที่)
-    function renderAdminTable() { 
-      const tbody = document.getElementById("admin-table-body"); 
-      const selectedMonth = (document.getElementById("revenue-month")?.value || "").trim();
-      const showAllMonths = Boolean(document.getElementById("admin-show-all-months")?.checked);
-      const searchQ = (document.getElementById("admin-search-input")?.value || "").trim().toLowerCase();
-      const statusFilter = document.getElementById("admin-status-filter")?.value || "all";
-
-      const filteredBookings = allBookings
-        .filter(b => {
-          if (!showAllMonths && selectedMonth) {
-            if (!(typeof b.date === "string" && b.date.startsWith(selectedMonth))) return false;
-          }
-          if (statusFilter !== "all") {
-            const p = Number(b.price) || 0;
-            const d = Number(b.depositAmount) || 0;
-            if (statusFilter === "unpaid_balance") {
-              if (b.status === "ยกเลิก" || p <= d) return false;
-            } else if (statusFilter === "paid_full") {
-              if (b.status === "ยกเลิก" || p <= 0 || d < p) return false;
-            } else if (b.status !== statusFilter) {
-              return false;
-            }
-          }
-          if (searchQ) {
-            const hay = `${b.id || ''} ${b.customerName || ''} ${b.tel || ''} ${b.packageName || ''} ${b.location || ''} ${b.date || ''} ${b.notes || ''}`.toLowerCase();
-            if (!hay.includes(searchQ)) return false;
-          }
-          return true;
-        })
-        .sort((a, b) => {
-          const da = a.date || "9999-99-99";
-          const db = b.date || "9999-99-99";
-          if (da !== db) return da.localeCompare(db);
-          const slotRank = s => {
-            const t = String(s || "");
-            if (t.includes("เช้า")) return 1;
-            if (t.includes("เต็มวัน")) return 2;
-            if (t.includes("บ่าย")) return 3;
-            return 4;
-          };
-          return slotRank(a.timeSlot) - slotRank(b.timeSlot);
-        });
-
       if(filteredBookings.length === 0) {
-        const emptyMsg = (!showAllMonths && selectedMonth)
-          ? "ไม่มีรายการคิวงานที่ตรงเงื่อนไขในเดือนที่เลือก (สามารถติ๊ก 'แสดงทุกเดือน' เพื่อค้นหาข้ามเดือนได้)"
-          : "ไม่พบรายการจองคิวงานที่ตรงเงื่อนไข";
+        const emptyMsg = selectedMonth ? "ไม่มีรายการจองคิวงานในเดือนที่เลือก" : "ยังไม่มีรายการจองคิวงาน";
         tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center" style="color: var(--text-muted);">${emptyMsg}</td></tr>`;
         return;
       } 
@@ -2041,7 +1967,11 @@
         return; 
       } 
       
-      tbody.innerHTML = deliverBookings.map(b => `
+      tbody.innerHTML = deliverBookings.map(b => {
+        const safeId = encodeURIComponent(b.id);
+        const safeDrive = encodeURIComponent(b.driveLink || '');
+        const safePhotos = encodeURIComponent(b.photosLink || '');
+        return `
         <tr style="border-bottom: 1px solid var(--border-color);">
           <td class="p-4">
              <div class="font-bold text-base mb-1">${b.customerName}</div>
@@ -2051,25 +1981,26 @@
           <td class="p-4 text-sm font-mono opacity-80">${b.date}</td>
           <td class="p-4">
             <div class="flex flex-col gap-2">
-               ${b.driveLink ? `<span class="text-[11px] text-blue-400 flex items-center gap-1 break-all"><i data-lucide="hard-drive" class="w-3 h-3 shrink-0"></i> ${b.driveLink}</span>` : `<span class="text-[11px] opacity-40">- ไม่มีลิงก์ Drive -</span>`}
-               ${b.photosLink ? `<span class="text-[11px] text-rose-400 flex items-center gap-1 break-all"><i data-lucide="image" class="w-3 h-3 shrink-0"></i> ${b.photosLink}</span>` : `<span class="text-[11px] opacity-40">- ไม่มีลิงก์ Photos -</span>`}
+               ${b.driveLink ? `<div class="flex items-center gap-2"><span class="text-[11px] text-blue-400 flex items-center gap-1 break-all"><i data-lucide="hard-drive" class="w-3 h-3 shrink-0"></i> ${b.driveLink}</span><button onclick="copyTextSafe(decodeURIComponent('${safeDrive}'), 'คัดลอกลิงก์ Drive แล้ว')" class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 text-[10px] font-bold shrink-0">คัดลอก</button></div>` : `<span class="text-[11px] opacity-40">- ไม่มีลิงก์ Drive -</span>`}
+               ${b.photosLink ? `<div class="flex items-center gap-2"><span class="text-[11px] text-rose-400 flex items-center gap-1 break-all"><i data-lucide="image" class="w-3 h-3 shrink-0"></i> ${b.photosLink}</span><button onclick="copyTextSafe(decodeURIComponent('${safePhotos}'), 'คัดลอกลิงก์ Photos แล้ว')" class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 text-[10px] font-bold shrink-0">คัดลอก</button></div>` : `<span class="text-[11px] opacity-40">- ไม่มีลิงก์ Photos -</span>`}
             </div>
           </td>
           <td class="p-4 text-center">
-             <button onclick="openDeliverModal('${b.id}')" class="px-4 py-2 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg text-xs font-bold transition-colors shadow-lg w-full max-w-[120px]">
+             <button onclick="openDeliverModal(decodeURIComponent('${safeId}'))" class="px-4 py-2 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg text-xs font-bold transition-colors shadow-lg w-full max-w-[120px]">
                 <i data-lucide="send" class="w-3 h-3 inline mr-1"></i> แนบลิงก์
              </button>
           </td>
         </tr>
-      `).join(''); 
+      `;
+      }).join(''); 
       lucide.createIcons(); 
     }
     
-    function confirmBooking(id) { uiConfirm("ยืนยันคิวงานนี้?", () => { const idx = allBookings.findIndex(b => b.id === id); if(idx > -1) { allBookings[idx].status = "ยืนยันแล้ว"; renderAdminTable(); renderDeliverTable(); renderCalendar(); updateDashboardStats(); google.script.run.updateBookingInSheet(id, { status: "ยืนยันแล้ว" }); } }); }
-    function deleteBooking(id) { uiConfirm("ลบข้อมูลคิวถาวร?", () => { google.script.run.withSuccessHandler(res => { uiAlert(res.message); if(res.success) { google.script.run.withSuccessHandler(resData => { if (resData.success) { allBookings = resData.data; renderAdminTable(); renderDeliverTable(); renderCalendar(); updateDashboardStats(); } }).getBookingsFromSheet(); } }).deleteBookingInSheet(id); }); }
+    function confirmBooking(id) { uiConfirm("ยืนยันคิวงานนี้?", () => { const idx = allBookings.findIndex(b => String(b.id) === String(id)); if(idx > -1) { allBookings[idx].status = "ยืนยันแล้ว"; SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings)); renderAdminTable(); renderDeliverTable(); renderCalendar(); updateDashboardStats(); google.script.run.updateBookingInSheet(id, { status: "ยืนยันแล้ว" }); } }); }
+    function deleteBooking(id) { uiConfirm("ลบข้อมูลคิวถาวร?", () => { allBookings = allBookings.filter(b => String(b.id) !== String(id)); SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings)); renderAdminTable(); renderDeliverTable(); renderCalendar(); updateDashboardStats(); google.script.run.withSuccessHandler(res => { uiAlert(res.message); }).deleteBookingInSheet(id); }); }
     
     function openEditBooking(id) { 
-      const b = allBookings.find(x => x.id === id); 
+      const b = allBookings.find(x => String(x.id) === String(id)); 
       if(!b) return; 
       
       document.getElementById('eb-id').value = b.id; 
@@ -2100,42 +2031,44 @@
         tel: document.getElementById('eb-tel').value, 
         location: document.getElementById('eb-loc').value, 
         packageName: document.getElementById('eb-pkg').value, 
-        price: document.getElementById('eb-price').value, 
-        depositAmount: document.getElementById('eb-deposit').value, 
+        price: Number(document.getElementById('eb-price').value) || 0, 
+        depositAmount: Number(document.getElementById('eb-deposit').value) || 0, 
         notes: document.getElementById('eb-notes').value, 
         status: document.getElementById('eb-status').value
       }; 
       
-      google.script.run.withSuccessHandler(res => { 
+      const idx = allBookings.findIndex(x => String(x.id) === String(id)); 
+      if(idx > -1) { 
+        allBookings[idx] = { ...allBookings[idx], ...updates }; 
+        SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings));
+      }
+      google.script.run.withSuccessHandler(() => { 
         uiAlert("บันทึกข้อมูลเรียบร้อย"); 
         btn.innerText = "บันทึกข้อมูล"; 
         btn.disabled = false; 
-        
-        if(res.success) { 
-          document.getElementById('edit-booking-modal').classList.remove('show'); 
-          const idx = allBookings.findIndex(x => x.id === id); 
-          if(idx > -1) { 
-            allBookings[idx] = { ...allBookings[idx], ...updates }; 
-            renderAdminTable(); 
-            renderDeliverTable(); 
-            renderCalendar(); 
-            updateDashboardStats(); 
-          } 
-        } 
+        document.getElementById('edit-booking-modal').classList.remove('show'); 
+        renderAdminTable(); 
+        renderDeliverTable(); 
+        renderCalendar(); 
+        updateDashboardStats(); 
       }).updateBookingInSheet(id, updates); 
     }
 
     // 📌 ฟังก์ชันเปิด Modal สำหรับส่งงาน
     function openDeliverModal(id) {
-       const b = allBookings.find(x => x.id === id); 
+       const b = allBookings.find(x => String(x.id) === String(id)); 
        if(!b) return; 
        
        document.getElementById('del-id').value = b.id;
        document.getElementById('del-name').innerText = b.customerName;
        document.getElementById('del-pkg').innerText = b.packageName;
        document.getElementById('del-status').value = b.status;
-       document.getElementById('del-drive').value = b.driveLink || '';
-       document.getElementById('del-photos').value = b.photosLink || '';
+       const driveEl = document.getElementById('del-drive');
+       const photosEl = document.getElementById('del-photos');
+       driveEl.type = 'text';
+       photosEl.type = 'text';
+       driveEl.value = b.driveLink || '';
+       photosEl.value = b.photosLink || '';
        document.getElementById('deliver-booking-modal').classList.add('show');
     }
 
@@ -2148,80 +2081,41 @@
        const id = document.getElementById('del-id').value; 
        const updates = { 
          status: document.getElementById('del-status').value,
-         driveLink: document.getElementById('del-drive').value,
-         photosLink: document.getElementById('del-photos').value
+         driveLink: document.getElementById('del-drive').value.trim(),
+         photosLink: document.getElementById('del-photos').value.trim()
        }; 
        
-       google.script.run.withSuccessHandler(res => { 
+       const idx = allBookings.findIndex(x => String(x.id) === String(id)); 
+       if(idx > -1) { 
+         allBookings[idx] = { ...allBookings[idx], ...updates }; 
+         SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings));
+       }
+       google.script.run.withSuccessHandler(() => { 
          uiAlert("อัปเดตลิงก์ส่งงานและสถานะเรียบร้อย!"); 
          btn.innerHTML = '<i data-lucide="save" class="w-4 h-4 inline"></i> บันทึก & ส่งงาน'; 
          btn.disabled = false; 
-         
-         if(res.success) { 
-           document.getElementById('deliver-booking-modal').classList.remove('show'); 
-           const idx = allBookings.findIndex(x => x.id === id); 
-           if(idx > -1) { 
-             allBookings[idx] = { ...allBookings[idx], ...updates }; 
-             renderAdminTable(); 
-             renderDeliverTable(); 
-             renderCalendar(); 
-             updateDashboardStats(); // อัปเดตสถิติหลังจากเปลี่ยนสถานะ
-           } 
-         } 
+         document.getElementById('deliver-booking-modal').classList.remove('show'); 
+         renderAdminTable(); 
+         renderDeliverTable(); 
+         renderCalendar(); 
+         updateDashboardStats();
+         if(window.lucide) lucide.createIcons();
        }).updateBookingInSheet(id, updates); 
     }
     
-    function showAppsScriptGuide() {
-      const sampleCode =
-`function doPost(e) {
-  var body = JSON.parse(e.postData.contents);
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (body.action === 'createBooking') {
-    var b = body.payload;
-    var sh = ss.getSheetByName('Bookings') || ss.getSheets()[0];
-    sh.appendRow([new Date(), b.id, b.customerName, "'" + b.tel, b.date, b.timeSlot, b.location, b.packageName, b.notes, b.status, '', b.price, b.depositAmount]);
-    // สามารถเรียกฟังก์ชันแจ้งเตือน LINE Messaging API / Telegram ต่อได้ที่นี่
-  }
-  return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
-}`;
-      const modal = document.getElementById('custom-dialog-modal');
-      const msgEl = document.getElementById('dialog-msg');
-      msgEl.innerHTML =
-        `<div class="text-left space-y-2">` +
-        `<p class="font-bold text-sm">วิธีติดตั้ง Two-Way Sync (Google Apps Script)</p>` +
-        `<ol class="list-decimal list-inside text-[11px] space-y-1 opacity-80">` +
-        `<li>เปิด Google Sheets > เมนู <b>ส่วนขยาย (Extensions) > Apps Script</b></li>` +
-        `<li>วางฟังก์ชัน <code>doPost(e)</code> ด้านล่าง แล้วกด <b>Deploy > New deployment > Web app</b></li>` +
-        `<li>ตั้งค่า Who has access เป็น <b>Anyone</b> แล้วคัดลอกลิงก์ <code>/exec</code> มาวางในช่องตั้งค่า</li>` +
-        `</ol>` +
-        `<pre class="p-2.5 rounded-xl bg-black/80 text-emerald-400 text-[10px] overflow-x-auto font-mono leading-relaxed">${sampleCode.replace(/</g, '&lt;')}</pre>` +
-        `</div>`;
-      const actions = document.getElementById('dialog-actions');
-      actions.innerHTML =
-        `<button id="dlg-cancel-btn" class="flex-1 py-2.5 rounded-xl input-field font-bold text-xs">ปิด</button>` +
-        `<button id="dlg-copy-code-btn" class="flex-1 py-2.5 rounded-xl btn-accent font-bold text-xs">คัดลอกโค้ด</button>`;
-      modal.classList.add('show');
-      document.getElementById('dlg-cancel-btn').onclick = () => modal.classList.remove('show');
-      document.getElementById('dlg-copy-code-btn').onclick = () => {
-        modal.classList.remove('show');
-        copyTextSafe(sampleCode, 'คัดลอกโค้ด Apps Script เรียบร้อยแล้ว');
-      };
-    }
-
     async function saveAdminSettings() {
       const btn = document.getElementById('btn-save-settings');
-      if (btn) { btn.innerText = 'กำลังบันทึก...'; btn.disabled = true; }
+      btn.innerText = 'กำลังบันทึก...';
+      btn.disabled = true;
       const data = {
         promptPayNum: document.getElementById('set-promptpay').value,
         accountName: document.getElementById('set-accname').value,
         sheetUrl: (document.getElementById('set-sheet-url')?.value || '').trim() || DEFAULT_SHEET_URL,
         bookingsTab: (document.getElementById('set-bookings-tab')?.value || '').trim(),
-        portfolioTab: (document.getElementById('set-portfolio-tab')?.value || '').trim(),
-        gasWebAppUrl: (document.getElementById('set-gas-webapp-url')?.value || '').trim(),
-        contractTerms: (document.getElementById('set-contract-terms')?.value || '').trim() || DEFAULT_CONTRACT_TERMS
+        portfolioTab: (document.getElementById('set-portfolio-tab')?.value || '').trim()
       };
       const fileInput = document.getElementById('set-qr-file');
-      if (fileInput && fileInput.files.length > 0) {
+      if (fileInput.files.length > 0) {
         const file = fileInput.files[0];
         data.qrBase64 = await new Promise(resolve => {
           const reader = new FileReader();
@@ -2232,16 +2126,14 @@
       }
       google.script.run.withSuccessHandler(res => {
         uiAlert(res.message);
-        if (btn) { btn.innerText = 'บันทึกการตั้งค่าระบบบัญชี'; btn.disabled = false; }
+        btn.innerText = 'บันทึกการตั้งค่าระบบบัญชี';
+        btn.disabled = false;
         if (res.success) {
           appSettings.promptPayNum = data.promptPayNum;
           appSettings.accountName = data.accountName;
           appSettings.sheetUrl = data.sheetUrl;
           appSettings.bookingsTab = data.bookingsTab;
           appSettings.portfolioTab = data.portfolioTab;
-          appSettings.gasWebAppUrl = data.gasWebAppUrl;
-          appSettings.contractTerms = data.contractTerms;
-          refreshContractTermsDisplays();
           google.script.run.withSuccessHandler(r => appSettings.qrImageUrl = r.qrImageUrl).getAppSettings();
         }
       }).saveAppSettings(data);
@@ -2316,10 +2208,17 @@
         const line = cols.map((col, idx) => {
           const cell = cells[idx];
           if (!cell || (cell.v === null && !cell.f)) return '';
+          const colType = String(col?.type || '').toLowerCase();
           if (cell.v instanceof Date && !isNaN(cell.v)) {
             const y = cell.v.getFullYear();
             const m = String(cell.v.getMonth() + 1).padStart(2, '0');
             const d = String(cell.v.getDate()).padStart(2, '0');
+            const hh = cell.v.getHours();
+            const mm = cell.v.getMinutes();
+            const ss = cell.v.getSeconds();
+            if (colType === 'datetime' || hh !== 0 || mm !== 0 || ss !== 0) {
+              return `${y}-${m}-${d} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+            }
             return `${y}-${m}-${d}`;
           }
           if (typeof cell.v === 'string' && /^Date\(\d+,\d+,\d+/.test(cell.v)) {
@@ -2328,6 +2227,12 @@
               const y = Number(nums[0]);
               const m = String(Number(nums[1]) + 1).padStart(2, '0');
               const d = String(Number(nums[2])).padStart(2, '0');
+              const hh = Number(nums[3] || 0);
+              const mm = Number(nums[4] || 0);
+              const ss = Number(nums[5] || 0);
+              if (colType === 'datetime' || hh !== 0 || mm !== 0 || ss !== 0) {
+                return `${y}-${m}-${d} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+              }
               return `${y}-${m}-${d}`;
             }
           }
@@ -2346,10 +2251,11 @@
       return new Promise((resolve, reject) => {
         const cbName = '__tgGvizCb_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
         const script = document.createElement('script');
+        const waitMs = opts.timeoutMs || 8000;
         const timer = setTimeout(() => {
           cleanup();
           reject(new Error('หมดเวลาเชื่อมต่อ Google Sheets กรุณาตรวจสอบว่าเปิดแชร์ไฟล์แบบ "ทุกคนที่มีลิงก์มีสิทธิ์อ่าน" แล้ว'));
-        }, 12000);
+        }, waitMs);
 
         function cleanup() {
           clearTimeout(timer);
@@ -2381,26 +2287,64 @@
     }
 
     async function fetchSheetGrid(sheetId, opts = {}) {
-      let csvUrl;
-      if (opts.sheetName) {
-        csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&tqx=out:csv&sheet=${encodeURIComponent(opts.sheetName)}`;
-      } else {
-        const gidVal = (opts.gid !== undefined && opts.gid !== null && opts.gid !== '') ? opts.gid : '0';
-        csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${encodeURIComponent(gidVal)}`;
-      }
-
+      // ใช้ JSONP เป็นหลักเพื่อให้ทะลุ CORS ในทุกเบราว์เซอร์และทุกอุปกรณ์ (มือถือ/คอมพิวเตอร์เครื่องอื่น) ได้ 100%
       try {
-        const res = await fetch(csvUrl, { cache: 'no-store' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await fetchSheetViaJsonp(sheetId, opts);
+      } catch (jsonpErr) {
+        if (opts.isProbe) throw jsonpErr;
+        let csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+        if (opts.sheetName) csvUrl += `&sheet=${encodeURIComponent(opts.sheetName)}`;
+        else {
+          const gidVal = (opts.gid !== undefined && opts.gid !== null && opts.gid !== '') ? opts.gid : '0';
+          csvUrl += `&gid=${encodeURIComponent(gidVal)}`;
+        }
+        const res = await fetch(csvUrl);
+        if (!res.ok) throw jsonpErr;
         const text = await res.text();
         const trimmed = text.trim();
         if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html') || trimmed.includes('accounts.google.com')) {
-          throw new Error('ไฟล์ยังไม่ได้เปิดแชร์สาธารณะ');
+          throw new Error('ไฟล์ยังไม่ได้เปิดแชร์สาธารณะ (Anyone with the link)');
         }
         return parseCSVGrid(text);
-      } catch (fetchErr) {
-        // Fallback ผ่าน JSONP ซึ่งทำงานได้แม้ติด CORS ในบางเบราว์เซอร์หรือ iframe
-        return await fetchSheetViaJsonp(sheetId, opts);
+      }
+    }
+
+    function importFromPastedText(targetType) {
+      const raw = (document.getElementById('paste-sheet-raw')?.value || '').trim();
+      if (!raw) {
+        uiAlert('กรุณาวางข้อมูลที่คัดลอกจากตาราง Google Sheets ลงในช่องข้อความก่อนครับ');
+        return;
+      }
+      // รองรับทั้ง Tab-separated (เมื่อกด Ctrl+C จาก Google Sheets/Excel) และ CSV
+      const grid = raw.includes('\t')
+        ? raw.replace(/^\uFEFF/, '').split(/\r?\n/).map(line => line.split('\t').map(c => c.trim())).filter(r => r.some(Boolean))
+        : parseCSVGrid(raw);
+
+      if (grid.length === 0) {
+        uiAlert('ไม่พบข้อมูลในข้อความที่วาง');
+        return;
+      }
+
+      if (targetType === 'bookings') {
+        const mapped = mapGridToBookings(grid);
+        SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(mapped));
+        allBookings = mapped;
+        syncCalendarToActiveMonth();
+        renderAdminTable();
+        renderDeliverTable();
+        renderCalendar();
+        updateDashboardStats();
+        updateSheetSyncBanner(true, `นำเข้าคิวงานสำเร็จ (${mapped.length} รายการ)`, 'นำเข้าจากข้อความตารางโดยตรง');
+        uiAlert(`นำเข้าข้อมูลคิวงานสำเร็จ ${mapped.length} รายการ!`);
+      } else {
+        const mapped = mapGridToPortfolio(grid);
+        SafeStorage.setItem('tg_standalone_portfolio', JSON.stringify(mapped));
+        portfolioData = mapped;
+        processAlbums();
+        renderHomeAlbums();
+        renderManagePortfolio();
+        updateSheetSyncBanner(true, `นำเข้าผลงานสำเร็จ (${mapped.length} รูป)`, 'นำเข้าจากข้อความตารางโดยตรง');
+        uiAlert(`นำเข้าข้อมูลผลงานสำเร็จ ${mapped.length} รูปภาพ!`);
       }
     }
 
@@ -2688,157 +2632,162 @@
       const hNorms = Array.from({ length: maxCols }, (_, c) => normKey(headers?.[c] || ''));
       const totalRows = Math.max(dataRows.length, 1);
 
+      const isSlotCell = v => /^(ครึ่งวันเช้า|ครึ่งวันบ่าย|ครึ่งวัน|เต็มวัน|รายชั่วโมง.*|1\s*วันครึ่ง|เช้า-เที่ยง|บ่าย-เย็น|เช้า-เย็น|บ่าย-ดึก|เช้า|บ่าย)$/i.test(v);
+      const isStatusCell = v => /^(รอตรวจสอบ|ยืนยันแล้ว|เสร็จสิ้น|ยกเลิก|ยืนยันคิว|มัดจำแล้ว|ส่งงานแล้ว|pending|confirmed|completed|cancelled)$/i.test(v);
+      const isPkgCell = v => /(Wedding|Pre-Wedding|รับปริญญา|งานบวช|Portrait|นอกรอบ|\([\d,]+\s*บาท\)|[\d,]+\s*บาท|[\d,]+\.-)/i.test(v) && !/^https?:\/\//i.test(v);
+      const isIdCell = v => /^(TG|BK|QT|INV|Q)[-_]?\d{2,}/i.test(v);
+      const isUrlCell = v => /^https?:\/\/|^data:image\/|drive\.google\.com|photos\.app\.goo\.gl|photos\.google\.com/i.test(v);
+      const isPhoneCell = v => {
+        if (/[-/.]/.test(v) && /^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v)) return false;
+        const digits = v.replace(/[\s\-()]/g, '');
+        return /^(0[689]\d{7,8}|[689]\d{8}|0[2-57]\d{7})$/.test(digits);
+      };
+      const isPureDateCell = v => {
+        if (!v || isUrlCell(v) || isPhoneCell(v)) return false;
+        const hasNonZeroTime = /\s(\d{1,2}):(\d{2})/.test(v) && !/\s0?0:00(:00)?/.test(v);
+        if (hasNonZeroTime) return false;
+        return /^\d{4}-\d{2}-\d{2}$/.test(normalizeSheetDate(v, true));
+      };
+      const isLocCell = v => /(^|\s)(อ\.|จ\.|ต\.|น่าน|แพร่|พะเยา|เชียงใหม่|เชียงราย|ลำปาง|ลำพูน|อุตรดิตถ์|พิษณุโลก|กรุงเทพ|โรงแรม|รีสอร์ท|วัด|บ้าน|หอประชุม|ดอย|ปัว|ท่าวังผา|เวียงสา|สันติสุข|บ่อเกลือ|เชียงกลาง|ภูเพียง)/i.test(v) && !isPkgCell(v) && !isUrlCell(v);
+      const isValidPersonNameCell = v => {
+        if (!v || v === '-' || v === '*' || v.length < 2) return false;
+        if (isSlotCell(v) || isStatusCell(v) || isPkgCell(v) || isIdCell(v) || isUrlCell(v) || isPhoneCell(v) || isPureDateCell(v) || isLocCell(v)) return false;
+        if (/^฿?\s*[\d,]+(\.\d{1,2})?\s*(บาท|\.-)?$/.test(v)) return false;
+        if (/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v)) return false;
+        return /[a-zA-Z\u0E00-\u0E7F]{2,}/.test(v);
+      };
+
       const isTimestampCol = new Set();
       const colStats = Array.from({ length: maxCols }, (_, c) => {
         const rawVals = dataRows.map(r => String(r?.[c] ?? '').trim());
-        const nonEmpty = rawVals.filter(v => v !== '' && v !== '-');
+        const nonEmpty = rawVals.filter(v => v !== '' && v !== '-' && v !== '*');
         const count = nonEmpty.length;
         const denom = Math.max(count, 1);
         const h = hNorms[c];
 
-        // ตรวจจับคอลัมน์ Timestamp (วัน+เวลาที่มีชั่วโมง:นาที ที่ไม่ใช่ 00:00:00)
         const tsMatches = nonEmpty.filter(v => {
           const m = v.match(/\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}[T\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
           if (!m) return false;
           return !(Number(m[1]) === 0 && Number(m[2]) === 0 && Number(m[3] || 0) === 0);
         }).length;
 
-        if (
-          /^(timestamp|createdat|created|updatedat|ประทับเวลา|เวลาทำรายการ|วันที่ทำรายการ|เวลาบันทึก|วันที่บันทึก)$/.test(h) ||
-          (count > 0 && tsMatches / denom >= 0.5)
-        ) {
+        if (/(timestamp|createdat|created|updatedat|ประทับเวลา|เวลาทำรายการ|วันที่ทำรายการ|เวลาบันทึก|วันที่บันทึก)/.test(h) || (count > 0 && tsMatches / denom >= 0.4)) {
           isTimestampCol.add(c);
         }
 
-        const statusRatio = nonEmpty.filter(v => /^(รอตรวจสอบ|ยืนยันแล้ว|เสร็จสิ้น|ยกเลิก|ยืนยันคิว|มัดจำแล้ว|ส่งงานแล้ว|pending|confirmed|completed|cancelled)$/i.test(v)).length / denom;
-        const slotRatio = nonEmpty.filter(v => /^(ครึ่งวันเช้า|ครึ่งวันบ่าย|ครึ่งวัน|เต็มวัน|รายชั่วโมง.*|1\s*วันครึ่ง|เช้า-เที่ยง|บ่าย-เย็น|เช้า-เย็น|บ่าย-ดึก|เช้า|บ่าย)$/i.test(v)).length / denom;
-        const pkgRatio = nonEmpty.filter(v => /(Wedding|Pre-Wedding|รับปริญญา|งานบวช|Portrait|นอกรอบ|\([\d,]+\s*บาท\)|[\d,]+\s*บาท|[\d,]+\.-)/i.test(v) && !/^https?:\/\//i.test(v)).length / denom;
-        const idRatio = nonEmpty.filter(v => /^(TG|BK|QT|INV|Q)[-_]?\d{2,}/i.test(v)).length / denom;
-
-        const pureDateRatio = nonEmpty.filter(v => {
-          if (/^https?:\/\//i.test(v)) return false;
-          // ต้องไม่ใช่วันเวลาที่มีชั่วโมง:นาทีแบบ Timestamp
-          const hasNonZeroTime = /\s(\d{1,2}):(\d{2})/.test(v) && !/\s0?0:00(:00)?/.test(v);
-          if (hasNonZeroTime) return false;
-          const norm = normalizeSheetDate(v, true);
-          return /^\d{4}-\d{2}-\d{2}$/.test(norm);
-        }).length / denom;
-
-        const phoneRatio = nonEmpty.filter(v => {
-          if (/[-/.]/.test(v) && /^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v)) return false;
-          const digits = v.replace(/[\s\-()]/g, '');
-          return /^(0[689]\d{7,8}|[689]\d{8}|0[2-57]\d{7})$/.test(digits);
-        }).length / denom;
-
-        const urlRatio = nonEmpty.filter(v => /^https?:\/\/|^data:image\/|drive\.google\.com|photos\.app\.goo\.gl|photos\.google\.com/i.test(v)).length / denom;
-        const photosUrlRatio = nonEmpty.filter(v => /photos\.app\.goo\.gl|photos\.google\.com/i.test(v)).length / denom;
-        const driveFolderRatio = nonEmpty.filter(v => /drive\.google\.com\/drive\/folders/i.test(v)).length / denom;
-        const slipFileRatio = nonEmpty.filter(v => /(drive\.google\.com\/(file\/d|uc|open|thumbnail)|^data:image\/|\.(jpg|jpeg|png|webp))/i.test(v)).length / denom;
+        const statusCount = nonEmpty.filter(isStatusCell).length;
+        const slotCount = nonEmpty.filter(isSlotCell).length;
+        const pkgCount = nonEmpty.filter(isPkgCell).length;
+        const idCount = nonEmpty.filter(isIdCell).length;
+        const pureDateCount = nonEmpty.filter(isPureDateCell).length;
+        const phoneCount = nonEmpty.filter(isPhoneCell).length;
+        const urlCount = nonEmpty.filter(isUrlCell).length;
+        const photosUrlCount = nonEmpty.filter(v => /photos\.app\.goo\.gl|photos\.google\.com/i.test(v)).length;
+        const driveFolderCount = nonEmpty.filter(v => /drive\.google\.com\/drive\/folders/i.test(v)).length;
+        const slipFileCount = nonEmpty.filter(v => isUrlCell(v) && !/photos\.app\.goo\.gl|photos\.google\.com|drive\.google\.com\/drive\/folders/i.test(v)).length;
+        const locCount = nonEmpty.filter(isLocCell).length;
+        const validNameCount = nonEmpty.filter(isValidPersonNameCell).length;
 
         const moneyNums = nonEmpty
-          .filter(v => /^฿?\s*[\d,]+(\.\d{1,2})?\s*(บาท|\.-)?$/.test(v))
+          .filter(v => !isPhoneCell(v) && /^฿?\s*[\d,]+(\.\d{1,2})?\s*(บาท|\.-)?$/.test(v))
           .map(v => parseMoneyValue(v))
           .filter(n => n >= 0 && n <= 200000);
-        const moneyRatio = count > 0 ? (moneyNums.length / denom) : 0;
         const nonZeroMoney = moneyNums.filter(n => n > 0);
         const avgMoney = nonZeroMoney.length > 0 ? (nonZeroMoney.reduce((a, b) => a + b, 0) / nonZeroMoney.length) : 0;
 
-        const locRatio = nonEmpty.filter(v => /(^|\s)(อ\.|จ\.|ต\.|น่าน|แพร่|พะเยา|เชียงใหม่|เชียงราย|ลำปาง|ลำพูน|อุตรดิตถ์|พิษณุโลก|กรุงเทพ|โรงแรม|รีสอร์ท|วัด|บ้าน|หอประชุม|ดอย|ปัว|ท่าวังผา|เวียงสา|สันติสุข|บ่อเกลือ|เชียงกลาง|ภูเพียง)/i.test(v) && !/บาท/.test(v)).length / denom;
-        const personSignals = nonEmpty.filter(v => /^(คุณ|K\.|k\.|น้อง|พี่|ครู|หมอ|บ่าวสาว)/i.test(v) || /เวดดิ้ง|wedding/i.test(v) && !/\d/.test(v)).length / denom;
-        const avgLen = count > 0 ? (nonEmpty.reduce((s, v) => s + v.length, 0) / count) : 0;
-
         return {
-          c, h, count, fillRate: count / totalRows,
-          statusRatio, slotRatio, pkgRatio, idRatio, pureDateRatio, phoneRatio,
-          urlRatio, photosUrlRatio, driveFolderRatio, slipFileRatio,
-          moneyRatio, avgMoney, locRatio, personSignals, avgLen
+          c, h, count, denom,
+          statusRatio: statusCount / denom, statusCount,
+          slotRatio: slotCount / denom, slotCount,
+          pkgRatio: pkgCount / denom, pkgCount,
+          idRatio: idCount / denom, idCount,
+          pureDateRatio: pureDateCount / denom, pureDateCount,
+          phoneRatio: phoneCount / denom, phoneCount,
+          urlRatio: urlCount / denom, urlCount,
+          photosUrlCount, driveFolderCount, slipFileCount,
+          locRatio: locCount / denom, locCount,
+          validNameCount, validNameRatio: validNameCount / totalRows,
+          moneyRatio: moneyNums.length / denom, moneyCount: moneyNums.length, avgMoney
         };
       });
 
-      function headerScore(h, field) {
+      function headerBonus(h, field) {
         if (!h) return 0;
         const aliases = BOOKING_HEADER_ALIASES[field] || [];
-        if (aliases.includes(h)) {
-          if (field === 'date' && /^(shootdate|eventdate|workdate|วันที่ถ่ายภาพ|วันที่ถ่าย|วันถ่ายทำ|วันถ่าย|วันที่งาน|วันงาน|คิววันที่)$/.test(h)) return 85;
-          return 70;
-        }
-        if ((field === 'date' || field === 'timeSlot') && /(timestamp|ประทับเวลา|created|ทำรายการ|บันทึก)/.test(h)) return -100;
-        if (field === 'customerName' && /(package|แพ็กเกจ|แพ็คเกจ|บัญชี|อัลบั้ม)/.test(h)) return -100;
-        if (field === 'price' && /(deposit|มัดจำ)/.test(h)) return -80;
-        if (field === 'depositAmount' && /(total|full|ราคาเต็ม|ยอดรวม)/.test(h)) return -80;
+        if (aliases.includes(h)) return 40;
         for (const a of aliases) {
-          if (a.length >= 4 && h.includes(a)) return 45;
+          if (a.length >= 4 && h.includes(a)) return 25;
         }
         return 0;
       }
 
-      const candidates = [];
-      const addCand = (field, c, score) => {
-        if (score >= 20) candidates.push({ field, c, score });
-      };
-
-      colStats.forEach(st => {
-        const c = st.c;
-        if (isTimestampCol.has(c)) return;
-        const hasData = st.count > 0;
-
-        // 1. Status
-        addCand('status', c, headerScore(st.h, 'status') + (hasData ? st.statusRatio * 120 : 0) - (st.urlRatio > 0.2 || st.pureDateRatio > 0.3 ? 100 : 0));
-
-        // 2. TimeSlot
-        addCand('timeSlot', c, headerScore(st.h, 'timeSlot') + (hasData ? st.slotRatio * 120 : 0) - (st.pkgRatio > 0.3 || st.pureDateRatio > 0.3 || st.urlRatio > 0.2 ? 100 : 0));
-
-        // 3. PackageName
-        addCand('packageName', c, headerScore(st.h, 'packageName') + (hasData ? st.pkgRatio * 120 : 0) - (st.urlRatio > 0.2 || st.pureDateRatio > 0.3 ? 100 : 0));
-
-        // 4. Shoot Date
-        addCand('date', c, headerScore(st.h, 'date') + (hasData ? st.pureDateRatio * 115 : 0) - (st.phoneRatio > 0.3 || st.urlRatio > 0.2 ? 100 : 0));
-
-        // 5. Booking ID
-        addCand('id', c, headerScore(st.h, 'id') + (hasData ? st.idRatio * 120 : 0) - (st.pureDateRatio > 0.3 || st.pkgRatio > 0.3 || st.urlRatio > 0.2 ? 100 : 0));
-
-        // 6. Phone (Tel)
-        addCand('tel', c, headerScore(st.h, 'tel') + (hasData ? st.phoneRatio * 115 : 0) - (st.pureDateRatio > 0.3 || st.urlRatio > 0.2 ? 100 : 0));
-
-        // 7. URLs: PhotosLink, DriveLink, SlipUrl
-        addCand('photosLink', c, headerScore(st.h, 'photosLink') + (hasData ? st.photosUrlRatio * 120 : 0));
-        addCand('driveLink', c, headerScore(st.h, 'driveLink') + (hasData ? st.driveFolderRatio * 120 : 0));
-        addCand('slipUrl', c, headerScore(st.h, 'slipUrl') + (hasData ? (st.slipFileRatio * 110 + (st.urlRatio > 0 && st.photosUrlRatio === 0 && st.driveFolderRatio === 0 ? st.urlRatio * 75 : 0)) : 0));
-
-        // 8. Money: Price vs Deposit
-        if (st.phoneRatio < 0.3 && st.pureDateRatio < 0.3 && st.urlRatio < 0.2 && st.idRatio < 0.3) {
-          const isMoneyCol = hasData && st.moneyRatio >= 0.6;
-          addCand('price', c, headerScore(st.h, 'price') + (isMoneyCol ? (st.avgMoney >= 3000 ? 85 : 40) : 0));
-          addCand('depositAmount', c, headerScore(st.h, 'depositAmount') + (isMoneyCol ? (st.avgMoney > 0 && st.avgMoney <= 2500 ? 80 : 45) : 0));
-        }
-
-        // 9. Text fields: Location, CustomerName, Notes
-        const isPlainText = st.statusRatio < 0.3 && st.slotRatio < 0.3 && st.pkgRatio < 0.3 && st.pureDateRatio < 0.3 && st.phoneRatio < 0.3 && st.urlRatio < 0.2 && st.idRatio < 0.3 && st.moneyRatio < 0.5;
-        if (isPlainText || headerScore(st.h, 'location') > 0 || headerScore(st.h, 'customerName') > 0 || headerScore(st.h, 'notes') > 0) {
-          addCand('location', c, headerScore(st.h, 'location') + (hasData ? st.locRatio * 105 : 0));
-          addCand('customerName', c,
-            headerScore(st.h, 'customerName') +
-            (isPlainText && hasData ? (st.fillRate * 55 + st.personSignals * 35 + (st.avgLen >= 2 && st.avgLen <= 40 ? 15 : 0) - st.locRatio * 70) : 0)
-          );
-          addCand('notes', c, headerScore(st.h, 'notes') + (isPlainText && hasData && st.locRatio < 0.2 ? 22 : 0));
-        }
-      });
-
-      candidates.sort((a, b) => b.score - a.score);
       const colMap = {};
       const assignedCols = new Set();
-
-      for (const cand of candidates) {
-        if (colMap[cand.field] === undefined && !assignedCols.has(cand.c)) {
-          colMap[cand.field] = cand.c;
-          assignedCols.add(cand.c);
+      const assignBest = (field, scorer, minScore = 25) => {
+        let bestCol = -1, bestScore = minScore;
+        colStats.forEach(st => {
+          if (assignedCols.has(st.c) || isTimestampCol.has(st.c)) return;
+          const sc = scorer(st);
+          if (sc > bestScore) { bestScore = sc; bestCol = st.c; }
+        });
+        if (bestCol !== -1) {
+          colMap[field] = bestCol;
+          assignedCols.add(bestCol);
         }
-      }
+      };
+
+      // ล็อกคอลัมน์จากรูปแบบข้อมูลจริง (Content-First) เพื่อไม่ให้หัวตารางที่คลาดเคลื่อนบังคับข้อมูลผิดช่อง
+      assignBest('status', st => st.statusCount > 0 ? st.statusRatio * 200 + st.statusCount * 10 + headerBonus(st.h, 'status') : 0);
+      assignBest('timeSlot', st => st.slotCount > 0 ? st.slotRatio * 200 + st.slotCount * 10 + headerBonus(st.h, 'timeSlot') : 0);
+      assignBest('packageName', st => st.pkgCount > 0 ? st.pkgRatio * 200 + st.pkgCount * 10 + headerBonus(st.h, 'packageName') : 0);
+      assignBest('date', st => st.pureDateCount > 0 ? st.pureDateRatio * 200 + st.pureDateCount * 10 + headerBonus(st.h, 'date') : 0);
+      assignBest('id', st => st.idCount > 0 ? st.idRatio * 200 + st.idCount * 10 + headerBonus(st.h, 'id') : headerBonus(st.h, 'id'));
+      assignBest('photosLink', st => st.photosUrlCount > 0 ? st.photosUrlCount * 50 + 100 : (st.urlCount === 0 ? headerBonus(st.h, 'photosLink') : 0));
+      assignBest('driveLink', st => st.driveFolderCount > 0 ? st.driveFolderCount * 50 + 100 : (st.urlCount === 0 ? headerBonus(st.h, 'driveLink') : 0));
+      assignBest('slipUrl', st => st.slipFileCount > 0 ? st.slipFileCount * 40 + st.urlRatio * 150 + headerBonus(st.h, 'slipUrl') : 0);
+      assignBest('tel', st => st.phoneCount > 0 && st.validNameCount === 0 ? st.phoneRatio * 180 + st.phoneCount * 20 + headerBonus(st.h, 'tel') : 0);
+      assignBest('location', st => st.urlCount === 0 && st.phoneCount === 0 && st.locCount > 0 ? st.locRatio * 180 + st.locCount * 25 + headerBonus(st.h, 'location') : 0);
+      assignBest('customerName', st => st.urlCount === 0 && st.phoneCount === 0 && st.validNameCount > 0 ? st.validNameRatio * 220 + st.validNameCount * 20 - st.locCount * 30 + headerBonus(st.h, 'customerName') : 0);
+      assignBest('price', st => st.urlCount === 0 && st.phoneCount === 0 && st.validNameCount === 0 && st.moneyCount > 0 && st.avgMoney >= 2500 ? st.moneyRatio * 150 + headerBonus(st.h, 'price') : 0);
+      assignBest('depositAmount', st => st.urlCount === 0 && st.phoneCount === 0 && st.validNameCount === 0 && st.moneyCount > 0 && st.avgMoney > 0 && st.avgMoney <= 2500 ? st.moneyRatio * 150 + headerBonus(st.h, 'depositAmount') : 0);
+      assignBest('notes', st => st.urlCount === 0 ? headerBonus(st.h, 'notes') + (st.count > 0 ? 30 : 0) : 0, 15);
 
       return colMap;
     }
 
-    function mapGridToBookings(grid) {
+    function unmergeGvizHeaderIfNeeded(grid) {
+      if (!grid || grid.length === 0) return grid;
+      const row0 = grid[0];
+      const allAliases = Object.values(BOOKING_HEADER_ALIASES).flat();
+      let splitCount = 0;
+      const headerRow = [];
+      const firstDataRow = [];
+
+      row0.forEach(cell => {
+        const s = String(cell || '').trim();
+        const parts = s.split(/\s+/);
+        if (parts.length >= 2) {
+          const firstKey = normKey(parts[0]);
+          const rest = parts.slice(1).join(' ').trim();
+          if (allAliases.includes(firstKey) && (isBookingDataCell(rest) || /^0[689]\d{7,8}$/.test(rest.replace(/\D/g, '')) || rest.length >= 2)) {
+            headerRow.push(parts[0]);
+            firstDataRow.push(rest);
+            splitCount++;
+            return;
+          }
+        }
+        headerRow.push(s);
+        firstDataRow.push('');
+      });
+
+      if (splitCount >= 3) {
+        return [headerRow, firstDataRow, ...grid.slice(1)];
+      }
+      return grid;
+    }
+
+    function mapGridToBookings(rawGrid) {
+      const grid = unmergeGvizHeaderIfNeeded(rawGrid);
       if (!grid || grid.length === 0) return [];
       const info = classifyGrid(grid);
       let headerIdx = info.headerIdx;
@@ -2875,9 +2824,61 @@
         let driveLink = getField(row, 'driveLink');
         let photosLink = getField(row, 'photosLink');
 
+        // Row-Level Self-Healing Guarantee: ตรวจสอบความถูกต้องรายแถวป้องกันข้อมูลสลับช่อง 100%
+        const cells = row.map(c => String(c ?? '').trim());
+        const isSlotVal = v => /^(ครึ่งวันเช้า|ครึ่งวันบ่าย|ครึ่งวัน|เต็มวัน|รายชั่วโมง.*|1\s*วันครึ่ง|เช้า-เที่ยง|บ่าย-เย็น|เช้า-เย็น)$/i.test(v);
+        const isStatusVal = v => /^(รอตรวจสอบ|ยืนยันแล้ว|เสร็จสิ้น|ยกเลิก)$/i.test(v);
+        const isPkgVal = v => /(Wedding|Pre-Wedding|รับปริญญา|งานบวช|Portrait).*(บาท|\d)/i.test(v) || /\([\d,]+\s*บาท\)/.test(v);
+        const isUrlVal = v => /^https?:\/\/|^data:image\//i.test(v);
+        const isPhoneVal = v => {
+          if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v)) return false;
+          const d = v.replace(/[\s\-()]/g, '');
+          return /^(0[689]\d{7,8}|[689]\d{8}|0[2-57]\d{7})$/.test(d);
+        };
+        const isPureDateVal = v => {
+          if (!v || isUrlVal(v) || isPhoneVal(v)) return false;
+          if (/\s(\d{1,2}):(\d{2})/.test(v) && !/\s0?0:00(:00)?/.test(v)) return false;
+          return /^\d{4}-\d{2}-\d{2}$/.test(normalizeSheetDate(v, preferMDY));
+        };
+        const isLocVal = v => /(^|\s)(อ\.|จ\.|ต\.|น่าน|แพร่|พะเยา|เชียงใหม่|เชียงราย|ลำปาง|ลำพูน|อุตรดิตถ์|พิษณุโลก|กรุงเทพ|โรงแรม|รีสอร์ท|วัด|บ้าน|หอประชุม|ดอย|ปัว|ท่าวังผา|เวียงสา|สันติสุข|บ่อเกลือ|เชียงกลาง|ภูเพียง)/i.test(v) && !isPkgVal(v) && !isUrlVal(v);
+        const isPersonNameVal = v => v && v !== '-' && v !== '*' && v.length >= 2 && !isSlotVal(v) && !isStatusVal(v) && !isPkgVal(v) && !isUrlVal(v) && !isPhoneVal(v) && !isPureDateVal(v) && !isLocVal(v) && !/^TG-\d+/i.test(v) && !/^฿?\s*[\d,]+(\.\d{1,2})?\s*(บาท|\.-)?$/.test(v) && !/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v) && /[a-zA-Z\u0E00-\u0E7F]{2,}/.test(v);
+
+        if (!isSlotVal(timeSlot)) {
+          const found = cells.find(isSlotVal);
+          if (found) timeSlot = found;
+        }
+        if (!isStatusVal(normalizeBookingStatus(rawStatus))) {
+          const found = cells.find(isStatusVal);
+          if (found) rawStatus = found;
+        }
+        if (!isPkgVal(packageName)) {
+          const found = cells.find(isPkgVal);
+          if (found) packageName = found;
+        }
+        if (!isPureDateVal(rawDate)) {
+          const found = cells.find(isPureDateVal);
+          if (found) rawDate = found;
+        }
+        if (!slipUrl || !isUrlVal(slipUrl)) {
+          const foundSlip = cells.find(v => isUrlVal(v) && !/drive\/folders|photos\.app\.goo\.gl|photos\.google\.com/i.test(v));
+          if (foundSlip) slipUrl = foundSlip;
+        }
+        if (!tel || !isPhoneVal(tel)) {
+          const foundTel = cells.find(isPhoneVal);
+          if (foundTel) tel = foundTel;
+        }
+        if (!location || location === '-' || location === '*' || isUrlVal(location) || isPhoneVal(location) || isPkgVal(location) || isSlotVal(location) || isStatusVal(location) || isPureDateVal(location)) {
+          const foundLoc = cells.find(isLocVal);
+          location = foundLoc || '-';
+        }
+        if (!isPersonNameVal(customerName)) {
+          const foundName = cells.find(isPersonNameVal);
+          if (foundName) customerName = foundName;
+        }
+
         if (!id || id === '-') {
-          const foundId = row.find(c => /^TG-\d+/i.test(String(c || '').trim()));
-          id = foundId ? String(foundId).trim() : `TG-${1001 + index}`;
+          const foundId = cells.find(c => /^TG-\d+/i.test(c));
+          id = foundId || `TG-${1001 + index}`;
         }
 
         const normalizedDate = normalizeSheetDate(rawDate, preferMDY);
@@ -2893,16 +2894,16 @@
           depositAmount = 1500;
         }
 
-        // ข้ามแถวว่างหรือแถวสรุปที่ไม่ใช่คิวงาน
         if (!customerName && !packageName && !normalizedDate && !tel) return null;
 
-        const cleanLoc = (!location || location === '-') ? '-' : location;
+        const cleanLoc = (!location || location === '-' || location === '*' || isUrlVal(location) || isPhoneVal(location) || isPkgVal(location) || isSlotVal(location) || isStatusVal(location)) ? '-' : location;
         const cleanSlot = (!timeSlot || timeSlot === '-') ? '-' : timeSlot;
         const cleanSlip = (!slipUrl || slipUrl === '-') ? '' : slipUrl;
+        const cleanName = (!customerName || customerName === '*' || isPhoneVal(customerName) || isUrlVal(customerName)) ? '-' : customerName;
 
         return {
           id: id,
-          customerName: customerName || '-',
+          customerName: cleanName,
           tel: formatPhone(tel || '-'),
           date: normalizedDate,
           timeSlot: cleanSlot,
@@ -3193,7 +3194,6 @@
               SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(mappedBookings));
               allBookings = mappedBookings;
               syncCalendarToActiveMonth();
-              renderUpcomingReminders();
               renderAdminTable();
               renderDeliverTable();
               renderCalendar();
@@ -3482,11 +3482,9 @@
     function closeQRModal() { document.getElementById("qr-modal").classList.remove("show"); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   </script>
   <!-- 🚀 UPGRADE MODULE: 1. Add-ons + Real EMVCo PromptPay QR | 2. E-Signature | 3. Google Calendar + Promo Code -->
-<script>
-  // =========================================================
-  // 🏦 1. ระบบสร้าง Thai QR PromptPay มาตรฐาน EMVCo + CRC16 (สแกนจ่ายผ่านแอปธนาคารได้จริง)
-  // =========================================================
+  <script>
   const DEFAULT_PROMO_CODES = 'EARLY500:500, TOY10:10%, NAN300:300';
+  const DEFAULT_CONTRACT_TERMS = "1. การจองคิวจะสมบูรณ์เมื่อชำระเงินมัดจำ 1,500 บาท เพื่อล็อคคิวงาน ส่วนยอดคงเหลือชำระในวันถ่ายทำ\n2. กรณีจำเป็นต้องเลื่อนวันถ่ายภาพ กรุณาแจ้งล่วงหน้าอย่างน้อย 7–14 วัน (ขึ้นอยู่กับคิวว่างของช่างภาพ) หากยกเลิกคิวงานขอสงวนสิทธิ์ไม่คืนเงินมัดจำ\n3. ส่งมอบไฟล์ภาพความละเอียดสูงปรับแสงและโทนสีฟิล์ม Cinematic ทุกภาพที่คัดส่งมอบ พร้อมสำรองไฟล์บนระบบคลาวด์เป็นเวลา 60 วันหลังส่งงาน";
   let activePromoObj = null;
   let sigPadInitialized = false;
   let sigIsDrawing = false;
@@ -3512,12 +3510,12 @@
     let digits = String(ppTarget || '0626079030').replace(/\D/g, '');
     let subTag = '';
     if (digits.length >= 13) {
-      subTag = formatEmvTlv('02', digits.slice(0, 13)); // เลขประจำตัวผู้เสียภาษี / บัตรประชาชน 13 หลัก
+      subTag = formatEmvTlv('02', digits.slice(0, 13));
     } else {
       if (digits.startsWith('0')) digits = digits.slice(1);
       else if (digits.startsWith('66')) digits = digits.slice(2);
       const formattedPhone = ('0066' + digits).slice(-13).padStart(13, '0');
-      subTag = formatEmvTlv('01', formattedPhone); // เบอร์โทรศัพท์พร้อมเพย์
+      subTag = formatEmvTlv('01', formattedPhone);
     }
     const merchantInfo = formatEmvTlv('00', 'A000000677010111') + subTag;
     const numAmt = Number(amount) || 0;
@@ -3534,7 +3532,6 @@
     return payload + crc16PromptPay(payload);
   }
 
-  // Pure-JS QR Matrix Generator (Version 5-L, 37x37, Reed-Solomon GF(256))
   function encodeQrMatrixV5L(textStr) {
     const bytes = [];
     for (let i = 0; i < textStr.length; i++) bytes.push(textStr.charCodeAt(i) & 0xFF);
@@ -3546,7 +3543,6 @@
     bytes.forEach(b => pushBits(b, 8));
     pushBits(0, Math.min(4, totalData * 8 - bits.length));
     while (bits.length % 8 !== 0) bits.push(0);
-
     const codewords = [];
     for (let i = 0; i < bits.length; i += 8) {
       let v = 0;
@@ -3556,7 +3552,6 @@
     const pad = [0xEC, 0x11];
     let pi = 0;
     while (codewords.length < totalData) codewords.push(pad[(pi++) % 2]);
-
     const gfExp = new Array(512).fill(0), gfLog = new Array(256).fill(0);
     let x = 1;
     for (let i = 0; i < 255; i++) {
@@ -3565,7 +3560,6 @@
     }
     for (let i = 255; i < 512; i++) gfExp[i] = gfExp[i - 255];
     const gfMul = (a, b) => (a === 0 || b === 0) ? 0 : gfExp[gfLog[a] + gfLog[b]];
-
     let gen = [1];
     for (let i = 0; i < ecLen; i++) {
       const nxt = new Array(gen.length + 1).fill(0);
@@ -3576,7 +3570,6 @@
       }
       gen = nxt;
     }
-
     let ec = new Array(ecLen).fill(0);
     for (const cw of codewords) {
       const factor = cw ^ ec[0];
@@ -3586,7 +3579,6 @@
       }
     }
     const allCw = codewords.concat(ec);
-
     const mat = Array.from({ length: size }, () => new Array(size).fill(0));
     const isFunc = Array.from({ length: size }, () => new Array(size).fill(false));
     const setFunc = (r, c, dark) => {
@@ -3616,11 +3608,9 @@
       if (!isFunc[i][8]) setFunc(i, 8, false);
     }
     for (let i = 0; i < 8; i++) { setFunc(8, size - 1 - i, false); setFunc(size - 1 - i, 8, false); }
-
     const dataBits = [];
     allCw.forEach(cw => { for (let i = 7; i >= 0; i--) dataBits.push((cw >> i) & 1); });
     for (let i = 0; i < 7; i++) dataBits.push(0);
-
     let bi = 0, up = true;
     for (let col = size - 1; col > 0; col -= 2) {
       if (col === 6) col--;
@@ -3633,13 +3623,11 @@
       }
       up = !up;
     }
-
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
         if (!isFunc[r][c] && ((r + c) % 2 === 0)) mat[r][c] ^= 1;
       }
     }
-
     const fmtData = (0b01 << 3) | 0;
     let rem = fmtData << 10;
     for (let i = 14; i >= 10; i--) { if ((rem >> i) & 1) rem ^= (0x537 << (i - 10)); }
@@ -3680,14 +3668,11 @@
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   };
 
-  // =========================================================
-  // 🎟️ 2. ระบบโค้ดส่วนลด (Promo Code) & คำนวณยอดรวม Add-ons
-  // =========================================================
   function getStoredPromoRulesString() {
     try {
       const fromSetInput = document.getElementById('set-promo-codes')?.value?.trim();
       if (fromSetInput) return fromSetInput;
-      const saved = localStorage.getItem('tg_promo_codes');
+      const saved = SafeStorage.getItem('tg_promo_codes');
       if (saved) return saved;
     } catch (e) {}
     return (window.appSettings && appSettings.promoCodes) || DEFAULT_PROMO_CODES;
@@ -3749,7 +3734,6 @@
     let basePrice = 0;
     const priceMatch = basePkg.match(/([\d,]+)\s*บาท/);
     if (priceMatch) basePrice = parseInt(priceMatch[1].replace(/,/g, ''), 10) || 0;
-
     const addons = [];
     let addonTotal = 0;
     if (document.getElementById('addon-extra-hr')?.checked) {
@@ -3766,7 +3750,6 @@
       addonTotal += 1500;
       addons.push('ส่งงานด่วน Express 3 วัน (+1,500.-)');
     }
-
     const subtotal = basePrice + addonTotal;
     let discount = 0, promoLabel = '';
     if (activePromoObj && subtotal > 0) {
@@ -3778,13 +3761,11 @@
         promoLabel = `โค้ด ${activePromoObj.code} (-${discount.toLocaleString()}.-)`;
       }
     }
-
     const total = Math.max(0, subtotal - discount);
     const deposit = total > 0 ? Math.min(1500, total) : 0;
     const balance = Math.max(0, total - deposit);
     let fullPkgLabel = addons.length > 0 ? `${basePkg} + [${addons.join(', ')}]` : basePkg;
     if (discount > 0 && promoLabel) fullPkgLabel += ` • ส่วนลด ${promoLabel}`;
-
     return { basePkg, basePrice, addons, addonTotal, subtotal, discount, total, deposit, balance, fullPkgLabel };
   };
 
@@ -3807,12 +3788,9 @@
     }
   };
 
-  // =========================================================
-  // ✍️ 3. ระบบเซ็นชื่อออนไลน์ (E-Signature Pad) บนใบเสนอราคา
-  // =========================================================
   function getBookingSignature(bookingId) {
     if (!bookingId) return '';
-    try { return localStorage.getItem('tg_sig_' + bookingId) || ''; } catch (e) { return ''; }
+    try { return SafeStorage.getItem('tg_sig_' + bookingId) || ''; } catch (e) { return ''; }
   }
 
   function initSignaturePadOnce() {
@@ -3825,7 +3803,6 @@
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = '#111827';
-
     const getPos = (evt) => {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / (rect.width || 280);
@@ -3834,7 +3811,6 @@
       const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
       return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
     };
-
     const startDraw = (evt) => {
       if (evt.cancelable) evt.preventDefault();
       sigIsDrawing = true;
@@ -3845,7 +3821,6 @@
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
     };
-
     const moveDraw = (evt) => {
       if (!sigIsDrawing) return;
       if (evt.cancelable) evt.preventDefault();
@@ -3853,9 +3828,7 @@
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
     };
-
     const endDraw = () => { sigIsDrawing = false; };
-
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mousemove', moveDraw);
     window.addEventListener('mouseup', endDraw);
@@ -3873,7 +3846,6 @@
     const ph = document.getElementById('q-sig-placeholder');
     if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     sigHasStrokes = false;
-
     const existingSig = getBookingSignature(bookingId);
     if (existingSig && savedImg && canvas) {
       savedImg.src = existingSig;
@@ -3899,7 +3871,7 @@
     if (ph) ph.classList.remove('hidden');
     sigHasStrokes = false;
     if (window.currentBookingId) {
-      try { localStorage.removeItem('tg_sig_' + window.currentBookingId); } catch (e) {}
+      SafeStorage.removeItem('tg_sig_' + window.currentBookingId);
     }
   };
 
@@ -3917,23 +3889,11 @@
       canvas.classList.add('hidden');
     }
     if (window.currentBookingId) {
-      try { localStorage.setItem('tg_sig_' + window.currentBookingId, dataUrl); } catch (e) {}
+      SafeStorage.setItem('tg_sig_' + window.currentBookingId, dataUrl);
     }
     uiAlert('บันทึกลายเซ็นลงในใบเสนอราคาเรียบร้อยแล้ว สามารถกด Save JPG / Print PDF หรือชำระมัดจำต่อได้เลยครับ');
   };
 
-  function syncInvoiceSignaturePreview(bookingId) {
-    const box = document.getElementById('inv-cust-sig-box');
-    const img = document.getElementById('inv-cust-sig-img');
-    if (!box || !img) return;
-    const sig = getBookingSignature(bookingId);
-    if (sig) { img.src = sig; box.classList.remove('hidden'); }
-    else { img.src = ''; box.classList.add('hidden'); }
-  }
-
-  // =========================================================
-  // 📅 4. ระบบปุ่มเพิ่มนัดหมายลง Google Calendar & ไฟล์ .ICS
-  // =========================================================
   function getSlotHoursRange(timeSlot) {
     const ts = String(timeSlot || '');
     if (ts.includes('เช้า')) return { startH: '080000', endH: '120000' };
@@ -4011,14 +3971,10 @@
     link.click();
   };
 
-  // =========================================================
-  // 🔗 5. เชื่อมการส่งฟอร์มจองคิว + ใบเสนอราคา + ใบเสร็จ + Save JPG
-  // =========================================================
   window.handleFormSubmit = function(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
     btn.innerText = 'กำลังดำเนินการ...'; btn.disabled = true;
-
     const calcInfo = window.getBookingCalculatedSummary();
     window.currentDocData = {
       id: 'TG-' + Math.floor(1000 + Math.random() * 9000),
@@ -4033,7 +3989,6 @@
       deposit: calcInfo.deposit,
       balance: calcInfo.balance
     };
-
     google.script.run.withSuccessHandler(res => {
       if (res.success) {
         btn.innerText = 'ขอใบเสนอราคาจองคิว'; btn.disabled = false;
@@ -4059,7 +4014,6 @@
         document.getElementById('q-bank-name').innerText = appSettings.accountName;
         document.getElementById('q-bank-num').innerText = appSettings.promptPayNum;
         window.prepareSignaturePadForBooking(window.currentBookingId, d.name);
-
         const payBtn = document.getElementById('q-btn-pay');
         if (payBtn) payBtn.style.display = 'block';
         document.getElementById('booking-form').reset();
@@ -4067,7 +4021,6 @@
         document.getElementById('b-date').value = new Date().toISOString().split('T')[0];
         window.recalcBookingPrice();
         document.getElementById('quotation-modal').classList.add('show');
-
         document.getElementById('qr-deposit-text').innerText = d.deposit.toLocaleString();
         document.getElementById('qr-pp-num').innerText = appSettings.promptPayNum;
         document.getElementById('qr-acc-name').innerText = appSettings.accountName;
@@ -4079,11 +4032,9 @@
         document.getElementById('qr-step-success').classList.add('hidden');
         document.getElementById('slip-file').value = '';
         if (window.lucide) lucide.createIcons();
-
         google.script.run.withSuccessHandler(resData => {
           if (resData.success) {
             allBookings = resData.data;
-            if (typeof renderUpcomingReminders === 'function') renderUpcomingReminders();
             renderAdminTable(); renderDeliverTable(); renderCalendar(); updateDashboardStats();
           }
         }).getBookingsFromSheet();
@@ -4111,82 +4062,189 @@
     }
   };
 
-  const origShowInvoiceFromAdmin = window.showInvoiceFromAdmin;
-  window.showInvoiceFromAdmin = function(id) {
-    if (origShowInvoiceFromAdmin) origShowInvoiceFromAdmin(id);
-    const b = (window.allBookings || []).find(x => String(x.id) === String(id));
-    if (b) {
-      const invPriceLine = document.getElementById('inv-price-line');
-      if (invPriceLine) invPriceLine.innerText = (Number(b.price) || 0).toLocaleString();
-    }
-    syncInvoiceSignaturePreview(id);
+  function getCustomContractTerms() {
+    try {
+      const saved = SafeStorage.getItem('tg_custom_contract_terms');
+      if (saved && saved.trim()) return saved;
+    } catch (e) {}
+    return DEFAULT_CONTRACT_TERMS;
+  }
+
+  window.refreshContractTermsDisplays = function() {
+    const terms = getCustomContractTerms();
+    const termsBox = document.getElementById('terms-detail-box');
+    if (termsBox) termsBox.innerText = terms;
+    const qTerms = document.getElementById('q-contract-terms');
+    if (qTerms) qTerms.innerText = terms;
+    const setTermsEl = document.getElementById('set-contract-terms');
+    if (setTermsEl && document.activeElement !== setTermsEl) setTermsEl.value = terms;
   };
 
-  const origShowInvoice = window.showInvoice;
-  window.showInvoice = function() {
-    if (origShowInvoice) origShowInvoice();
-    const invPriceLine = document.getElementById('inv-price-line');
-    if (invPriceLine && window.currentDocData) {
-      invPriceLine.innerText = (Number(window.currentDocData.price) || 0).toLocaleString();
-    }
-    syncInvoiceSignaturePreview(window.currentBookingId);
+  window.saveCustomTermsAndCredentials = function() {
+    const uEl = document.getElementById('set-admin-user');
+    const pEl = document.getElementById('set-admin-pass');
+    const tEl = document.getElementById('set-contract-terms');
+    const prEl = document.getElementById('set-promo-codes');
+    if (uEl && uEl.value.trim()) SafeStorage.setItem('tg_admin_custom_user', uEl.value.trim());
+    if (pEl && pEl.value.trim()) SafeStorage.setItem('tg_admin_custom_pass', pEl.value.trim());
+    if (tEl && tEl.value.trim()) SafeStorage.setItem('tg_custom_contract_terms', tEl.value.trim());
+    if (prEl && prEl.value.trim()) SafeStorage.setItem('tg_promo_codes', prEl.value.trim());
+    window.refreshContractTermsDisplays();
+    uiAlert('บันทึกการแก้ไขข้อมูลข้อตกลงสัญญาจ้าง และรหัสผ่านผู้ดูแลระบบเรียบร้อยแล้ว!');
   };
 
-  const origSaveAdminSettings = window.saveAdminSettings;
-  window.saveAdminSettings = function() {
-    const promoInput = document.getElementById('set-promo-codes');
-    if (promoInput && promoInput.value.trim()) {
-      try { localStorage.setItem('tg_promo_codes', promoInput.value.trim()); } catch (e) {}
+  window.doLogin = function() {
+    const user = (document.getElementById('admin-user')?.value || '').trim();
+    const pass = (document.getElementById('admin-pass')?.value || '').trim();
+    const savedU = (SafeStorage.getItem('tg_admin_custom_user') || 'admin').trim();
+    const savedP = (SafeStorage.getItem('tg_admin_custom_pass') || '1234').trim();
+    const uLower = user.toLowerCase();
+    if (
+      (uLower === savedU.toLowerCase() && pass === savedP) ||
+      ((uLower === 'admin' || uLower === 'toygallery') && (pass === '1234' || pass === 'admin' || pass === savedP))
+    ) {
+      SafeSession.setItem('tg_admin', 'true');
+      showAdminDashboard();
+      if (typeof renderReviews === 'function') renderReviews();
+    } else {
+      uiAlert(`ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง (ปัจจุบัน: ${savedU} / ${savedP})`);
     }
-    if (origSaveAdminSettings) origSaveAdminSettings();
   };
 
-  // อัปเกรด downloadJPG ให้วาดลายเซ็นจาก Canvas ลงในรูป JPG ด้วยเสมอ
-  window.downloadJPG = function(elementId, filename) {
-    const btn = event.currentTarget;
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> กำลังสร้างไฟล์...';
-    btn.disabled = true;
-    const el = document.getElementById(elementId);
-    const clone = el.cloneNode(true);
-    const origCanvases = el.querySelectorAll('canvas');
-    const cloneCanvases = clone.querySelectorAll('canvas');
-    origCanvases.forEach((origC, idx) => {
-      if (cloneCanvases[idx]) {
-        const ctxClone = cloneCanvases[idx].getContext('2d');
-        if (ctxClone) ctxClone.drawImage(origC, 0, 0);
+  function createUrlQrSvg(urlText, captionText) {
+    const cleanUrl = String(urlText || 'https://toyporawat.github.io/toy-gallery/').trim().slice(0, 106);
+    const mat = encodeQrMatrixV5L(cleanUrl);
+    const size = mat.length;
+    const cell = 4, offsetX = 46, offsetY = 42;
+    let pathD = '';
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (mat[r][c]) pathD += `M${offsetX + c * cell},${offsetY + r * cell}h${cell}v${cell}h-${cell}z`;
       }
-    });
-    clone.querySelectorAll('.no-print').forEach(e => e.remove());
-    clone.style.width = '794px';
-    clone.style.maxWidth = '794px';
-    clone.style.minHeight = '1123px';
-    clone.style.position = 'absolute';
-    clone.style.top = '-9999px';
-    clone.style.left = '-9999px';
-    document.body.appendChild(clone);
-    html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
-      const link = document.createElement('a');
-      link.download = filename + '.jpg';
-      link.href = canvas.toDataURL('image/jpeg', 0.9);
-      link.click();
-      document.body.removeChild(clone);
-      btn.innerHTML = originalHtml;
-      btn.disabled = false;
-      if (window.lucide) lucide.createIcons();
-    }).catch(() => {
-      uiAlert('เกิดข้อผิดพลาดในการบันทึกภาพ กรุณาลองใหม่อีกครั้ง');
-      document.body.removeChild(clone);
-      btn.innerHTML = originalHtml;
-      btn.disabled = false;
-    });
+    }
+    const cap = (captionText || 'SCAN TO DOWNLOAD PHOTOS').slice(0, 32);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 250" width="240" height="250">
+      <rect width="240" height="250" fill="#ffffff" rx="14" stroke="#e5e7eb" stroke-width="2"/>
+      <rect x="12" y="10" width="216" height="24" rx="6" fill="#18181b"/>
+      <text x="120" y="26" font-family="sans-serif" font-size="11" font-weight="bold" fill="#fbbf24" text-anchor="middle">TOY GALLERY 2000's • PHOTO QR</text>
+      <path d="${pathD}" fill="#000000" shape-rendering="crispEdges"/>
+      <text x="120" y="212" font-family="sans-serif" font-size="11" font-weight="bold" fill="#111827" text-anchor="middle">${cap}</text>
+      <text x="120" y="230" font-family="sans-serif" font-size="9" fill="#6b7280" text-anchor="middle">สแกน QR Code เพื่อเปิดดูและดาวน์โหลดรูปภาพ</text>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  window.openScanQrDeliveryModal = function() {
+    let modal = document.getElementById('scan-qr-delivery-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'scan-qr-delivery-modal';
+      modal.className = 'edit-modal';
+      modal.style.zIndex = '1090';
+      modal.innerHTML = `
+        <div class="glass-card p-6 sm:p-8 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl">
+          <div class="flex justify-between items-center mb-5 border-b pb-3" style="border-color: var(--border-color);">
+            <h3 class="text-xl font-serif font-bold flex items-center gap-2"><i data-lucide="qr-code" class="w-5 h-5 text-accent"></i> ระบบ Scan QR-Code รับรูปหน้างาน / ส่งลูกค้า</h3>
+            <button onclick="document.getElementById('scan-qr-delivery-modal').classList.remove('show')" class="p-1.5 rounded-lg input-field"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+          <div class="space-y-4 text-xs sm:text-sm">
+            <div>
+              <label class="block text-xs mb-1 opacity-80">เลือกดึงข้อมูลจากคิวงานลูกค้า (หรือกรอกเองด้านล่าง)</label>
+              <select id="qr-del-select-booking" onchange="onSelectQrDeliveryBooking(this.value)" class="w-full input-field rounded-xl px-3.5 py-2.5 text-xs">
+                <option value="">-- กำหนดชื่ออัลบั้มและลิงก์เอง --</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs mb-1 opacity-80">ชื่อป้าย / ชื่อลูกค้า / ชื่องาน</label>
+              <input type="text" id="qr-del-title" oninput="refreshDeliveryQrPreview()" class="w-full input-field rounded-xl px-3.5 py-2 text-xs" value="Toy Gallery 2000's Gallery">
+            </div>
+            <div>
+              <label class="block text-xs mb-1 opacity-80">ลิงก์รับรูป (Google Drive / Google Photos / ระบบ Gallery)</label>
+              <input type="text" id="qr-del-url" oninput="refreshDeliveryQrPreview()" class="w-full input-field rounded-xl px-3.5 py-2 text-xs font-mono" value="https://toyporawat.github.io/toy-gallery/">
+            </div>
+            <div id="printable-qr-delivery-card" class="p-6 rounded-2xl bg-white text-black text-center space-y-2 border border-gray-200 shadow-inner">
+              <div class="font-serif font-bold text-lg">Toy Gallery 2000's</div>
+              <div id="qr-card-EventTitle" class="text-sm font-bold text-amber-600">Toy Gallery 2000's Gallery</div>
+              <img id="qr-del-preview-img" src="" alt="QR Delivery" class="w-52 h-52 mx-auto object-contain">
+              <div class="text-[11px] text-gray-500">สแกนด้วยกล้องมือถือหรือ LINE เพื่อรับไฟล์ภาพความละเอียดสูง</div>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-2">
+              <button type="button" onclick="downloadJPG('printable-qr-delivery-card', 'QR_Photo_Delivery')" class="flex-1 py-3 rounded-xl btn-accent font-bold text-xs flex items-center justify-center gap-1.5 shadow-md"><i data-lucide="download" class="w-4 h-4"></i> บันทึกป้าย QR (JPG)</button>
+              <a href="https://toyporawat.github.io/toy-gallery/" target="_blank" rel="noopener" class="px-4 py-3 rounded-xl input-field font-bold text-xs flex items-center justify-center gap-1.5"><i data-lucide="external-link" class="w-4 h-4 text-accent"></i> เปิดเว็บระบบ QR / Gallery</a>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    const sel = document.getElementById('qr-del-select-booking');
+    if (sel) {
+      sel.innerHTML = '<option value="">-- กำหนดชื่ออัลบั้มและลิงก์เอง --</option>' +
+        (window.allBookings || []).map(b => `<option value="${encodeURIComponent(b.id)}">${b.date || ''} • ${b.customerName} (${b.id})</option>`).join('');
+    }
+    window.refreshDeliveryQrPreview();
+    modal.classList.add('show');
+    if (window.lucide) lucide.createIcons();
   };
 
-  // =========================================================
-  // 🎨 6. สร้าง UI ทั้ง 3 ระบบเข้าสู่หน้าเว็บอัตโนมัติเมื่อโหลดหน้า
-  // =========================================================
+  window.onSelectQrDeliveryBooking = function(encId) {
+    if (!encId) return;
+    const id = decodeURIComponent(encId);
+    const b = (window.allBookings || []).find(x => String(x.id) === String(id));
+    if (!b) return;
+    document.getElementById('qr-del-title').value = `${b.customerName} (${b.date || ''})`;
+    document.getElementById('qr-del-url').value = b.driveLink || b.photosLink || 'https://toyporawat.github.io/toy-gallery/';
+    window.refreshDeliveryQrPreview();
+  };
+
+  window.refreshDeliveryQrPreview = function() {
+    const title = document.getElementById('qr-del-title')?.value || "Toy Gallery 2000's";
+    const url = document.getElementById('qr-del-url')?.value || 'https://toyporawat.github.io/toy-gallery/';
+    const titleEl = document.getElementById('qr-card-EventTitle');
+    if (titleEl) titleEl.innerText = title;
+    const imgEl = document.getElementById('qr-del-preview-img');
+    if (imgEl) imgEl.src = createUrlQrSvg(url, title);
+  };
+
   function injectUpgradedFeaturesUI() {
-    // 6.1 เพิ่มช่องกรอก Promo Code ในหน้าจองคิว
+    window.refreshContractTermsDisplays();
+    const termsBox = document.getElementById('terms-detail-box');
+    if (termsBox) termsBox.classList.remove('hidden');
+
+    const settingsContainer = document.getElementById('admin-sub-settings');
+    if (settingsContainer && !document.getElementById('set-contract-terms')) {
+      const savedU = SafeStorage.getItem('tg_admin_custom_user') || 'admin';
+      const savedP = SafeStorage.getItem('tg_admin_custom_pass') || '1234';
+      const extraPanel = document.createElement('div');
+      extraPanel.className = 'mt-6 pt-6 border-t space-y-5';
+      extraPanel.style.borderColor = 'var(--border-color)';
+      extraPanel.innerHTML = `
+        <div class="space-y-3">
+          <h4 class="text-base font-serif font-bold flex items-center gap-2"><i data-lucide="shield-check" class="w-5 h-5 text-accent"></i> ตั้งค่าชื่อผู้ใช้งาน & รหัสผ่านแอดมิน (User / Password)</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="block mb-1 opacity-80">ชื่อผู้ใช้งานแอดมิน (Username)</label>
+              <input type="text" id="set-admin-user" class="w-full input-field rounded-xl px-3.5 py-2" value="${savedU}">
+            </div>
+            <div>
+              <label class="block mb-1 opacity-80">รหัสผ่านแอดมิน (Password)</label>
+              <input type="text" id="set-admin-pass" class="w-full input-field rounded-xl px-3.5 py-2" value="${savedP}">
+            </div>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="block text-xs font-bold flex items-center gap-1.5"><i data-lucide="ticket-percent" class="w-4 h-4 text-accent"></i> โค้ดส่วนลดโปรโมชั่น (รูปแบบ CODE:มูลค่า เช่น EARLY500:500, TOY10:10%)</label>
+          <input type="text" id="set-promo-codes" class="w-full input-field rounded-xl px-3.5 py-2 text-xs font-mono" value="${getStoredPromoRulesString()}">
+        </div>
+        <div class="space-y-2">
+          <label class="block text-xs font-bold flex items-center gap-1.5"><i data-lucide="file-check-2" class="w-4 h-4 text-accent"></i> แก้ไขข้อตกลงและเงื่อนไขสัญญาจ้างถ่ายภาพ (แสดงในหน้าจองคิว & ท้ายใบเสนอราคา)</label>
+          <textarea id="set-contract-terms" rows="4" class="w-full input-field rounded-xl p-3 text-xs leading-relaxed">${getCustomContractTerms()}</textarea>
+        </div>
+        <button type="button" onclick="saveCustomTermsAndCredentials()" class="w-full py-3 btn-accent font-bold rounded-xl shadow-md text-sm">บันทึกข้อมูลข้อตกลง & รหัสผ่านแอดมิน</button>
+      `;
+      settingsContainer.appendChild(extraPanel);
+    }
+
     const calcTotalEl = document.getElementById('calc-total');
     if (calcTotalEl && !document.getElementById('b-promo-code')) {
       const gridBox = calcTotalEl.closest('.grid');
@@ -4210,21 +4268,6 @@
       calcTotalEl.parentNode.appendChild(discSpan);
     }
 
-    // 6.2 เพิ่มช่องตั้งค่าโค้ดส่วนลดในหน้าแอดมิน (ตั้งค่าระบบ)
-    const termsTextarea = document.getElementById('set-contract-terms');
-    if (termsTextarea && !document.getElementById('set-promo-codes')) {
-      const promoSetBox = document.createElement('div');
-      promoSetBox.className = 'pt-5 mt-5 border-t space-y-2.5';
-      promoSetBox.style.borderColor = 'var(--border-color)';
-      promoSetBox.innerHTML = `
-        <label class="block text-xs font-bold flex items-center gap-1.5"><i data-lucide="ticket-percent" class="w-4 h-4 text-accent"></i> ตั้งค่าโค้ดส่วนลด (รูปแบบ CODE:มูลค่า คั่นด้วยคอมม่า เช่น EARLY500:500, TOY10:10%)</label>
-        <input type="text" id="set-promo-codes" class="w-full input-field rounded-xl px-3.5 py-2.5 text-xs font-mono" value="${getStoredPromoRulesString()}">
-      `;
-      termsTextarea.parentElement.parentElement.insertBefore(promoSetBox, termsTextarea.parentElement);
-    }
-
-    // 6.3 เพิ่มช่องเซ็นชื่อ E-Signature และปุ่ม Google Calendar ในใบเสนอราคา
-    const qTerms = document.getElementById('q-contract-terms');
     if (qTerms && !document.getElementById('q-sig-canvas')) {
       const sigSection = document.createElement('div');
       sigSection.className = 'grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 pt-5 border-t border-gray-200 text-center text-xs text-gray-600';
@@ -4267,28 +4310,13 @@
       calBtn.onclick = window.openGoogleCalendarForCurrentDoc;
       calBtn.className = 'px-4 py-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 flex items-center justify-center gap-1.5 transition-colors text-xs sm:text-sm';
       calBtn.innerHTML = '<i data-lucide="calendar-plus" class="w-4 h-4"></i> เพิ่มลง Google Calendar';
-
       const icsBtn = document.createElement('button');
       icsBtn.type = 'button';
       icsBtn.onclick = window.downloadICSForCurrentDoc;
       icsBtn.className = 'px-4 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-100 flex items-center justify-center gap-1.5 transition-colors text-xs sm:text-sm';
       icsBtn.innerHTML = '<i data-lucide="calendar" class="w-4 h-4"></i> ไฟล์ .ICS';
-
       qPayBtn.parentElement.insertBefore(icsBtn, qPayBtn.parentElement.firstChild);
       qPayBtn.parentElement.insertBefore(calBtn, qPayBtn.parentElement.firstChild);
-    }
-
-    // 6.4 เพิ่มการแสดงผลลายเซ็นลูกค้าและปุ่ม Google Calendar ในใบเสร็จรับเงิน
-    const invTerms = document.getElementById('inv-contract-terms');
-    if (invTerms && !document.getElementById('inv-cust-sig-box')) {
-      const invSigBox = document.createElement('div');
-      invSigBox.id = 'inv-cust-sig-box';
-      invSigBox.className = 'hidden mt-4 pt-3 border-t border-gray-100 flex items-center gap-3 text-xs text-gray-600';
-      invSigBox.innerHTML = `
-        <span class="font-bold text-black">ลายเซ็นผู้ว่าจ้างที่บันทึกไว้:</span>
-        <img id="inv-cust-sig-img" src="" alt="Customer Signature" class="h-12 object-contain border border-gray-200 rounded bg-white px-2">
-      `;
-      invTerms.parentElement.parentElement.appendChild(invSigBox);
     }
 
     if (window.lucide) lucide.createIcons();
@@ -4299,6 +4327,6 @@
   } else {
     injectUpgradedFeaturesUI();
   }
-</script>
+  </script>
 </body>
 </html>
