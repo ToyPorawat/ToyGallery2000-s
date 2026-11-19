@@ -1006,18 +1006,18 @@
         groupedAlbums[name].images.push(p);
       });
       Object.values(groupedAlbums).forEach(album => {
-        // 1. ตรวจสอบค่า isCover จาก Google Sheets ก่อน (เพื่อให้ทุกเครื่องแสดงปกตรงกันตามชีต)
-        let coverIdx = album.images.findIndex(img => Boolean(img.isCover));
-        // 2. หากในชีตยังไม่ได้ระบุ หรือมีการตั้งค่าปกไว้ในระบบ ให้เทียบทั้ง ID, URL และ Drive File ID
+        let coverIdx = -1;
         const savedCoverKey = savedCovers[album.title];
         if (savedCoverKey) {
-          const savedFid = extractDriveFileId(savedCoverKey);
-          const customIdx = album.images.findIndex(img =>
+          const savedFid = (!String(savedCoverKey).startsWith('data:')) ? extractDriveFileId(savedCoverKey) : '';
+          coverIdx = album.images.findIndex(img =>
             String(img.id) === String(savedCoverKey) ||
             String(img.url) === String(savedCoverKey) ||
-            (savedFid && extractDriveFileId(img.url) === savedFid)
+            (savedFid && !String(img.url).startsWith('data:') && extractDriveFileId(img.url) === savedFid)
           );
-          if (customIdx !== -1) coverIdx = customIdx;
+        }
+        if (coverIdx === -1) {
+          coverIdx = album.images.findIndex(img => Boolean(img.isCover));
         }
         if (coverIdx > 0) {
           const [coverImg] = album.images.splice(coverIdx, 1);
@@ -1169,16 +1169,25 @@
       if (!targetImg) return;
 
       const savedCovers = getSavedAlbumCoversMap();
-      savedCovers[albumTitle] = targetImg.url || targetImg.id;
+      const coverKey = String(targetImg.url || '').startsWith('data:') ? targetImg.id : (targetImg.url || targetImg.id);
+      savedCovers[albumTitle] = coverKey;
       SafeStorage.setItem('tg_custom_album_covers', JSON.stringify(savedCovers));
 
-      portfolioData = portfolioData.map(p => {
+      const chosen = { ...targetImg, isCover: true };
+      const restOfAlbum = [];
+      let skippedTarget = false;
+      portfolioData.forEach(p => {
         if (p.title === albumTitle) {
-          const isMatch = (targetImg.url && p.url === targetImg.url) || String(p.id) === String(targetImg.id);
-          return { ...p, isCover: isMatch };
+          if (!skippedTarget && (p === targetImg || (p.url === targetImg.url && String(p.id) === String(targetImg.id)) || p.url === targetImg.url)) {
+            skippedTarget = true;
+          } else {
+            restOfAlbum.push({ ...p, isCover: false });
+          }
         }
-        return p;
       });
+      const otherAlbums = portfolioData.filter(p => p.title !== albumTitle);
+      portfolioData = [chosen, ...restOfAlbum, ...otherAlbums];
+
       SafeStorage.setItem('tg_standalone_portfolio', JSON.stringify(portfolioData));
       processAlbums();
       renderManagePortfolio();
@@ -1191,7 +1200,7 @@
         driveId: extractDriveFileId(targetImg.url)
       });
       pushToGasWebhook('saveSettings', { albumCovers: JSON.stringify(savedCovers) });
-      uiAlert(`ตั้งรูปหน้าปกอัลบั้ม "${albumTitle}" เรียบร้อยแล้ว! (ซิงค์ไปยัง Google Sheets สำหรับทุกเครื่องแล้ว)`);
+      uiAlert(`ตั้งรูปหน้าปกอัลบั้ม "${albumTitle}" เรียบร้อยแล้ว!`);
     }
 
     function deleteAlbumPhoto(id) {
@@ -1757,11 +1766,11 @@
           if (!loc) loc = foundLoc || remainingTexts.find(t => t !== title) || 'จ.น่าน';
         }
 
-        const rawFirstCell = cells[0] && !isUrl(cells[0]) && !isCat(cells[0]) && !isBool(cells[0]) ? cells[0] : '';
-        const rowId = cells.find(c => /^PF-\d+/i.test(c)) || rawFirstCell || `PF-${rIdx + 1}`;
+        const explicitPfId = cells.find(c => /^PF-\d+/i.test(c));
+        const rowId = explicitPfId ? `${explicitPfId}-${rIdx + 1}` : `PF-${rIdx + 1}`;
         urls.forEach((u, uIdx) => {
           items.push({
-            id: urls.length === 1 ? rowId : `${rowId}-${uIdx + 1}`,
+            id: `${rowId}-${uIdx + 1}`,
             title: title || `Album ${rIdx + 1}`,
             category: cat || 'Wedding',
             location: loc || 'จ.น่าน',
