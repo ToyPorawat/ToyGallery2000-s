@@ -171,7 +171,7 @@
       .no-print { display: none !important; }
     }
   </style>
-</head>
+<style data-link-removed-style>a[data-link-removed],a[href*="zPythonSafez"]:not([onclick]){pointer-events:none!important;cursor:default!important;opacity:.6}</style></head>
 <body>
   <div id="system-loader">
     <div id="loader-spinner" class="w-12 h-12 border-4 border-transparent border-t-amber-500 rounded-full animate-spin mb-4" style="border-top-color: var(--accent);"></div>
@@ -486,11 +486,10 @@
               </div>
             </div>
             <div class="p-3 rounded-xl border text-[11px] space-y-1.5" style="background: rgba(0,0,0,0.15); border-color: var(--border-color); color: var(--text-muted);">
-              <p class="font-bold" style="color: var(--text-main);">💡 คำแนะนำการตั้งค่า Google Sheets:</p>
+              <p class="font-bold" style="color: var(--text-main);">💡 คำแนะนำการตั้งค่า Google Sheets & Google Drive:</p>
               <ul class="list-disc list-inside space-y-1">
-                <li>กดปุ่ม <b>แชร์ (Share)</b> บน Google Sheets แล้วเลือก <b>"ทุกคนที่มีลิงก์ (Anyone with the link)"</b> สิทธิ์อ่าน (Viewer)</li>
-                <li>หรือไปที่เมนู <b>ไฟล์ (File) > แชร์ > เผยแพร่ไปยังเว็บ (Publish to web)</b> แล้วกดเผยแพร่</li>
-                <li>หากตั้งชื่อแท็บเป็นอย่างอื่น สามารถพิมพ์ชื่อแท็บหรือเลข GID ในช่องด้านบนแล้วกดซิงค์ได้ทันที</li>
+                <li>กดปุ่ม <b>แชร์ (Share)</b> บน Google Sheets และโฟลเดอร์ Google Drive แล้วเลือก <b>"ทุกคนที่มีลิงก์ (Anyone with the link)"</b> สิทธิ์อ่าน (Viewer)</li>
+                <li>เว็บจะดึงข้อมูลสดจาก Google Drive & Google Sheets ผ่านลิงก์ Apps Script (<code>/exec</code>) และ Google Visualization API โดยตรง ไม่ต้องสำรองฐานข้อมูลแยก</li>
               </ul>
             </div>
           </div>
@@ -2134,6 +2133,84 @@
       else copyTextSafe('0626079030', 'คัดลอกเบอร์โทรศัพท์ 062-607-9030 เรียบร้อยแล้ว!');
     };
 
+    // =========================================================
+    // ☁️ GOOGLE DRIVE & GOOGLE SHEETS DIRECT LIVE BRIDGE
+    // ดึงข้อมูลโดยตรงจาก Google Drive & Google Sheets (ผ่าน Apps Script /exec + GViz)
+    // โดยไม่ต้องสำรองฐานข้อมูลแยกบน Firebase
+    // =========================================================
+    const origPushToGas = pushToGasWebhook;
+    pushToGasWebhook = function(action, payload) {
+      origPushToGas(action, payload);
+      try {
+        const rawSettings = SafeStorage.getItem('tg_standalone_settings');
+        const parsed = rawSettings ? JSON.parse(rawSettings) : {};
+        const url = String(parsed.gasWebAppUrl || (typeof appSettings !== 'undefined' && appSettings.gasWebAppUrl) || DEFAULT_GAS_WEBAPP_URL).trim();
+        if (!url || !/^https?:\/\//i.test(url)) return;
+        // ส่งผ่าน GET query คู่ขนานสำหรับคำสั่งสำคัญ (เช่น เปลี่ยนปกอัลบั้ม / ตั้งค่า) เพื่อไม่ให้ข้อมูลหายเมื่อติด 302 Redirect ของ Apps Script
+        if (action === 'setPortfolioCover' || action === 'saveSettings' || action === 'deleteBooking') {
+          const q = new URLSearchParams({
+            action,
+            payload: JSON.stringify(payload || {}),
+            id: String(payload?.id || ''),
+            title: String(payload?.title || ''),
+            url: String(payload?.url || ''),
+            driveId: String(payload?.driveId || ''),
+            t: String(Date.now())
+          });
+          fetch(`${url}?${q.toString()}`, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+        }
+      } catch (e) {}
+    };
+
+    const origSyncSheet = syncSheetData;
+    syncSheetData = async function(type = 'all', silent = false) {
+      const gasUrl = document.getElementById('set-gas-webapp-url')?.value.trim() || appSettings.gasWebAppUrl || DEFAULT_GAS_WEBAPP_URL;
+      // 1. ดึงข้อมูลสดจาก Google Drive & Sheets ผ่าน Apps Script (/exec?action=getAllData)
+      if (gasUrl && /^https?:\/\//i.test(gasUrl)) {
+        try {
+          const res = await fetch(`${gasUrl}?action=getAllData&t=${Date.now()}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success) {
+              if (data.settings && data.settings.albumCovers && Date.now() - lastLocalCoverChangeAt > 8000) {
+                try {
+                  const remoteCovers = typeof data.settings.albumCovers === 'string'
+                    ? JSON.parse(data.settings.albumCovers)
+                    : data.settings.albumCovers;
+                  SafeStorage.setItem('tg_custom_album_covers', JSON.stringify({ ...getSavedAlbumCoversMap(), ...remoteCovers }));
+                } catch (e) {}
+              }
+              if ((type === 'all' || type === 'bookings') && Array.isArray(data.bookings) && data.bookings.length > 0) {
+                allBookings = data.bookings;
+                SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings));
+                syncCalendarToActiveMonth(); renderAdminTable(); renderDeliverTable(); renderCalendar(); updateDashboardStats();
+              }
+              if ((type === 'all' || type === 'portfolio') && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
+                if (Date.now() - lastLocalCoverChangeAt > 8000) {
+                  const coversMap = getSavedAlbumCoversMap();
+                  data.portfolio.forEach(item => {
+                    if (item.isCover && item.title && item.url) coversMap[item.title] = normalizeDriveImageUrl(item.url);
+                  });
+                  SafeStorage.setItem('tg_custom_album_covers', JSON.stringify(coversMap));
+                }
+                portfolioData = data.portfolio.map((p, idx) => ({
+                  ...p,
+                  id: p.id || `PF-${idx + 1}`,
+                  sheetId: p.sheetId || p.id || `PF-${idx + 1}`,
+                  rawUrl: p.rawUrl || p.url,
+                  url: normalizeDriveImageUrl(p.url)
+                }));
+                SafeStorage.setItem('tg_standalone_portfolio', JSON.stringify(portfolioData));
+                processAlbums(); renderHomeAlbums(); renderManagePortfolio();
+              }
+            }
+          }
+        } catch (e) {}
+      }
+      // 2. ซิงค์ตรงจาก Google Sheets (CSV / JSONP) ควบคู่กันเสมอ
+      await origSyncSheet(type, silent);
+    };
+
     window.onload = function() {
       initTheme();
       document.getElementById("b-date").value = new Date().toISOString().split("T")[0];
@@ -2158,7 +2235,7 @@
         document.getElementById('set-gas-webapp-url').value = appSettings.gasWebAppUrl || DEFAULT_GAS_WEBAPP_URL;
         syncSheetData('all', true);
         if (realTimeSyncTimer) clearInterval(realTimeSyncTimer);
-        realTimeSyncTimer = setInterval(() => { if (!document.hidden) syncSheetData('all', true); }, 25000);
+        realTimeSyncTimer = setInterval(() => { if (!document.hidden) syncSheetData('all', true); }, 20000);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) syncSheetData('all', true); });
       }).getAppSettings();
       google.script.run.withSuccessHandler(res => {
