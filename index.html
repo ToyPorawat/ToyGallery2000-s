@@ -1160,6 +1160,8 @@
       currentManageAlbumObj = null;
     }
 
+    let lastLocalCoverChangeAt = 0;
+
     function setAlbumCover(idxOrId) {
       if (!currentManageAlbumObj) return;
       const albumTitle = currentManageAlbumObj.title;
@@ -1168,6 +1170,7 @@
         : currentManageAlbumObj.images.find(img => String(img.id) === String(idxOrId));
       if (!targetImg) return;
 
+      lastLocalCoverChangeAt = Date.now();
       const savedCovers = getSavedAlbumCoversMap();
       const coverKey = String(targetImg.url || '').startsWith('data:') ? targetImg.id : (targetImg.url || targetImg.id);
       savedCovers[albumTitle] = coverKey;
@@ -1193,10 +1196,14 @@
       renderManagePortfolio();
       renderHomeAlbums();
       openManageAlbum(albumTitle);
+
+      const exactSheetRowId = targetImg.sheetId || targetImg.id;
       pushToGasWebhook('setPortfolioCover', {
-        id: targetImg.id,
+        id: exactSheetRowId,
+        sheetId: exactSheetRowId,
         title: albumTitle,
-        url: targetImg.url,
+        url: targetImg.rawUrl || targetImg.url,
+        normalizedUrl: targetImg.url,
         driveId: extractDriveFileId(targetImg.url)
       });
       pushToGasWebhook('saveSettings', { albumCovers: JSON.stringify(savedCovers) });
@@ -1766,11 +1773,15 @@
           if (!loc) loc = foundLoc || remainingTexts.find(t => t !== title) || 'จ.น่าน';
         }
 
+        const rawUrlCells = cells.filter(isUrl);
         const explicitPfId = cells.find(c => /^PF-\d+/i.test(c));
-        const rowId = explicitPfId ? `${explicitPfId}-${rIdx + 1}` : `PF-${rIdx + 1}`;
+        const colZeroId = (cells[0] && cells[0] !== title && !isUrl(cells[0]) && !isCat(cells[0]) && !isBool(cells[0])) ? cells[0] : '';
+        const exactSheetId = explicitPfId || colZeroId || `PF-${rIdx + 1}`;
         urls.forEach((u, uIdx) => {
           items.push({
-            id: `${rowId}-${uIdx + 1}`,
+            id: `PF-${rIdx + 1}-${uIdx + 1}`,
+            sheetId: exactSheetId,
+            rawUrl: rawUrlCells[uIdx] || u,
             title: title || `Album ${rIdx + 1}`,
             category: cat || 'Wedding',
             location: loc || 'จ.น่าน',
@@ -1809,12 +1820,41 @@
         }
 
         if (type === 'all' || type === 'portfolio') {
+          // ดึงข้อมูลปกอัลบั้มจากแท็บ Settings (ถ้ามี) เพื่อให้ทุกเครื่องเห็นปกตรงกัน
+          if (Date.now() - lastLocalCoverChangeAt > 8000) {
+            for (const sName of ['Settings', 'ตั้งค่า']) {
+              try {
+                const sGrid = await fetchSheetGrid(sheetId, { sheetName: sName });
+                sGrid.forEach(r => {
+                  const k = String(r[0] || '').trim().toLowerCase();
+                  if ((k === 'albumcovers' || k === 'ปกอัลบั้ม') && r[1]) {
+                    try {
+                      const remoteCovers = JSON.parse(r[1]);
+                      const merged = { ...getSavedAlbumCoversMap(), ...remoteCovers };
+                      SafeStorage.setItem('tg_custom_album_covers', JSON.stringify(merged));
+                    } catch (e) {}
+                  }
+                });
+                break;
+              } catch (e) {}
+            }
+          }
+
           const pTabs = portfolioTab ? [portfolioTab] : ['Portfolio', 'ผลงาน', 'Albums', 'Sheet2'];
           for (const tName of pTabs) {
             try {
               const pGrid = await fetchSheetGrid(sheetId, { sheetName: tName });
               const mappedP = mapGridToPortfolio(pGrid);
               if (mappedP.length > 0) {
+                if (Date.now() - lastLocalCoverChangeAt > 8000) {
+                  const coversMap = getSavedAlbumCoversMap();
+                  mappedP.forEach(item => {
+                    if (item.isCover && item.title && item.url) {
+                      coversMap[item.title] = item.url;
+                    }
+                  });
+                  SafeStorage.setItem('tg_custom_album_covers', JSON.stringify(coversMap));
+                }
                 portfolioData = mappedP;
                 syncedPortfolioCount = mappedP.length;
                 SafeStorage.setItem('tg_standalone_portfolio', JSON.stringify(mappedP));
