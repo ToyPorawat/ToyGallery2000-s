@@ -171,7 +171,7 @@
       .no-print { display: none !important; }
     }
   </style>
-<style data-link-removed-style>a[data-link-removed],a[href*="zPythonSafez"]:not([onclick]){pointer-events:none!important;cursor:default!important;opacity:.6}</style></head>
+</head>
 <body>
   <div id="system-loader">
     <div id="loader-spinner" class="w-12 h-12 border-4 border-transparent border-t-amber-500 rounded-full animate-spin mb-4" style="border-top-color: var(--accent);"></div>
@@ -486,32 +486,11 @@
               </div>
             </div>
             <div class="p-3 rounded-xl border text-[11px] space-y-1.5" style="background: rgba(0,0,0,0.15); border-color: var(--border-color); color: var(--text-muted);">
-              <p class="font-bold" style="color: var(--text-main);">💡 คำแนะนำการตั้งค่า Google Sheets:</p>
+              <p class="font-bold" style="color: var(--text-main);">💡 คำแนะนำการตั้งค่า Google Sheets & Google Drive:</p>
               <ul class="list-disc list-inside space-y-1">
-                <li>กดปุ่ม <b>แชร์ (Share)</b> บน Google Sheets แล้วเลือก <b>"ทุกคนที่มีลิงก์ (Anyone with the link)"</b> สิทธิ์อ่าน (Viewer)</li>
-                <li>หรือไปที่เมนู <b>ไฟล์ (File) > แชร์ > เผยแพร่ไปยังเว็บ (Publish to web)</b> แล้วกดเผยแพร่</li>
-                <li>หากตั้งชื่อแท็บเป็นอย่างอื่น สามารถพิมพ์ชื่อแท็บหรือเลข GID ในช่องด้านบนแล้วกดซิงค์ได้ทันที</li>
+                <li>กดปุ่ม <b>แชร์ (Share)</b> บน Google Sheets และโฟลเดอร์ Google Drive แล้วเลือก <b>"ทุกคนที่มีลิงก์ (Anyone with the link)"</b> สิทธิ์อ่าน (Viewer)</li>
+                <li>เว็บจะดึงข้อมูลสดจาก Google Drive & Google Sheets ผ่านลิงก์ Apps Script (<code>/exec</code>) และ Google Visualization API โดยตรง ไม่ต้องสำรองฐานข้อมูลแยก</li>
               </ul>
-            </div>
-          </div>
-
-          <div class="mt-6 pt-6 border-t space-y-3" style="border-color: var(--border-color);">
-            <div class="flex items-center justify-between gap-2">
-              <h3 class="text-xl font-serif font-bold flex items-center gap-2"><i data-lucide="flame" class="w-6 h-6 text-orange-500"></i> เชื่อมต่อ Firebase Realtime (ซิงค์ทุกเครื่องเรียลไทม์)</h3>
-              <button type="button" onclick="showFirebaseGuideModal()" class="text-xs font-bold text-orange-500 underline shrink-0">วิธีสร้างลิงก์ฟรี 1 นาที</button>
-            </div>
-            <div id="firebase-sync-status" class="p-3 rounded-xl text-xs border" style="background: rgba(249, 115, 22, 0.08); border-color: rgba(249, 115, 22, 0.3);">
-              <span class="font-bold text-orange-500">⚡ พร้อมเชื่อมต่อ Firebase Realtime Database</span>
-              <span class="block mt-0.5 text-[11px]" style="color: var(--text-muted);">วางลิงก์ Database URL (หรือวางโค้ด firebaseConfig) เพื่อให้การเปลี่ยนปกอัลบั้ม อัปโหลดรูป และคิวงานแสดงเหมือนกันทุกเครื่องแบบเรียลไทม์ทันที</span>
-            </div>
-            <div>
-              <label class="block mb-1 text-xs font-bold text-orange-500">Firebase Database URL หรือวางโค้ด firebaseConfig</label>
-              <input type="text" id="set-firebase-url" class="w-full input-field rounded-xl px-4 py-2.5 font-mono text-xs" placeholder="เช่น about:invalid#zPythonSafez">
-            </div>
-            <button type="button" onclick="saveAndConnectFirebase()" class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-md transition-all text-sm"><i data-lucide="zap" class="w-4 h-4"></i> บันทึก & เชื่อมต่อ Firebase Realtime ทันที</button>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <button type="button" onclick="pushAllToFirebase(false)" class="py-2.5 input-field hover:opacity-80 font-bold rounded-xl flex items-center justify-center gap-1.5"><i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-orange-500"></i> อัปโหลดข้อมูลขึ้น Firebase</button>
-              <button type="button" onclick="pullFromFirebase(false)" class="py-2.5 input-field hover:opacity-80 font-bold rounded-xl flex items-center justify-center gap-1.5"><i data-lucide="cloud-download" class="w-3.5 h-3.5 text-emerald-500"></i> ดึงข้อมูลสดจาก Firebase</button>
             </div>
           </div>
 
@@ -1658,11 +1637,74 @@
       return rows.filter(r => r.some(cell => cell !== ''));
     }
 
+    function gvizTableToGrid(table) {
+      if (!table) return [];
+      const cols = Array.isArray(table.cols) ? table.cols : [];
+      const rawRows = Array.isArray(table.rows) ? table.rows : [];
+      const grid = [];
+      const labels = cols.map(c => String(c?.label || '').trim());
+      if (labels.some(Boolean)) grid.push(labels);
+
+      rawRows.forEach(r => {
+        const cells = Array.isArray(r?.c) ? r.c : [];
+        const line = cols.map((col, idx) => {
+          const cell = cells[idx];
+          if (!cell || (cell.v === null && !cell.f)) return '';
+          const colType = String(col?.type || '').toLowerCase();
+          if (cell.v instanceof Date && !isNaN(cell.v)) {
+            const y = cell.v.getFullYear(), m = String(cell.v.getMonth() + 1).padStart(2, '0'), d = String(cell.v.getDate()).padStart(2, '0');
+            const hh = cell.v.getHours(), mm = cell.v.getMinutes(), ss = cell.v.getSeconds();
+            if (colType === 'datetime' || hh !== 0 || mm !== 0 || ss !== 0) return `${y}-${m}-${d} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+            return `${y}-${m}-${d}`;
+          }
+          if (typeof cell.v === 'string' && /^Date\(\d+,\d+,\d+/.test(cell.v)) {
+            const nums = cell.v.match(/\d+/g);
+            if (nums && nums.length >= 3) {
+              const y = Number(nums[0]), m = String(Number(nums[1]) + 1).padStart(2, '0'), d = String(Number(nums[2])).padStart(2, '0');
+              const hh = Number(nums[3] || 0), mm = Number(nums[4] || 0), ss = Number(nums[5] || 0);
+              if (colType === 'datetime' || hh !== 0 || mm !== 0 || ss !== 0) return `${y}-${m}-${d} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+              return `${y}-${m}-${d}`;
+            }
+          }
+          if (cell.f !== undefined && cell.f !== null && String(cell.f).trim() !== '') return String(cell.f).trim();
+          return cell.v !== undefined && cell.v !== null ? String(cell.v).trim() : '';
+        });
+        if (line.some(v => v !== '')) grid.push(line);
+      });
+      return grid;
+    }
+
+    function fetchSheetViaJsonp(sheetId, opts = {}) {
+      return new Promise((resolve, reject) => {
+        const cbName = '__tgGvizCb_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+        const script = document.createElement('script');
+        const timer = setTimeout(() => { cleanup(); reject(new Error('Timeout')); }, opts.timeoutMs || 8000);
+        function cleanup() {
+          clearTimeout(timer);
+          try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+        window[cbName] = function(resp) {
+          cleanup();
+          if (!resp || resp.status === 'error') { reject(new Error('Invalid sheet')); return; }
+          resolve(gvizTableToGrid(resp.table));
+        };
+        script.onerror = function() { cleanup(); reject(new Error('JSONP blocked')); };
+        let url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&tqx=responseHandler:${cbName}`;
+        if (opts.sheetName) url += `&sheet=${encodeURIComponent(opts.sheetName)}`;
+        else url += `&gid=${encodeURIComponent(opts.gid || '0')}`;
+        script.src = url;
+        document.head.appendChild(script);
+      });
+    }
+
     async function fetchSheetGrid(sheetId, opts = {}) {
-      let csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
-      if (opts.sheetName) csvUrl += `&sheet=${encodeURIComponent(opts.sheetName)}`;
-      else csvUrl += `&gid=${encodeURIComponent(opts.gid || '0')}`;
       try {
+        return await fetchSheetViaJsonp(sheetId, opts);
+      } catch (jsonpErr) {
+        let csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+        if (opts.sheetName) csvUrl += `&sheet=${encodeURIComponent(opts.sheetName)}`;
+        else csvUrl += `&gid=${encodeURIComponent(opts.gid || '0')}`;
         const res = await fetch(csvUrl);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -1671,105 +1713,359 @@
           throw new Error('กรุณาตั้งค่าแชร์ไฟล์ Google Sheets เป็น "ทุกคนที่มีลิงก์ (Anyone with the link)"');
         }
         return parseCSVGrid(text);
-      } catch (csvErr) {
-        // Fallback ผ่าน JSONP
-        return await new Promise((resolve, reject) => {
-          const cbName = '__tgSyncCb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-          const s = document.createElement('script');
-          const t = setTimeout(() => { s.remove(); reject(csvErr); }, 6000);
-          window[cbName] = resp => {
-            clearTimeout(t); s.remove();
-            if (!resp || !resp.table) { reject(csvErr); return; }
-            const cols = resp.table.cols || [];
-            const labels = cols.map(c => String(c?.label || '').trim());
-            const g = labels.some(Boolean) ? [labels] : [];
-            (resp.table.rows || []).forEach(r => {
-              const line = cols.map((_, idx) => {
-                const cell = (r.c || [])[idx];
-                return cell ? String(cell.f ?? cell.v ?? '').trim() : '';
-              });
-              if (line.some(Boolean)) g.push(line);
-            });
-            resolve(g);
-          };
-          s.onerror = () => { clearTimeout(t); s.remove(); reject(csvErr); };
-          s.src = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&tqx=responseHandler:${cbName}` + (opts.sheetName ? `&sheet=${encodeURIComponent(opts.sheetName)}` : `&gid=${encodeURIComponent(opts.gid || '0')}`);
-          document.head.appendChild(s);
-        });
       }
     }
 
-    function normalizeSheetDateStr(val) {
+    function normKey(s) { return String(s || '').toLowerCase().replace(/[\s_\-()./*#:]/g, ''); }
+    function parseMoneyValue(val) {
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      if (!val) return 0;
+      const num = parseFloat(String(val).replace(/[^0-9.-]/g, ''));
+      return isNaN(num) ? 0 : num;
+    }
+    function detectColumnPreferMDY(values) {
+      let mdy = 0, dmy = 0;
+      (values || []).forEach(val => {
+        const m = String(val || '').trim().match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+        if (m) {
+          const p1 = parseInt(m[1], 10), p2 = parseInt(m[2], 10);
+          if (p2 > 12 && p1 <= 12) mdy++;
+          else if (p1 > 12 && p2 <= 12) dmy++;
+        }
+      });
+      return mdy > dmy;
+    }
+
+    function normalizeSheetDate(val, preferMDY = false) {
       if (!val) return '';
-      const s = String(val).trim();
-      let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+      let s = String(val).trim();
+      if (!s || s === '-') return '';
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}.*Z$/i.test(s)) {
+        const dt = new Date(s);
+        if (!isNaN(dt.getTime())) {
+          let y = dt.getFullYear(); if (y >= 2400) y -= 543;
+          return `${y}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+        }
+      }
+      let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[\sT].*)?$/);
       if (m) {
         let y = parseInt(m[1], 10); if (y >= 2400) y -= 543;
         return `${y}-${String(parseInt(m[2], 10)).padStart(2, '0')}-${String(parseInt(m[3], 10)).padStart(2, '0')}`;
       }
-      m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+      m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})(?:\s.*)?$/);
       if (m) {
         let p1 = parseInt(m[1], 10), p2 = parseInt(m[2], 10), y = parseInt(m[3], 10);
-        if (y < 100) y += 2000; if (y >= 2400) y -= 543;
-        const day = p1 > 12 ? p1 : (p2 > 12 ? p2 : p1);
-        const mo = p1 > 12 ? p2 : (p2 > 12 ? p1 : p2);
-        return `${y}-${String(mo).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        if (y < 100) y += (y >= 60 ? 1957 : 2000);
+        if (y >= 2400) y -= 543;
+        let day = (p2 > 12 && p1 <= 12) ? p2 : ((p1 > 12 && p2 <= 12) ? p1 : (preferMDY ? p2 : p1));
+        let month = (p2 > 12 && p1 <= 12) ? p1 : ((p1 > 12 && p2 <= 12) ? p2 : (preferMDY ? p1 : p2));
+        if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+          return `${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
       }
-      return '';
+      if (/[a-zA-Z]{3}\s+[a-zA-Z]{3}\s+\d{1,2}\s+\d{4}/.test(s)) {
+        const dt = new Date(s);
+        if (!isNaN(dt.getTime())) {
+          let y = dt.getFullYear(); if (y >= 2400) y -= 543;
+          return `${y}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+        }
+      }
+      const thMonths = [['มกราคม','มค'],['กุมภาพันธ์','กพ'],['มีนาคม','มีค'],['เมษายน','เมย'],['พฤษภาคม','พค'],['มิถุนายน','มิย'],['กรกฎาคม','กค'],['สิงหาคม','สค'],['กันยายน','กย'],['ตุลาคม','ตค'],['พฤศจิกายน','พย'],['ธันวาคม','ธค']];
+      const cleanTh = s.replace(/\./g, '');
+      for (let idx = 0; idx < thMonths.length; idx++) {
+        for (const token of thMonths[idx]) {
+          if (cleanTh.includes(token)) {
+            const nums = cleanTh.match(/\d+/g);
+            if (nums && nums.length >= 2) {
+              const d = String(parseInt(nums[0], 10)).padStart(2, '0');
+              let y = parseInt(nums[nums.length - 1], 10);
+              if (y < 100) y = (y + 2500) - 543; else if (y >= 2400) y -= 543;
+              return `${y}-${String(idx + 1).padStart(2, '0')}-${d}`;
+            }
+          }
+        }
+      }
+      return s;
     }
 
-    function mapGridToBookings(grid) {
-      if (!grid || !grid.length) return [];
-      const isSlot = v => /^(ครึ่งวันเช้า|ครึ่งวันบ่าย|ครึ่งวัน|เต็มวัน|รายชั่วโมง.*|1\s*วันครึ่ง|เช้า-เที่ยง|บ่าย-เย็น|เช้า-เย็น)$/i.test(v);
-      const isStatus = v => /^(รอตรวจสอบ|ยืนยันแล้ว|เสร็จสิ้น|ยกเลิก)$/i.test(v);
-      const isPkg = v => /(Wedding|Pre-Wedding|รับปริญญา|งานบวช|Portrait).*(บาท|\d)/i.test(v) || /\([\d,]+\s*บาท\)/.test(v);
-      const isUrl = v => /^https?:\/\/|^data:image\//i.test(v);
-      const isPhone = v => {
-        if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v)) return false;
-        const d = v.replace(/[\s\-()]/g, '');
-        return /^(0[689]\d{7,8}|[689]\d{8}|0[2-57]\d{7})$/.test(d);
-      };
-      const isPureDate = v => {
-        if (!v || isUrl(v) || isPhone(v)) return false;
-        if (/\s(\d{1,2}):(\d{2})/.test(v) && !/\s0?0:00(:00)?/.test(v)) return false;
-        return /^\d{4}-\d{2}-\d{2}$/.test(normalizeSheetDateStr(v));
-      };
-      const isLoc = v => /(^|\s)(อ\.|จ\.|ต\.|น่าน|แพร่|พะเยา|เชียงใหม่|เชียงราย|ลำปาง|ลำพูน|โรงแรม|รีสอร์ท|วัด|บ้าน|หอประชุม|ดอย|ปัว|ท่าวังผา|เวียงสา|สันติสุข|บ่อเกลือ|เชียงกลาง|ภูเพียง|การ์เด้น)/i.test(v) && !isPkg(v) && !isUrl(v);
-      const isHeaderRow = r => r.some(c => /^(id|customername|ชื่อลูกค้า|เบอร์โทร|แพ็กเกจ|สถานะ|timeslot|packagename)$/i.test(String(c || '').trim())) && !r.some(isPkg);
+    function normalizeBookingStatus(rawStatus) {
+      const s = String(rawStatus || '').trim();
+      if (!s) return 'รอตรวจสอบ';
+      if (/เสร็จสิ้น|ส่งงานแล้ว|ส่งงานเรียบร้อย|completed|done/i.test(s)) return 'เสร็จสิ้น';
+      if (/ยืนยัน|คอนเฟิร์ม|มัดจำแล้ว|ล็อคคิว|confirmed/i.test(s)) return 'ยืนยันแล้ว';
+      if (/ยกเลิก|cancel/i.test(s)) return 'ยกเลิก';
+      if (/รอตรวจ|รอมัดจำ|รอดำเนินการ|pending/i.test(s)) return 'รอตรวจสอบ';
+      return s;
+    }
 
-      const dataRows = isHeaderRow(grid[0]) ? grid.slice(1) : grid;
-      return dataRows.map((rawRow, idx) => {
-        const cells = rawRow.map(c => String(c ?? '').trim());
-        const pkg = cells.find(isPkg) || '';
-        const slot = cells.find(isSlot) || '-';
-        const status = cells.find(isStatus) || 'รอตรวจสอบ';
-        const rawDate = cells.find(isPureDate) || '';
-        const normDate = normalizeSheetDateStr(rawDate);
-        const tel = cells.find(isPhone) || '-';
-        const slipUrl = cells.find(v => isUrl(v) && !/drive\/folders|photos\.app\.goo\.gl|photos\.google\.com/i.test(v)) || '';
-        const driveLink = cells.find(v => /drive\.google\.com\/drive\/folders/i.test(v)) || '';
-        const photosLink = cells.find(v => /photos\.app\.goo\.gl|photos\.google\.com/i.test(v)) || '';
-        const loc = cells.find(isLoc) || '-';
-        const isName = v => v && v !== '-' && v !== '*' && v.length >= 2 && !isSlot(v) && !isStatus(v) && !isPkg(v) && !isUrl(v) && !isPhone(v) && !isPureDate(v) && v !== loc && !/^TG-\d+/i.test(v) && !/^฿?\s*[\d,]+(\.\d{1,2})?\s*(บาท|\.-)?$/.test(v) && !/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v) && !/^(id|customername|ชื่อลูกค้า|สถานที่|วันที่)$/i.test(v) && /[a-zA-Z\u0E00-\u0E7F]{2,}/.test(v);
-        const name = cells.find(isName) || '-';
-        if (name === '-' && !pkg && !normDate) return null;
-        const pm = pkg.match(/([\d,]+)\s*(?:บาท|\.-)/);
-        const price = pm ? parseInt(pm[1].replace(/,/g, ''), 10) : 0;
+    const BOOKING_HEADER_ALIASES = {
+      id: ['id', 'bookingid', 'queueid', 'docno', 'orderid', 'รหัส', 'รหัสคิว', 'รหัสการจอง', 'หมายเลขคิว', 'หมายเลข', 'เลขที่คิว', 'เลขคิว'],
+      customerName: ['customername', 'customer', 'clientname', 'client', 'fullname', 'name', 'ชื่อลูกค้า', 'ชื่อผู้จอง', 'ชื่อบ่าวสาว', 'ลูกค้า', 'ผู้จอง', 'ชื่อ'],
+      tel: ['tel', 'phone', 'phonenumber', 'mobile', 'contact', 'เบอร์โทร', 'เบอร์โทรศัพท์', 'โทรศัพท์', 'เบอร์ติดต่อ', 'เบอร์'],
+      date: ['shootdate', 'eventdate', 'workdate', 'bookingdate', 'date', 'วันที่ถ่ายภาพ', 'วันที่ถ่าย', 'วันถ่ายทำ', 'วันถ่าย', 'วันที่งาน', 'วันงาน', 'คิววันที่', 'วันที่จอง', 'วันที่'],
+      timeSlot: ['timeslot', 'slot', 'period', 'session', 'ช่วงเวลา', 'รอบเวลา', 'เวลาถ่าย', 'คิวเวลา', 'เวลา'],
+      location: ['location', 'loc', 'place', 'venue', 'province', 'สถานที่', 'สถานที่ถ่าย', 'สถานที่จัดงาน', 'โลเคชั่น', 'พิกัด', 'จังหวัด', 'อำเภอ'],
+      packageName: ['packagename', 'package', 'pkg', 'service', 'แพ็กเกจ', 'แพ็คเกจ', 'รายการ', 'บริการ', 'ประเภทงาน', 'โปรโมชั่น'],
+      price: ['price', 'totalprice', 'fullprice', 'ราคาเต็ม', 'ราคาแพ็กเกจ', 'ยอดรวม', 'ยอดเต็ม', 'ราคา'],
+      depositAmount: ['depositamount', 'deposit', 'downpayment', 'paid', 'มัดจำ', 'ยอดมัดจำ', 'เงินมัดจำ', 'มัดจำที่โอนแล้ว'],
+      notes: ['notes', 'note', 'brief', 'remark', 'detail', 'details', 'บรีฟ', 'บรีฟงาน', 'บรีฟเพิ่มเติม', 'หมายเหตุ', 'โน้ต', 'รายละเอียด'],
+      status: ['status', 'bookingstatus', 'state', 'สถานะ', 'สถานะคิว', 'สถานะงาน'],
+      slipUrl: ['slipurl', 'slip', 'sliplink', 'slipimage', 'paymentproof', 'สลิป', 'สลิปโอนเงิน', 'รูปสลิป', 'ลิงก์สลิป', 'หลักฐานการโอน', 'หลักฐาน'],
+      driveLink: ['drivelink', 'driveurl', 'googledrive', 'folderlink', 'ลิงก์drive', 'ลิงก์ไดรฟ์', 'ส่งงานdrive', 'โฟลเดอร์drive'],
+      photosLink: ['photoslink', 'photosurl', 'googlephotos', 'ลิงก์photos', 'ลิงก์รูปส่งงาน', 'ส่งงานphotos']
+    };
+
+    function isBookingDataCell(v) {
+      const s = String(v || '').trim();
+      if (!s || s === '-') return false;
+      return (
+        /^(รอตรวจสอบ|ยืนยันแล้ว|เสร็จสิ้น|ยกเลิก)$/.test(s) ||
+        /^(ครึ่งวันเช้า|ครึ่งวันบ่าย|เต็มวัน|รายชั่วโมง.*|1\s*วันครึ่ง)$/.test(s) ||
+        /^TG-\d+/i.test(s) ||
+        /^https?:\/\//i.test(s) ||
+        /(Wedding|Pre-Wedding|รับปริญญา|งานบวช).*\d/i.test(s) ||
+        /^\d{4}[-/]\d{1,2}[-/]\d{1,2}/.test(s)
+      );
+    }
+
+    function scoreHeaderRow(row, aliasMap) {
+      if (!row || row.length === 0) return 0;
+      if (row.filter(isBookingDataCell).length >= 2) return 0;
+      const normedCells = row.map(normKey).filter(Boolean);
+      let score = 0;
+      for (const field of Object.keys(aliasMap)) {
+        const aliases = aliasMap[field];
+        if (normedCells.some(c => aliases.some(a => c === a || (a.length >= 5 && c.includes(a))))) score++;
+      }
+      return score;
+    }
+
+    function detectBookingColumnMap(headers, dataRows) {
+      const maxCols = Math.max(headers ? headers.length : 0, ...dataRows.map(r => (r ? r.length : 0)), 0);
+      const hNorms = Array.from({ length: maxCols }, (_, c) => normKey(headers?.[c] || ''));
+      const totalRows = Math.max(dataRows.length, 1);
+
+      const isSlotCell = v => /^(ครึ่งวันเช้า|ครึ่งวันบ่าย|ครึ่งวัน|เต็มวัน|รายชั่วโมง.*|1\s*วันครึ่ง|เช้า-เที่ยง|บ่าย-เย็น|เช้า-เย็น|บ่าย-ดึก|เช้า|บ่าย)$/i.test(v);
+      const isStatusCell = v => /^(รอตรวจสอบ|ยืนยันแล้ว|เสร็จสิ้น|ยกเลิก|ยืนยันคิว|มัดจำแล้ว|ส่งงานแล้ว|pending|confirmed|completed|cancelled)$/i.test(v);
+      const isPkgCell = v => /(Wedding|Pre-Wedding|รับปริญญา|งานบวช|Portrait|นอกรอบ|\([\d,]+\s*บาท\)|[\d,]+\s*บาท|[\d,]+\.-)/i.test(v) && !/^https?:\/\//i.test(v);
+      const isIdCell = v => /^(TG|BK|QT|INV|Q)[-_]?\d{2,}/i.test(v);
+      const isUrlCell = v => /^https?:\/\/|^data:image\/|drive\.google\.com|photos\.app\.goo\.gl|photos\.google\.com/i.test(v);
+      const isPhoneCell = v => {
+        if (/[-/.]/.test(v) && /^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v)) return false;
+        const digits = v.replace(/[\s\-()]/g, '');
+        return /^(0[689]\d{7,8}|[689]\d{8}|0[2-57]\d{7})$/.test(digits);
+      };
+      const isPureDateCell = v => {
+        if (!v || isUrlCell(v) || isPhoneCell(v)) return false;
+        const hasNonZeroTime = /\s(\d{1,2}):(\d{2})/.test(v) && !/\s0?0:00(:00)?/.test(v);
+        if (hasNonZeroTime) return false;
+        return /^\d{4}-\d{2}-\d{2}$/.test(normalizeSheetDate(v, true));
+      };
+      const isLocCell = v => /(^|\s)(อ\.|จ\.|ต\.|น่าน|แพร่|พะเยา|เชียงใหม่|เชียงราย|ลำปาง|ลำพูน|อุตรดิตถ์|พิษณุโลก|กรุงเทพ|โรงแรม|รีสอร์ท|วัด|บ้าน|หอประชุม|ดอย|ปัว|ท่าวังผา|เวียงสา|สันติสุข|บ่อเกลือ|เชียงกลาง|ภูเพียง|การ์เด้น)/i.test(v) && !isPkgCell(v) && !isUrlCell(v);
+      const isValidPersonNameCell = v => {
+        if (!v || v === '-' || v === '*' || v.length < 2) return false;
+        if (isSlotCell(v) || isStatusCell(v) || isPkgCell(v) || isIdCell(v) || isUrlCell(v) || isPhoneCell(v) || isPureDateCell(v) || isLocCell(v)) return false;
+        if (/^฿?\s*[\d,]+(\.\d{1,2})?\s*(บาท|\.-)?$/.test(v)) return false;
+        if (/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v)) return false;
+        return /[a-zA-Z\u0E00-\u0E7F]{2,}/.test(v);
+      };
+
+      const isTimestampCol = new Set();
+      const colStats = Array.from({ length: maxCols }, (_, c) => {
+        const rawVals = dataRows.map(r => String(r?.[c] ?? '').trim());
+        const nonEmpty = rawVals.filter(v => v !== '' && v !== '-' && v !== '*');
+        const count = nonEmpty.length, denom = Math.max(count, 1), h = hNorms[c];
+        const tsMatches = nonEmpty.filter(v => {
+          const m = v.match(/\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}[T\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+          return m && !(Number(m[1]) === 0 && Number(m[2]) === 0 && Number(m[3] || 0) === 0);
+        }).length;
+        if (/(timestamp|createdat|created|updatedat|ประทับเวลา|เวลาทำรายการ|วันที่ทำรายการ|เวลาบันทึก|วันที่บันทึก)/.test(h) || (count > 0 && tsMatches / denom >= 0.4)) {
+          isTimestampCol.add(c);
+        }
+        const statusCount = nonEmpty.filter(isStatusCell).length;
+        const slotCount = nonEmpty.filter(isSlotCell).length;
+        const pkgCount = nonEmpty.filter(isPkgCell).length;
+        const idCount = nonEmpty.filter(isIdCell).length;
+        const pureDateCount = nonEmpty.filter(isPureDateCell).length;
+        const phoneCount = nonEmpty.filter(isPhoneCell).length;
+        const urlCount = nonEmpty.filter(isUrlCell).length;
+        const photosUrlCount = nonEmpty.filter(v => /photos\.app\.goo\.gl|photos\.google\.com/i.test(v)).length;
+        const driveFolderCount = nonEmpty.filter(v => /drive\.google\.com\/drive\/folders/i.test(v)).length;
+        const slipFileCount = nonEmpty.filter(v => isUrlCell(v) && !/photos\.app\.goo\.gl|photos\.google\.com|drive\.google\.com\/drive\/folders/i.test(v)).length;
+        const locCount = nonEmpty.filter(isLocCell).length;
+        const validNameCount = nonEmpty.filter(isValidPersonNameCell).length;
+        const moneyNums = nonEmpty.filter(v => !isPhoneCell(v) && /^฿?\s*[\d,]+(\.\d{1,2})?\s*(บาท|\.-)?$/.test(v)).map(v => parseMoneyValue(v)).filter(n => n >= 0 && n <= 200000);
+        const nonZeroMoney = moneyNums.filter(n => n > 0);
+        const avgMoney = nonZeroMoney.length > 0 ? (nonZeroMoney.reduce((a, b) => a + b, 0) / nonZeroMoney.length) : 0;
+
         return {
-          id: cells.find(c => /^TG-\d+/i.test(c)) || `TG-${1001 + idx}`,
-          customerName: name,
-          tel: formatPhone(tel),
-          date: normDate,
-          timeSlot: slot,
-          location: loc,
-          packageName: pkg || '-',
-          price,
-          depositAmount: (status === 'ยืนยันแล้ว' || status === 'เสร็จสิ้น') ? 1500 : 0,
-          notes: '',
-          status,
-          slipUrl,
-          driveLink,
-          photosLink
+          c, h, count, denom,
+          statusRatio: statusCount / denom, statusCount,
+          slotRatio: slotCount / denom, slotCount,
+          pkgRatio: pkgCount / denom, pkgCount,
+          idRatio: idCount / denom, idCount,
+          pureDateRatio: pureDateCount / denom, pureDateCount,
+          phoneRatio: phoneCount / denom, phoneCount,
+          urlRatio: urlCount / denom, urlCount,
+          photosUrlCount, driveFolderCount, slipFileCount,
+          locRatio: locCount / denom, locCount,
+          validNameCount, validNameRatio: validNameCount / totalRows,
+          moneyRatio: moneyNums.length / denom, moneyCount: moneyNums.length, avgMoney
+        };
+      });
+
+      function headerBonus(h, field) {
+        if (!h) return 0;
+        const aliases = BOOKING_HEADER_ALIASES[field] || [];
+        if (aliases.includes(h)) return 40;
+        for (const a of aliases) { if (a.length >= 4 && h.includes(a)) return 25; }
+        return 0;
+      }
+
+      const colMap = {}, assignedCols = new Set();
+      const assignBest = (field, scorer, minScore = 25) => {
+        let bestCol = -1, bestScore = minScore;
+        colStats.forEach(st => {
+          if (assignedCols.has(st.c) || isTimestampCol.has(st.c)) return;
+          const sc = scorer(st);
+          if (sc > bestScore) { bestScore = sc; bestCol = st.c; }
+        });
+        if (bestCol !== -1) { colMap[field] = bestCol; assignedCols.add(bestCol); }
+      };
+
+      assignBest('status', st => st.statusCount > 0 ? st.statusRatio * 200 + st.statusCount * 10 + headerBonus(st.h, 'status') : 0);
+      assignBest('timeSlot', st => st.slotCount > 0 ? st.slotRatio * 200 + st.slotCount * 10 + headerBonus(st.h, 'timeSlot') : 0);
+      assignBest('packageName', st => st.pkgCount > 0 ? st.pkgRatio * 200 + st.pkgCount * 10 + headerBonus(st.h, 'packageName') : 0);
+      assignBest('date', st => st.pureDateCount > 0 ? st.pureDateRatio * 200 + st.pureDateCount * 10 + headerBonus(st.h, 'date') : 0);
+      assignBest('id', st => st.idCount > 0 ? st.idRatio * 200 + st.idCount * 10 + headerBonus(st.h, 'id') : headerBonus(st.h, 'id'));
+      assignBest('photosLink', st => st.photosUrlCount > 0 ? st.photosUrlCount * 50 + 100 : (st.urlCount === 0 ? headerBonus(st.h, 'photosLink') : 0));
+      assignBest('driveLink', st => st.driveFolderCount > 0 ? st.driveFolderCount * 50 + 100 : (st.urlCount === 0 ? headerBonus(st.h, 'driveLink') : 0));
+      assignBest('slipUrl', st => st.slipFileCount > 0 ? st.slipFileCount * 40 + st.urlRatio * 150 + headerBonus(st.h, 'slipUrl') : 0);
+      assignBest('tel', st => st.phoneCount > 0 && st.validNameCount === 0 ? st.phoneRatio * 180 + st.phoneCount * 20 + headerBonus(st.h, 'tel') : 0);
+      assignBest('location', st => st.urlCount === 0 && st.phoneCount === 0 && st.locCount > 0 ? st.locRatio * 180 + st.locCount * 25 + headerBonus(st.h, 'location') : 0);
+      assignBest('customerName', st => st.urlCount === 0 && st.phoneCount === 0 && st.validNameCount > 0 ? st.validNameRatio * 220 + st.validNameCount * 20 - st.locCount * 30 + headerBonus(st.h, 'customerName') : 0);
+      assignBest('price', st => st.urlCount === 0 && st.phoneCount === 0 && st.validNameCount === 0 && st.moneyCount > 0 && st.avgMoney >= 2500 ? st.moneyRatio * 150 + headerBonus(st.h, 'price') : 0);
+      assignBest('depositAmount', st => st.urlCount === 0 && st.phoneCount === 0 && st.validNameCount === 0 && st.moneyCount > 0 && st.avgMoney > 0 && st.avgMoney <= 2500 ? st.moneyRatio * 150 + headerBonus(st.h, 'depositAmount') : 0);
+      assignBest('notes', st => st.urlCount === 0 ? headerBonus(st.h, 'notes') + (st.count > 0 ? 30 : 0) : 0, 15);
+      return colMap;
+    }
+
+    function unmergeGvizHeaderIfNeeded(grid) {
+      if (!grid || grid.length === 0) return grid;
+      const row0 = grid[0], allAliases = Object.values(BOOKING_HEADER_ALIASES).flat();
+      let splitCount = 0;
+      const headerRow = [], firstDataRow = [];
+      row0.forEach(cell => {
+        const s = String(cell || '').trim(), parts = s.split(/\s+/);
+        if (parts.length >= 2) {
+          const firstKey = normKey(parts[0]), rest = parts.slice(1).join(' ').trim();
+          if (allAliases.includes(firstKey) && (isBookingDataCell(rest) || /^0[689]\d{7,8}$/.test(rest.replace(/\D/g, '')) || rest.length >= 2)) {
+            headerRow.push(parts[0]); firstDataRow.push(rest); splitCount++; return;
+          }
+        }
+        headerRow.push(s); firstDataRow.push('');
+      });
+      return splitCount >= 3 ? [headerRow, firstDataRow, ...grid.slice(1)] : grid;
+    }
+
+    function mapGridToBookings(rawGrid) {
+      const grid = unmergeGvizHeaderIfNeeded(rawGrid);
+      if (!grid || grid.length === 0) return [];
+      const hasHeader = scoreHeaderRow(grid[0], BOOKING_HEADER_ALIASES) >= 2 || (!isBookingDataCell(grid[0]?.[0]) && !grid[0].some(isBookingDataCell));
+      const headers = hasHeader ? grid[0] : [];
+      const dataRows = (hasHeader ? grid.slice(1) : grid).filter(r => r && r.some(c => String(c || '').trim() !== ''));
+      if (dataRows.length === 0) return [];
+
+      const colMap = detectBookingColumnMap(headers, dataRows);
+      const getField = (row, field) => {
+        const idx = colMap[field];
+        return (idx !== undefined && row[idx] !== undefined) ? String(row[idx]).trim() : '';
+      };
+
+      const dateColValues = colMap.date !== undefined ? dataRows.map(r => r[colMap.date]) : [];
+      const preferMDY = detectColumnPreferMDY(dateColValues);
+
+      return dataRows.map((row, index) => {
+        let id = getField(row, 'id');
+        let customerName = getField(row, 'customerName');
+        let tel = getField(row, 'tel');
+        let rawDate = getField(row, 'date');
+        let timeSlot = getField(row, 'timeSlot');
+        let location = getField(row, 'location');
+        let packageName = getField(row, 'packageName');
+        let rawPrice = getField(row, 'price');
+        let rawDeposit = getField(row, 'depositAmount');
+        let notes = getField(row, 'notes');
+        let rawStatus = getField(row, 'status');
+        let slipUrl = getField(row, 'slipUrl');
+        let driveLink = getField(row, 'driveLink');
+        let photosLink = getField(row, 'photosLink');
+
+        const cells = row.map(c => String(c ?? '').trim());
+        const isSlotVal = v => /^(ครึ่งวันเช้า|ครึ่งวันบ่าย|ครึ่งวัน|เต็มวัน|รายชั่วโมง.*|1\s*วันครึ่ง|เช้า-เที่ยง|บ่าย-เย็น|เช้า-เย็น)$/i.test(v);
+        const isStatusVal = v => /^(รอตรวจสอบ|ยืนยันแล้ว|เสร็จสิ้น|ยกเลิก)$/i.test(v);
+        const isPkgVal = v => /(Wedding|Pre-Wedding|รับปริญญา|งานบวช|Portrait).*(บาท|\d)/i.test(v) || /\([\d,]+\s*บาท\)/.test(v);
+        const isUrlVal = v => /^https?:\/\/|^data:image\//i.test(v);
+        const isPhoneVal = v => {
+          if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v)) return false;
+          const d = v.replace(/[\s\-()]/g, '');
+          return /^(0[689]\d{7,8}|[689]\d{8}|0[2-57]\d{7})$/.test(d);
+        };
+        const isPureDateVal = v => {
+          if (!v || isUrlVal(v) || isPhoneVal(v)) return false;
+          if (/\s(\d{1,2}):(\d{2})/.test(v) && !/\s0?0:00(:00)?/.test(v)) return false;
+          return /^\d{4}-\d{2}-\d{2}$/.test(normalizeSheetDate(v, preferMDY));
+        };
+        const isLocVal = v => /(^|\s)(อ\.|จ\.|ต\.|น่าน|แพร่|พะเยา|เชียงใหม่|เชียงราย|ลำปาง|ลำพูน|อุตรดิตถ์|พิษณุโลก|กรุงเทพ|โรงแรม|รีสอร์ท|วัด|บ้าน|หอประชุม|ดอย|ปัว|ท่าวังผา|เวียงสา|สันติสุข|บ่อเกลือ|เชียงกลาง|ภูเพียง|การ์เด้น)/i.test(v) && !isPkgVal(v) && !isUrlVal(v);
+        const isPersonNameVal = v => v && v !== '-' && v !== '*' && v.length >= 2 && !isSlotVal(v) && !isStatusVal(v) && !isPkgVal(v) && !isUrlVal(v) && !isPhoneVal(v) && !isPureDateVal(v) && !isLocVal(v) && !/^TG-\d+/i.test(v) && !/^฿?\s*[\d,]+(\.\d{1,2})?\s*(บาท|\.-)?$/.test(v) && !/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(v) && /[a-zA-Z\u0E00-\u0E7F]{2,}/.test(v);
+
+        if (!isSlotVal(timeSlot)) { const found = cells.find(isSlotVal); if (found) timeSlot = found; }
+        if (!isStatusVal(normalizeBookingStatus(rawStatus))) { const found = cells.find(isStatusVal); if (found) rawStatus = found; }
+        if (!isPkgVal(packageName)) { const found = cells.find(isPkgVal); if (found) packageName = found; }
+        if (!isPureDateVal(rawDate)) { const found = cells.find(isPureDateVal); if (found) rawDate = found; }
+        if (!slipUrl || !isUrlVal(slipUrl)) {
+          const foundSlip = cells.find(v => isUrlVal(v) && !/drive\/folders|photos\.app\.goo\.gl|photos\.google\.com/i.test(v));
+          if (foundSlip) slipUrl = foundSlip;
+        }
+        if (!tel || !isPhoneVal(tel)) { const foundTel = cells.find(isPhoneVal); if (foundTel) tel = foundTel; }
+        if (!location || location === '-' || location === '*' || isUrlVal(location) || isPhoneVal(location) || isPkgVal(location) || isSlotVal(location) || isStatusVal(location) || isPureDateVal(location)) {
+          const foundLoc = cells.find(isLocVal);
+          location = foundLoc || '-';
+        }
+        if (!isPersonNameVal(customerName)) {
+          const foundName = cells.find(isPersonNameVal);
+          if (foundName) customerName = foundName;
+        }
+        if (!id || id === '-') {
+          const foundId = cells.find(c => /^TG-\d+/i.test(c));
+          id = foundId || `TG-${1001 + index}`;
+        }
+
+        const normalizedDate = normalizeSheetDate(rawDate, preferMDY);
+        const status = normalizeBookingStatus(rawStatus);
+        let price = parseMoneyValue(rawPrice);
+        if (!price && packageName) {
+          const pm = packageName.match(/([\d,]+)\s*(?:บาท|\.-)/);
+          if (pm) price = parseMoneyValue(pm[1]);
+        }
+        let depositAmount = parseMoneyValue(rawDeposit);
+        if (!depositAmount && (status === 'ยืนยันแล้ว' || status === 'เสร็จสิ้น') && price > 0 && colMap.depositAmount === undefined) {
+          depositAmount = 1500;
+        }
+        if (!customerName && !packageName && !normalizedDate && !tel) return null;
+
+        const cleanLoc = (!location || location === '-' || location === '*' || isUrlVal(location) || isPhoneVal(location) || isPkgVal(location) || isSlotVal(location) || isStatusVal(location)) ? '-' : location;
+        const cleanSlot = (!timeSlot || timeSlot === '-') ? '-' : timeSlot;
+        const cleanSlip = (!slipUrl || slipUrl === '-') ? '' : slipUrl;
+        const cleanName = (!customerName || customerName === '*' || isPhoneVal(customerName) || isUrlVal(customerName)) ? '-' : customerName;
+
+        return {
+          id, customerName: cleanName, tel: formatPhone(tel || '-'),
+          date: normalizedDate, timeSlot: cleanSlot, location: cleanLoc,
+          packageName: packageName || '-', price, depositAmount,
+          notes: notes || '', status, slipUrl: cleanSlip,
+          driveLink: (!driveLink || driveLink === '-') ? '' : driveLink,
+          photosLink: (!photosLink || photosLink === '-') ? '' : photosLink
         };
       }).filter(Boolean);
     }
@@ -2155,277 +2451,81 @@
     };
 
     // =========================================================
-    // 🔥 FIREBASE REALTIME DATABASE ENGINE (Real-Time Cross-Device Sync)
-    // รองรับทั้งการวาง Database URL หรือโค้ด firebaseConfig และซิงค์อัตโนมัติผ่าน Google Sheets Settings
+    // ☁️ GOOGLE DRIVE & GOOGLE SHEETS DIRECT LIVE BRIDGE
+    // ดึงข้อมูลโดยตรงจาก Google Drive & Google Sheets (ผ่าน Apps Script /exec + GViz)
+    // โดยไม่ต้องสำรองฐานข้อมูลแยกบน Firebase
     // =========================================================
-    const DEFAULT_FIREBASE_URL = '';
-    let fbEventSource = null;
-    let fbPollTimer = null;
-    let lastFbPushTimestamp = 0;
-    let lastAppliedFbTimestamp = 0;
-
-    function normalizeFirebaseDbUrl(rawInput) {
-      if (!rawInput) return '';
-      const s = String(rawInput).trim();
-      const dbUrlMatch = s.match(/https?:\/\/[a-zA-Z0-9-]+\.(?:firebaseio\.com|firebasedatabase\.app)/i);
-      if (dbUrlMatch) return dbUrlMatch[0].replace(/\/+$/, '');
-      const projMatch = s.match(/projectId\s*:\s*["']([a-zA-Z0-9-]+)["']/i);
-      if (projMatch && projMatch[1]) return `about:invalid#zPythonSafez`;
-      return '';
-    }
-
-    function getActiveFirebaseUrl() {
-      const fromInput = normalizeFirebaseDbUrl(document.getElementById('set-firebase-url')?.value || '');
-      if (fromInput) return fromInput;
-      const fromStorage = normalizeFirebaseDbUrl(SafeStorage.getItem('tg_firebase_url') || '');
-      if (fromStorage) return fromStorage;
-      return normalizeFirebaseDbUrl(DEFAULT_FIREBASE_URL);
-    }
-
-    function updateFirebaseStatusBanner(ok, title, detail) {
-      const box = document.getElementById('firebase-sync-status');
-      if (!box) return;
-      if (ok) {
-        box.style.background = 'rgba(16, 185, 129, 0.1)';
-        box.style.borderColor = 'rgba(16, 185, 129, 0.35)';
-        box.innerHTML = `<span class="font-bold text-emerald-500">🟢 ${title}</span><span class="block mt-0.5 text-[11px]" style="color: var(--text-muted);">${detail}</span>`;
-      } else {
-        box.style.background = 'rgba(249, 115, 22, 0.08)';
-        box.style.borderColor = 'rgba(249, 115, 22, 0.3)';
-        box.innerHTML = `<span class="font-bold text-orange-500">⚡ ${title}</span><span class="block mt-0.5 text-[11px]" style="color: var(--text-muted);">${detail}</span>`;
-      }
-    }
-
-    function buildFullFirebasePayload() {
-      const ts = Date.now();
-      lastFbPushTimestamp = ts;
-      return {
-        updatedAt: ts,
-        bookings: allBookings || [],
-        portfolio: portfolioData || [],
-        albumCovers: getSavedAlbumCoversMap(),
-        reviews: reviewsList || [],
-        expenses: getExpensesList(),
-        settings: {
-          promptPayNum: appSettings.promptPayNum || '062-607-9030',
-          accountName: appSettings.accountName || 'ปรวรรตน์ แสนใหญ่',
-          qrImageUrl: appSettings.qrImageUrl || '',
-          contractTerms: getCustomContractTerms(),
-          promoCodes: getStoredPromoRulesString(),
-          adminUser: SafeStorage.getItem('tg_admin_custom_user') || 'admin',
-          adminPass: SafeStorage.getItem('tg_admin_custom_pass') || '1234'
-        }
-      };
-    }
-
-    function applyRemoteFirebaseState(data) {
-      if (!data || typeof data !== 'object') return false;
-      if (data.updatedAt && data.updatedAt <= lastFbPushTimestamp) return false;
-      if (data.updatedAt && data.updatedAt === lastAppliedFbTimestamp) return false;
-      if (data.updatedAt) lastAppliedFbTimestamp = data.updatedAt;
-
-      let changed = false;
-      if (data.albumCovers && typeof data.albumCovers === 'object') {
-        const mergedCovers = { ...getSavedAlbumCoversMap(), ...data.albumCovers };
-        SafeStorage.setItem('tg_custom_album_covers', JSON.stringify(mergedCovers));
-        changed = true;
-      }
-      if (Array.isArray(data.bookings) && data.bookings.length > 0) {
-        allBookings = data.bookings;
-        SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings));
-        syncCalendarToActiveMonth();
-        renderAdminTable();
-        renderDeliverTable();
-        renderCalendar();
-        updateDashboardStats();
-        changed = true;
-      }
-      if (Array.isArray(data.portfolio) && data.portfolio.length > 0) {
-        portfolioData = data.portfolio;
-        SafeStorage.setItem('tg_standalone_portfolio', JSON.stringify(portfolioData));
-        processAlbums();
-        renderHomeAlbums();
-        renderManagePortfolio();
-        changed = true;
-      } else if (data.albumCovers) {
-        processAlbums();
-        renderHomeAlbums();
-        renderManagePortfolio();
-      }
-      if (Array.isArray(data.reviews)) {
-        reviewsList = data.reviews;
-        SafeStorage.setItem('tg_standalone_reviews', JSON.stringify(reviewsList));
-        renderReviews();
-        changed = true;
-      }
-      if (Array.isArray(data.expenses)) {
-        saveExpensesList(data.expenses);
-        updateDashboardStats();
-        changed = true;
-      }
-      if (data.settings && typeof data.settings === 'object') {
-        if (data.settings.promptPayNum) appSettings.promptPayNum = data.settings.promptPayNum;
-        if (data.settings.accountName) appSettings.accountName = data.settings.accountName;
-        if (data.settings.contractTerms) SafeStorage.setItem('tg_custom_contract_terms', data.settings.contractTerms);
-        if (data.settings.promoCodes) SafeStorage.setItem('tg_promo_codes', data.settings.promoCodes);
-        if (data.settings.adminUser) SafeStorage.setItem('tg_admin_custom_user', data.settings.adminUser);
-        if (data.settings.adminPass) SafeStorage.setItem('tg_admin_custom_pass', data.settings.adminPass);
-        refreshContractTermsDisplays();
-      }
-      return changed;
-    }
-
-    window.pushAllToFirebase = async function(silent = true) {
-      const fbUrl = getActiveFirebaseUrl();
-      if (!fbUrl) {
-        if (!silent) uiAlert('กรุณาวางลิงก์ Firebase Database URL ในช่องตั้งค่าก่อนครับ');
-        return false;
-      }
-      try {
-        const payload = buildFullFirebasePayload();
-        const res = await fetch(`${fbUrl}/toygallery_state.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status + ' (กรุณาตั้งค่า Rules ของ Firebase Realtime Database เป็น ".read": true, ".write": true)');
-        updateFirebaseStatusBanner(true, `ซิงค์ขึ้น Firebase Realtime สำเร็จ (${formatThaiTime(new Date())})`, `อัปเดตคิวงาน ${allBookings.length} คิว • ผลงาน ${portfolioData.length} รูป • ปกอัลบั้มซิงค์ทุกเครื่องแล้ว`);
-        if (!silent) uiAlert('อัปโหลดข้อมูลทั้งหมด (คิวงาน, ผลงาน, ปกอัลบั้ม และตั้งค่า) ขึ้น Firebase Realtime สำเร็จแล้ว!\nตอนนี้ทุกเครื่องที่เปิดเว็บจะเห็นข้อมูลชุดเดียวกันแบบเรียลไทม์ทันทีครับ');
-        return true;
-      } catch (err) {
-        updateFirebaseStatusBanner(false, 'ไม่สามารถบันทึกขึ้น Firebase ได้', err.message);
-        if (!silent) uiAlert('ไม่สามารถอัปโหลดขึ้น Firebase ได้:\n' + err.message);
-        return false;
-      }
-    };
-
-    window.pullFromFirebase = async function(silent = true) {
-      const fbUrl = getActiveFirebaseUrl();
-      if (!fbUrl) {
-        if (!silent) uiAlert('กรุณาวางลิงก์ Firebase Database URL ในช่องตั้งค่าก่อนครับ');
-        return false;
-      }
-      try {
-        const res = await fetch(`${fbUrl}/toygallery_state.json`);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        if (!data) {
-          if (allBookings.length > 0 || portfolioData.length > 0) {
-            await window.pushAllToFirebase(true);
-          }
-          return false;
-        }
-        applyRemoteFirebaseState(data);
-        updateFirebaseStatusBanner(true, `เชื่อมต่อ Firebase Realtime สำเร็จ (${formatThaiTime(new Date())})`, `ซิงค์ข้อมูลสดแบบเรียลไทม์ทุกเครื่องอัตโนมัติ`);
-        if (!silent) uiAlert('ดึงข้อมูลสดจาก Firebase Realtime สำเร็จแล้ว!');
-        return true;
-      } catch (err) {
-        updateFirebaseStatusBanner(false, 'เชื่อมต่อ Firebase ไม่สำเร็จ', err.message);
-        if (!silent) uiAlert('ดึงข้อมูลจาก Firebase ไม่สำเร็จ:\n' + err.message);
-        return false;
-      }
-    };
-
-    function startFirebaseRealtimeListener() {
-      const fbUrl = getActiveFirebaseUrl();
-      if (!fbUrl) return;
-      const inputEl = document.getElementById('set-firebase-url');
-      if (inputEl && !inputEl.value) inputEl.value = fbUrl;
-
-      window.pullFromFirebase(true);
-
-      if (fbEventSource) { try { fbEventSource.close(); } catch (e) {} fbEventSource = null; }
-      try {
-        fbEventSource = new EventSource(`${fbUrl}/toygallery_state.json`);
-        fbEventSource.addEventListener('put', e => {
-          try {
-            const packet = JSON.parse(e.data);
-            if (packet && packet.path === '/' && packet.data) {
-              applyRemoteFirebaseState(packet.data);
-              updateFirebaseStatusBanner(true, `ซิงค์เรียลไทม์ล่าสุด (${formatThaiTime(new Date())})`, 'รับข้อมูลอัปเดตสดจาก Firebase Realtime Database แล้ว');
-            } else {
-              window.pullFromFirebase(true);
-            }
-          } catch (err) {}
-        });
-      } catch (e) {}
-
-      if (fbPollTimer) clearInterval(fbPollTimer);
-      fbPollTimer = setInterval(() => {
-        if (!document.hidden && getActiveFirebaseUrl()) window.pullFromFirebase(true);
-      }, 6000);
-    }
-
-    window.saveAndConnectFirebase = async function() {
-      const raw = (document.getElementById('set-firebase-url')?.value || '').trim();
-      const cleanUrl = normalizeFirebaseDbUrl(raw);
-      if (!cleanUrl) {
-        uiAlert('รูปแบบลิงก์ Firebase ไม่ถูกต้อง\nกรุณาวางลิงก์ที่มี .firebaseio.com หรือ .firebasedatabase.app (หรือวางโค้ด firebaseConfig ทั้งก้อน)');
-        return;
-      }
-      document.getElementById('set-firebase-url').value = cleanUrl;
-      SafeStorage.setItem('tg_firebase_url', cleanUrl);
-      // บันทึกลิงก์ Firebase ลงแท็บ Settings บน Google Sheets เพื่อให้เครื่องอื่นดึงลิงก์ Firebase ไปเชื่อมต่อเองอัตโนมัติ
-      pushToGasWebhook('saveSettings', { firebaseUrl: cleanUrl, albumCovers: JSON.stringify(getSavedAlbumCoversMap()) });
-      const ok = await window.pushAllToFirebase(false);
-      if (ok) startFirebaseRealtimeListener();
-    };
-
-    window.showFirebaseGuideModal = function() {
-      const modal = document.getElementById('custom-dialog-modal');
-      document.getElementById('dialog-msg').innerHTML = `
-        <div class="text-left space-y-2 text-xs leading-relaxed">
-          <h4 class="font-bold text-sm text-orange-500">🔥 วิธีสร้างลิงก์ Firebase Realtime Database ฟรี (1 นาที)</h4>
-          <ol class="list-decimal list-inside space-y-1.5">
-            <li>เข้าเว็บ <b>console.firebase.google.com</b> แล้วกด <b>Create a project</b></li>
-            <li>ไปที่เมนูซ้าย <b>Build &gt; Realtime Database</b> แล้วกด <b>Create Database</b></li>
-            <li>เลือก <b>Start in test mode</b> (หรือตั้งค่า Rules ให้ <code>".read": true, ".write": true</code>)</li>
-            <li>คัดลอกลิงก์ URL ด้านบนของตาราง (เช่น <code>about:invalid#zPythonSafez</code>) มาวางในช่องตั้งค่าแล้วกด <b>บันทึก &amp; เชื่อมต่อ</b> ได้เลย!</li>
-          </ol>
-          <p class="text-[11px] opacity-75 pt-1">* เมื่อกดเชื่อมต่อในเครื่องหลักแล้ว ระบบจะจำลิงก์ไว้ใน Google Sheets ให้เครื่องอื่นๆ เชื่อมต่อตามโดยอัตโนมัติครับ</p>
-        </div>
-      `;
-      document.getElementById('dialog-actions').innerHTML = `<button id="dlg-ok-btn" class="w-full py-2.5 rounded-xl btn-accent font-bold text-xs">เข้าใจแล้ว</button>`;
-      modal.classList.add('show');
-      document.getElementById('dlg-ok-btn').onclick = () => modal.classList.remove('show');
-    };
-
-    // เชื่อมทุกการเปลี่ยนแปลง (เปลี่ยนปกอัลบั้ม, อัปโหลดรูป, จองคิว, แก้ไขคิว, ตั้งค่า) ให้ซิงค์ขึ้น Firebase อัตโนมัติทันที
     const origPushToGas = pushToGasWebhook;
     pushToGasWebhook = function(action, payload) {
       origPushToGas(action, payload);
-      if (getActiveFirebaseUrl()) {
-        setTimeout(() => window.pushAllToFirebase(true), 50);
-      }
+      try {
+        const rawSettings = SafeStorage.getItem('tg_standalone_settings');
+        const parsed = rawSettings ? JSON.parse(rawSettings) : {};
+        const url = String(parsed.gasWebAppUrl || (typeof appSettings !== 'undefined' && appSettings.gasWebAppUrl) || DEFAULT_GAS_WEBAPP_URL).trim();
+        if (!url || !/^https?:\/\//i.test(url)) return;
+        // ส่งผ่าน GET query คู่ขนานสำหรับคำสั่งสำคัญ (เช่น เปลี่ยนปกอัลบั้ม / ตั้งค่า) เพื่อไม่ให้ข้อมูลหายเมื่อติด 302 Redirect ของ Apps Script
+        if (action === 'setPortfolioCover' || action === 'saveSettings' || action === 'deleteBooking') {
+          const q = new URLSearchParams({
+            action,
+            payload: JSON.stringify(payload || {}),
+            id: String(payload?.id || ''),
+            title: String(payload?.title || ''),
+            url: String(payload?.url || ''),
+            driveId: String(payload?.driveId || ''),
+            t: String(Date.now())
+          });
+          fetch(`${url}?${q.toString()}`, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+        }
+      } catch (e) {}
     };
 
     const origSyncSheet = syncSheetData;
     syncSheetData = async function(type = 'all', silent = false) {
-      await origSyncSheet(type, silent);
-      const sheetUrl = document.getElementById('set-sheet-url')?.value.trim() || appSettings.sheetUrl || DEFAULT_SHEET_URL;
-      const m = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if (m && !getActiveFirebaseUrl()) {
-        for (const sName of ['Settings', 'ตั้งค่า']) {
-          try {
-            const sGrid = await fetchSheetGrid(m[1], { sheetName: sName });
-            sGrid.forEach(r => {
-              const k = String(r[0] || '').trim().toLowerCase();
-              if (k === 'firebaseurl' && r[1]) {
-                const cleanFb = normalizeFirebaseDbUrl(r[1]);
-                if (cleanFb) {
-                  SafeStorage.setItem('tg_firebase_url', cleanFb);
-                  const el = document.getElementById('set-firebase-url');
-                  if (el) el.value = cleanFb;
-                }
+      const gasUrl = document.getElementById('set-gas-webapp-url')?.value.trim() || appSettings.gasWebAppUrl || DEFAULT_GAS_WEBAPP_URL;
+      // 1. ดึงข้อมูลสดจาก Google Drive & Sheets ผ่าน Apps Script (/exec?action=getAllData)
+      if (gasUrl && /^https?:\/\//i.test(gasUrl)) {
+        try {
+          const res = await fetch(`${gasUrl}?action=getAllData&t=${Date.now()}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success) {
+              if (data.settings && data.settings.albumCovers && Date.now() - lastLocalCoverChangeAt > 8000) {
+                try {
+                  const remoteCovers = typeof data.settings.albumCovers === 'string'
+                    ? JSON.parse(data.settings.albumCovers)
+                    : data.settings.albumCovers;
+                  SafeStorage.setItem('tg_custom_album_covers', JSON.stringify({ ...getSavedAlbumCoversMap(), ...remoteCovers }));
+                } catch (e) {}
               }
-            });
-            break;
-          } catch (e) {}
-        }
+              if ((type === 'all' || type === 'bookings') && Array.isArray(data.bookings) && data.bookings.length > 0) {
+                allBookings = data.bookings;
+                SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings));
+                syncCalendarToActiveMonth(); renderAdminTable(); renderDeliverTable(); renderCalendar(); updateDashboardStats();
+              }
+              if ((type === 'all' || type === 'portfolio') && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
+                if (Date.now() - lastLocalCoverChangeAt > 8000) {
+                  const coversMap = getSavedAlbumCoversMap();
+                  data.portfolio.forEach(item => {
+                    if (item.isCover && item.title && item.url) coversMap[item.title] = normalizeDriveImageUrl(item.url);
+                  });
+                  SafeStorage.setItem('tg_custom_album_covers', JSON.stringify(coversMap));
+                }
+                portfolioData = data.portfolio.map((p, idx) => ({
+                  ...p,
+                  id: p.id || `PF-${idx + 1}`,
+                  sheetId: p.sheetId || p.id || `PF-${idx + 1}`,
+                  rawUrl: p.rawUrl || p.url,
+                  url: normalizeDriveImageUrl(p.url)
+                }));
+                SafeStorage.setItem('tg_standalone_portfolio', JSON.stringify(portfolioData));
+                processAlbums(); renderHomeAlbums(); renderManagePortfolio();
+              }
+            }
+          }
+        } catch (e) {}
       }
-      if (getActiveFirebaseUrl()) {
-        await window.pullFromFirebase(true);
-      }
+      // 2. ซิงค์ตรงจาก Google Sheets (CSV / JSONP) ควบคู่กันเสมอ
+      await origSyncSheet(type, silent);
     };
 
     window.onload = function() {
@@ -2437,10 +2537,6 @@
       refreshContractTermsDisplays();
       loadReviews();
       injectFloatingQuickChat();
-      const savedFb = getActiveFirebaseUrl();
-      if (savedFb && document.getElementById('set-firebase-url')) {
-        document.getElementById('set-firebase-url').value = savedFb;
-      }
       if (SafeSession.getItem("tg_admin") === "true") {
         document.getElementById("admin-login-view").classList.add("hidden");
         document.getElementById("admin-dashboard-view").classList.remove("hidden");
@@ -2454,11 +2550,9 @@
         document.getElementById('set-accname').value = appSettings.accountName || '';
         document.getElementById('set-sheet-url').value = appSettings.sheetUrl || DEFAULT_SHEET_URL;
         document.getElementById('set-gas-webapp-url').value = appSettings.gasWebAppUrl || DEFAULT_GAS_WEBAPP_URL;
-        syncSheetData('all', true).then(() => {
-          if (getActiveFirebaseUrl()) startFirebaseRealtimeListener();
-        });
+        syncSheetData('all', true);
         if (realTimeSyncTimer) clearInterval(realTimeSyncTimer);
-        realTimeSyncTimer = setInterval(() => { if (!document.hidden) syncSheetData('all', true); }, 25000);
+        realTimeSyncTimer = setInterval(() => { if (!document.hidden) syncSheetData('all', true); }, 20000);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) syncSheetData('all', true); });
       }).getAppSettings();
       google.script.run.withSuccessHandler(res => {
