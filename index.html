@@ -986,6 +986,13 @@
       if (document.getElementById('calc-balance')) document.getElementById('calc-balance').innerText = info.balance.toLocaleString();
     }
 
+    function extractDriveFileId(u) {
+      if (!u) return '';
+      const s = String(u).trim();
+      const m = s.match(/\/d\/([a-zA-Z0-9_-]{10,})/) || s.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+      return m && m[1] ? m[1] : s;
+    }
+
     function getSavedAlbumCoversMap() {
       try { return JSON.parse(SafeStorage.getItem('tg_custom_album_covers') || '{}'); } catch (e) { return {}; }
     }
@@ -999,13 +1006,18 @@
         groupedAlbums[name].images.push(p);
       });
       Object.values(groupedAlbums).forEach(album => {
+        // 1. ตรวจสอบค่า isCover จาก Google Sheets ก่อน (เพื่อให้ทุกเครื่องแสดงปกตรงกันตามชีต)
+        let coverIdx = album.images.findIndex(img => Boolean(img.isCover));
+        // 2. หากในชีตยังไม่ได้ระบุ หรือมีการตั้งค่าปกไว้ในระบบ ให้เทียบทั้ง ID, URL และ Drive File ID
         const savedCoverKey = savedCovers[album.title];
-        let coverIdx = -1;
         if (savedCoverKey) {
-          coverIdx = album.images.findIndex(img => String(img.id) === String(savedCoverKey) || String(img.url) === String(savedCoverKey));
-        }
-        if (coverIdx === -1) {
-          coverIdx = album.images.findIndex(img => img.isCover);
+          const savedFid = extractDriveFileId(savedCoverKey);
+          const customIdx = album.images.findIndex(img =>
+            String(img.id) === String(savedCoverKey) ||
+            String(img.url) === String(savedCoverKey) ||
+            (savedFid && extractDriveFileId(img.url) === savedFid)
+          );
+          if (customIdx !== -1) coverIdx = customIdx;
         }
         if (coverIdx > 0) {
           const [coverImg] = album.images.splice(coverIdx, 1);
@@ -1172,7 +1184,14 @@
       renderManagePortfolio();
       renderHomeAlbums();
       openManageAlbum(albumTitle);
-      google.script.run.setPortfolioCoverInSheet(targetImg.id);
+      pushToGasWebhook('setPortfolioCover', {
+        id: targetImg.id,
+        title: albumTitle,
+        url: targetImg.url,
+        driveId: extractDriveFileId(targetImg.url)
+      });
+      pushToGasWebhook('saveSettings', { albumCovers: JSON.stringify(savedCovers) });
+      uiAlert(`ตั้งรูปหน้าปกอัลบั้ม "${albumTitle}" เรียบร้อยแล้ว! (ซิงค์ไปยัง Google Sheets สำหรับทุกเครื่องแล้ว)`);
     }
 
     function deleteAlbumPhoto(id) {
@@ -1738,7 +1757,8 @@
           if (!loc) loc = foundLoc || remainingTexts.find(t => t !== title) || 'จ.น่าน';
         }
 
-        const rowId = cells.find(c => /^PF-\d+/i.test(c)) || `PF-${rIdx + 1}`;
+        const rawFirstCell = cells[0] && !isUrl(cells[0]) && !isCat(cells[0]) && !isBool(cells[0]) ? cells[0] : '';
+        const rowId = cells.find(c => /^PF-\d+/i.test(c)) || rawFirstCell || `PF-${rIdx + 1}`;
         urls.forEach((u, uIdx) => {
           items.push({
             id: urls.length === 1 ? rowId : `${rowId}-${uIdx + 1}`,
@@ -1746,7 +1766,7 @@
             category: cat || 'Wedding',
             location: loc || 'จ.น่าน',
             url: u,
-            isCover: uIdx === 0 && (isCoverFlag || uIdx === 0)
+            isCover: uIdx === 0 && isCoverFlag
           });
         });
       });
