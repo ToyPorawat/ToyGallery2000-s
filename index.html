@@ -486,11 +486,32 @@
               </div>
             </div>
             <div class="p-3 rounded-xl border text-[11px] space-y-1.5" style="background: rgba(0,0,0,0.15); border-color: var(--border-color); color: var(--text-muted);">
-              <p class="font-bold" style="color: var(--text-main);">💡 คำแนะนำการตั้งค่า Google Sheets & Google Drive:</p>
+              <p class="font-bold" style="color: var(--text-main);">💡 คำแนะนำการตั้งค่า Google Sheets:</p>
               <ul class="list-disc list-inside space-y-1">
-                <li>กดปุ่ม <b>แชร์ (Share)</b> บน Google Sheets และโฟลเดอร์ Google Drive แล้วเลือก <b>"ทุกคนที่มีลิงก์ (Anyone with the link)"</b> สิทธิ์อ่าน (Viewer)</li>
-                <li>เว็บจะดึงข้อมูลสดจาก Google Drive & Google Sheets ผ่านลิงก์ Apps Script (<code>/exec</code>) และ Google Visualization API โดยตรง ไม่ต้องสำรองฐานข้อมูลแยก</li>
+                <li>กดปุ่ม <b>แชร์ (Share)</b> บน Google Sheets แล้วเลือก <b>"ทุกคนที่มีลิงก์ (Anyone with the link)"</b> สิทธิ์อ่าน (Viewer)</li>
+                <li>หรือไปที่เมนู <b>ไฟล์ (File) > แชร์ > เผยแพร่ไปยังเว็บ (Publish to web)</b> แล้วกดเผยแพร่</li>
+                <li>หากตั้งชื่อแท็บเป็นอย่างอื่น สามารถพิมพ์ชื่อแท็บหรือเลข GID ในช่องด้านบนแล้วกดซิงค์ได้ทันที</li>
               </ul>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t space-y-3" style="border-color: var(--border-color);">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-xl font-serif font-bold flex items-center gap-2"><i data-lucide="flame" class="w-6 h-6 text-orange-500"></i> เชื่อมต่อ Firebase Realtime (ซิงค์ทุกเครื่องเรียลไทม์)</h3>
+              <button type="button" onclick="showFirebaseGuideModal()" class="text-xs font-bold text-orange-500 underline shrink-0">วิธีสร้างลิงก์ฟรี 1 นาที</button>
+            </div>
+            <div id="firebase-sync-status" class="p-3 rounded-xl text-xs border" style="background: rgba(249, 115, 22, 0.08); border-color: rgba(249, 115, 22, 0.3);">
+              <span class="font-bold text-orange-500">⚡ พร้อมเชื่อมต่อ Firebase Realtime Database</span>
+              <span class="block mt-0.5 text-[11px]" style="color: var(--text-muted);">วางลิงก์ Database URL (หรือวางโค้ด firebaseConfig) เพื่อให้การเปลี่ยนปกอัลบั้ม อัปโหลดรูป และคิวงานแสดงเหมือนกันทุกเครื่องแบบเรียลไทม์ทันที</span>
+            </div>
+            <div>
+              <label class="block mb-1 text-xs font-bold text-orange-500">Firebase Database URL หรือวางโค้ด firebaseConfig</label>
+              <input type="text" id="set-firebase-url" class="w-full input-field rounded-xl px-4 py-2.5 font-mono text-xs" placeholder="เช่น about:invalid#zPythonSafez">
+            </div>
+            <button type="button" onclick="saveAndConnectFirebase()" class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-md transition-all text-sm"><i data-lucide="zap" class="w-4 h-4"></i> บันทึก & เชื่อมต่อ Firebase Realtime ทันที</button>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <button type="button" onclick="pushAllToFirebase(false)" class="py-2.5 input-field hover:opacity-80 font-bold rounded-xl flex items-center justify-center gap-1.5"><i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-orange-500"></i> อัปโหลดข้อมูลขึ้น Firebase</button>
+              <button type="button" onclick="pullFromFirebase(false)" class="py-2.5 input-field hover:opacity-80 font-bold rounded-xl flex items-center justify-center gap-1.5"><i data-lucide="cloud-download" class="w-3.5 h-3.5 text-emerald-500"></i> ดึงข้อมูลสดจาก Firebase</button>
             </div>
           </div>
 
@@ -2134,81 +2155,277 @@
     };
 
     // =========================================================
-    // ☁️ GOOGLE DRIVE & GOOGLE SHEETS DIRECT LIVE BRIDGE
-    // ดึงข้อมูลโดยตรงจาก Google Drive & Google Sheets (ผ่าน Apps Script /exec + GViz)
-    // โดยไม่ต้องสำรองฐานข้อมูลแยกบน Firebase
+    // 🔥 FIREBASE REALTIME DATABASE ENGINE (Real-Time Cross-Device Sync)
+    // รองรับทั้งการวาง Database URL หรือโค้ด firebaseConfig และซิงค์อัตโนมัติผ่าน Google Sheets Settings
     // =========================================================
+    const DEFAULT_FIREBASE_URL = '';
+    let fbEventSource = null;
+    let fbPollTimer = null;
+    let lastFbPushTimestamp = 0;
+    let lastAppliedFbTimestamp = 0;
+
+    function normalizeFirebaseDbUrl(rawInput) {
+      if (!rawInput) return '';
+      const s = String(rawInput).trim();
+      const dbUrlMatch = s.match(/https?:\/\/[a-zA-Z0-9-]+\.(?:firebaseio\.com|firebasedatabase\.app)/i);
+      if (dbUrlMatch) return dbUrlMatch[0].replace(/\/+$/, '');
+      const projMatch = s.match(/projectId\s*:\s*["']([a-zA-Z0-9-]+)["']/i);
+      if (projMatch && projMatch[1]) return `about:invalid#zPythonSafez`;
+      return '';
+    }
+
+    function getActiveFirebaseUrl() {
+      const fromInput = normalizeFirebaseDbUrl(document.getElementById('set-firebase-url')?.value || '');
+      if (fromInput) return fromInput;
+      const fromStorage = normalizeFirebaseDbUrl(SafeStorage.getItem('tg_firebase_url') || '');
+      if (fromStorage) return fromStorage;
+      return normalizeFirebaseDbUrl(DEFAULT_FIREBASE_URL);
+    }
+
+    function updateFirebaseStatusBanner(ok, title, detail) {
+      const box = document.getElementById('firebase-sync-status');
+      if (!box) return;
+      if (ok) {
+        box.style.background = 'rgba(16, 185, 129, 0.1)';
+        box.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+        box.innerHTML = `<span class="font-bold text-emerald-500">🟢 ${title}</span><span class="block mt-0.5 text-[11px]" style="color: var(--text-muted);">${detail}</span>`;
+      } else {
+        box.style.background = 'rgba(249, 115, 22, 0.08)';
+        box.style.borderColor = 'rgba(249, 115, 22, 0.3)';
+        box.innerHTML = `<span class="font-bold text-orange-500">⚡ ${title}</span><span class="block mt-0.5 text-[11px]" style="color: var(--text-muted);">${detail}</span>`;
+      }
+    }
+
+    function buildFullFirebasePayload() {
+      const ts = Date.now();
+      lastFbPushTimestamp = ts;
+      return {
+        updatedAt: ts,
+        bookings: allBookings || [],
+        portfolio: portfolioData || [],
+        albumCovers: getSavedAlbumCoversMap(),
+        reviews: reviewsList || [],
+        expenses: getExpensesList(),
+        settings: {
+          promptPayNum: appSettings.promptPayNum || '062-607-9030',
+          accountName: appSettings.accountName || 'ปรวรรตน์ แสนใหญ่',
+          qrImageUrl: appSettings.qrImageUrl || '',
+          contractTerms: getCustomContractTerms(),
+          promoCodes: getStoredPromoRulesString(),
+          adminUser: SafeStorage.getItem('tg_admin_custom_user') || 'admin',
+          adminPass: SafeStorage.getItem('tg_admin_custom_pass') || '1234'
+        }
+      };
+    }
+
+    function applyRemoteFirebaseState(data) {
+      if (!data || typeof data !== 'object') return false;
+      if (data.updatedAt && data.updatedAt <= lastFbPushTimestamp) return false;
+      if (data.updatedAt && data.updatedAt === lastAppliedFbTimestamp) return false;
+      if (data.updatedAt) lastAppliedFbTimestamp = data.updatedAt;
+
+      let changed = false;
+      if (data.albumCovers && typeof data.albumCovers === 'object') {
+        const mergedCovers = { ...getSavedAlbumCoversMap(), ...data.albumCovers };
+        SafeStorage.setItem('tg_custom_album_covers', JSON.stringify(mergedCovers));
+        changed = true;
+      }
+      if (Array.isArray(data.bookings) && data.bookings.length > 0) {
+        allBookings = data.bookings;
+        SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings));
+        syncCalendarToActiveMonth();
+        renderAdminTable();
+        renderDeliverTable();
+        renderCalendar();
+        updateDashboardStats();
+        changed = true;
+      }
+      if (Array.isArray(data.portfolio) && data.portfolio.length > 0) {
+        portfolioData = data.portfolio;
+        SafeStorage.setItem('tg_standalone_portfolio', JSON.stringify(portfolioData));
+        processAlbums();
+        renderHomeAlbums();
+        renderManagePortfolio();
+        changed = true;
+      } else if (data.albumCovers) {
+        processAlbums();
+        renderHomeAlbums();
+        renderManagePortfolio();
+      }
+      if (Array.isArray(data.reviews)) {
+        reviewsList = data.reviews;
+        SafeStorage.setItem('tg_standalone_reviews', JSON.stringify(reviewsList));
+        renderReviews();
+        changed = true;
+      }
+      if (Array.isArray(data.expenses)) {
+        saveExpensesList(data.expenses);
+        updateDashboardStats();
+        changed = true;
+      }
+      if (data.settings && typeof data.settings === 'object') {
+        if (data.settings.promptPayNum) appSettings.promptPayNum = data.settings.promptPayNum;
+        if (data.settings.accountName) appSettings.accountName = data.settings.accountName;
+        if (data.settings.contractTerms) SafeStorage.setItem('tg_custom_contract_terms', data.settings.contractTerms);
+        if (data.settings.promoCodes) SafeStorage.setItem('tg_promo_codes', data.settings.promoCodes);
+        if (data.settings.adminUser) SafeStorage.setItem('tg_admin_custom_user', data.settings.adminUser);
+        if (data.settings.adminPass) SafeStorage.setItem('tg_admin_custom_pass', data.settings.adminPass);
+        refreshContractTermsDisplays();
+      }
+      return changed;
+    }
+
+    window.pushAllToFirebase = async function(silent = true) {
+      const fbUrl = getActiveFirebaseUrl();
+      if (!fbUrl) {
+        if (!silent) uiAlert('กรุณาวางลิงก์ Firebase Database URL ในช่องตั้งค่าก่อนครับ');
+        return false;
+      }
+      try {
+        const payload = buildFullFirebasePayload();
+        const res = await fetch(`${fbUrl}/toygallery_state.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' (กรุณาตั้งค่า Rules ของ Firebase Realtime Database เป็น ".read": true, ".write": true)');
+        updateFirebaseStatusBanner(true, `ซิงค์ขึ้น Firebase Realtime สำเร็จ (${formatThaiTime(new Date())})`, `อัปเดตคิวงาน ${allBookings.length} คิว • ผลงาน ${portfolioData.length} รูป • ปกอัลบั้มซิงค์ทุกเครื่องแล้ว`);
+        if (!silent) uiAlert('อัปโหลดข้อมูลทั้งหมด (คิวงาน, ผลงาน, ปกอัลบั้ม และตั้งค่า) ขึ้น Firebase Realtime สำเร็จแล้ว!\nตอนนี้ทุกเครื่องที่เปิดเว็บจะเห็นข้อมูลชุดเดียวกันแบบเรียลไทม์ทันทีครับ');
+        return true;
+      } catch (err) {
+        updateFirebaseStatusBanner(false, 'ไม่สามารถบันทึกขึ้น Firebase ได้', err.message);
+        if (!silent) uiAlert('ไม่สามารถอัปโหลดขึ้น Firebase ได้:\n' + err.message);
+        return false;
+      }
+    };
+
+    window.pullFromFirebase = async function(silent = true) {
+      const fbUrl = getActiveFirebaseUrl();
+      if (!fbUrl) {
+        if (!silent) uiAlert('กรุณาวางลิงก์ Firebase Database URL ในช่องตั้งค่าก่อนครับ');
+        return false;
+      }
+      try {
+        const res = await fetch(`${fbUrl}/toygallery_state.json`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data) {
+          if (allBookings.length > 0 || portfolioData.length > 0) {
+            await window.pushAllToFirebase(true);
+          }
+          return false;
+        }
+        applyRemoteFirebaseState(data);
+        updateFirebaseStatusBanner(true, `เชื่อมต่อ Firebase Realtime สำเร็จ (${formatThaiTime(new Date())})`, `ซิงค์ข้อมูลสดแบบเรียลไทม์ทุกเครื่องอัตโนมัติ`);
+        if (!silent) uiAlert('ดึงข้อมูลสดจาก Firebase Realtime สำเร็จแล้ว!');
+        return true;
+      } catch (err) {
+        updateFirebaseStatusBanner(false, 'เชื่อมต่อ Firebase ไม่สำเร็จ', err.message);
+        if (!silent) uiAlert('ดึงข้อมูลจาก Firebase ไม่สำเร็จ:\n' + err.message);
+        return false;
+      }
+    };
+
+    function startFirebaseRealtimeListener() {
+      const fbUrl = getActiveFirebaseUrl();
+      if (!fbUrl) return;
+      const inputEl = document.getElementById('set-firebase-url');
+      if (inputEl && !inputEl.value) inputEl.value = fbUrl;
+
+      window.pullFromFirebase(true);
+
+      if (fbEventSource) { try { fbEventSource.close(); } catch (e) {} fbEventSource = null; }
+      try {
+        fbEventSource = new EventSource(`${fbUrl}/toygallery_state.json`);
+        fbEventSource.addEventListener('put', e => {
+          try {
+            const packet = JSON.parse(e.data);
+            if (packet && packet.path === '/' && packet.data) {
+              applyRemoteFirebaseState(packet.data);
+              updateFirebaseStatusBanner(true, `ซิงค์เรียลไทม์ล่าสุด (${formatThaiTime(new Date())})`, 'รับข้อมูลอัปเดตสดจาก Firebase Realtime Database แล้ว');
+            } else {
+              window.pullFromFirebase(true);
+            }
+          } catch (err) {}
+        });
+      } catch (e) {}
+
+      if (fbPollTimer) clearInterval(fbPollTimer);
+      fbPollTimer = setInterval(() => {
+        if (!document.hidden && getActiveFirebaseUrl()) window.pullFromFirebase(true);
+      }, 6000);
+    }
+
+    window.saveAndConnectFirebase = async function() {
+      const raw = (document.getElementById('set-firebase-url')?.value || '').trim();
+      const cleanUrl = normalizeFirebaseDbUrl(raw);
+      if (!cleanUrl) {
+        uiAlert('รูปแบบลิงก์ Firebase ไม่ถูกต้อง\nกรุณาวางลิงก์ที่มี .firebaseio.com หรือ .firebasedatabase.app (หรือวางโค้ด firebaseConfig ทั้งก้อน)');
+        return;
+      }
+      document.getElementById('set-firebase-url').value = cleanUrl;
+      SafeStorage.setItem('tg_firebase_url', cleanUrl);
+      // บันทึกลิงก์ Firebase ลงแท็บ Settings บน Google Sheets เพื่อให้เครื่องอื่นดึงลิงก์ Firebase ไปเชื่อมต่อเองอัตโนมัติ
+      pushToGasWebhook('saveSettings', { firebaseUrl: cleanUrl, albumCovers: JSON.stringify(getSavedAlbumCoversMap()) });
+      const ok = await window.pushAllToFirebase(false);
+      if (ok) startFirebaseRealtimeListener();
+    };
+
+    window.showFirebaseGuideModal = function() {
+      const modal = document.getElementById('custom-dialog-modal');
+      document.getElementById('dialog-msg').innerHTML = `
+        <div class="text-left space-y-2 text-xs leading-relaxed">
+          <h4 class="font-bold text-sm text-orange-500">🔥 วิธีสร้างลิงก์ Firebase Realtime Database ฟรี (1 นาที)</h4>
+          <ol class="list-decimal list-inside space-y-1.5">
+            <li>เข้าเว็บ <b>console.firebase.google.com</b> แล้วกด <b>Create a project</b></li>
+            <li>ไปที่เมนูซ้าย <b>Build &gt; Realtime Database</b> แล้วกด <b>Create Database</b></li>
+            <li>เลือก <b>Start in test mode</b> (หรือตั้งค่า Rules ให้ <code>".read": true, ".write": true</code>)</li>
+            <li>คัดลอกลิงก์ URL ด้านบนของตาราง (เช่น <code>about:invalid#zPythonSafez</code>) มาวางในช่องตั้งค่าแล้วกด <b>บันทึก &amp; เชื่อมต่อ</b> ได้เลย!</li>
+          </ol>
+          <p class="text-[11px] opacity-75 pt-1">* เมื่อกดเชื่อมต่อในเครื่องหลักแล้ว ระบบจะจำลิงก์ไว้ใน Google Sheets ให้เครื่องอื่นๆ เชื่อมต่อตามโดยอัตโนมัติครับ</p>
+        </div>
+      `;
+      document.getElementById('dialog-actions').innerHTML = `<button id="dlg-ok-btn" class="w-full py-2.5 rounded-xl btn-accent font-bold text-xs">เข้าใจแล้ว</button>`;
+      modal.classList.add('show');
+      document.getElementById('dlg-ok-btn').onclick = () => modal.classList.remove('show');
+    };
+
+    // เชื่อมทุกการเปลี่ยนแปลง (เปลี่ยนปกอัลบั้ม, อัปโหลดรูป, จองคิว, แก้ไขคิว, ตั้งค่า) ให้ซิงค์ขึ้น Firebase อัตโนมัติทันที
     const origPushToGas = pushToGasWebhook;
     pushToGasWebhook = function(action, payload) {
       origPushToGas(action, payload);
-      try {
-        const rawSettings = SafeStorage.getItem('tg_standalone_settings');
-        const parsed = rawSettings ? JSON.parse(rawSettings) : {};
-        const url = String(parsed.gasWebAppUrl || (typeof appSettings !== 'undefined' && appSettings.gasWebAppUrl) || DEFAULT_GAS_WEBAPP_URL).trim();
-        if (!url || !/^https?:\/\//i.test(url)) return;
-        // ส่งผ่าน GET query คู่ขนานสำหรับคำสั่งสำคัญ (เช่น เปลี่ยนปกอัลบั้ม / ตั้งค่า) เพื่อไม่ให้ข้อมูลหายเมื่อติด 302 Redirect ของ Apps Script
-        if (action === 'setPortfolioCover' || action === 'saveSettings' || action === 'deleteBooking') {
-          const q = new URLSearchParams({
-            action,
-            payload: JSON.stringify(payload || {}),
-            id: String(payload?.id || ''),
-            title: String(payload?.title || ''),
-            url: String(payload?.url || ''),
-            driveId: String(payload?.driveId || ''),
-            t: String(Date.now())
-          });
-          fetch(`${url}?${q.toString()}`, { method: 'GET', mode: 'no-cors' }).catch(() => {});
-        }
-      } catch (e) {}
+      if (getActiveFirebaseUrl()) {
+        setTimeout(() => window.pushAllToFirebase(true), 50);
+      }
     };
 
     const origSyncSheet = syncSheetData;
     syncSheetData = async function(type = 'all', silent = false) {
-      const gasUrl = document.getElementById('set-gas-webapp-url')?.value.trim() || appSettings.gasWebAppUrl || DEFAULT_GAS_WEBAPP_URL;
-      // 1. ดึงข้อมูลสดจาก Google Drive & Sheets ผ่าน Apps Script (/exec?action=getAllData)
-      if (gasUrl && /^https?:\/\//i.test(gasUrl)) {
-        try {
-          const res = await fetch(`${gasUrl}?action=getAllData&t=${Date.now()}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.success) {
-              if (data.settings && data.settings.albumCovers && Date.now() - lastLocalCoverChangeAt > 8000) {
-                try {
-                  const remoteCovers = typeof data.settings.albumCovers === 'string'
-                    ? JSON.parse(data.settings.albumCovers)
-                    : data.settings.albumCovers;
-                  SafeStorage.setItem('tg_custom_album_covers', JSON.stringify({ ...getSavedAlbumCoversMap(), ...remoteCovers }));
-                } catch (e) {}
-              }
-              if ((type === 'all' || type === 'bookings') && Array.isArray(data.bookings) && data.bookings.length > 0) {
-                allBookings = data.bookings;
-                SafeStorage.setItem('tg_standalone_bookings', JSON.stringify(allBookings));
-                syncCalendarToActiveMonth(); renderAdminTable(); renderDeliverTable(); renderCalendar(); updateDashboardStats();
-              }
-              if ((type === 'all' || type === 'portfolio') && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
-                if (Date.now() - lastLocalCoverChangeAt > 8000) {
-                  const coversMap = getSavedAlbumCoversMap();
-                  data.portfolio.forEach(item => {
-                    if (item.isCover && item.title && item.url) coversMap[item.title] = normalizeDriveImageUrl(item.url);
-                  });
-                  SafeStorage.setItem('tg_custom_album_covers', JSON.stringify(coversMap));
-                }
-                portfolioData = data.portfolio.map((p, idx) => ({
-                  ...p,
-                  id: p.id || `PF-${idx + 1}`,
-                  sheetId: p.sheetId || p.id || `PF-${idx + 1}`,
-                  rawUrl: p.rawUrl || p.url,
-                  url: normalizeDriveImageUrl(p.url)
-                }));
-                SafeStorage.setItem('tg_standalone_portfolio', JSON.stringify(portfolioData));
-                processAlbums(); renderHomeAlbums(); renderManagePortfolio();
-              }
-            }
-          }
-        } catch (e) {}
-      }
-      // 2. ซิงค์ตรงจาก Google Sheets (CSV / JSONP) ควบคู่กันเสมอ
       await origSyncSheet(type, silent);
+      const sheetUrl = document.getElementById('set-sheet-url')?.value.trim() || appSettings.sheetUrl || DEFAULT_SHEET_URL;
+      const m = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (m && !getActiveFirebaseUrl()) {
+        for (const sName of ['Settings', 'ตั้งค่า']) {
+          try {
+            const sGrid = await fetchSheetGrid(m[1], { sheetName: sName });
+            sGrid.forEach(r => {
+              const k = String(r[0] || '').trim().toLowerCase();
+              if (k === 'firebaseurl' && r[1]) {
+                const cleanFb = normalizeFirebaseDbUrl(r[1]);
+                if (cleanFb) {
+                  SafeStorage.setItem('tg_firebase_url', cleanFb);
+                  const el = document.getElementById('set-firebase-url');
+                  if (el) el.value = cleanFb;
+                }
+              }
+            });
+            break;
+          } catch (e) {}
+        }
+      }
+      if (getActiveFirebaseUrl()) {
+        await window.pullFromFirebase(true);
+      }
     };
 
     window.onload = function() {
@@ -2220,6 +2437,10 @@
       refreshContractTermsDisplays();
       loadReviews();
       injectFloatingQuickChat();
+      const savedFb = getActiveFirebaseUrl();
+      if (savedFb && document.getElementById('set-firebase-url')) {
+        document.getElementById('set-firebase-url').value = savedFb;
+      }
       if (SafeSession.getItem("tg_admin") === "true") {
         document.getElementById("admin-login-view").classList.add("hidden");
         document.getElementById("admin-dashboard-view").classList.remove("hidden");
@@ -2233,9 +2454,11 @@
         document.getElementById('set-accname').value = appSettings.accountName || '';
         document.getElementById('set-sheet-url').value = appSettings.sheetUrl || DEFAULT_SHEET_URL;
         document.getElementById('set-gas-webapp-url').value = appSettings.gasWebAppUrl || DEFAULT_GAS_WEBAPP_URL;
-        syncSheetData('all', true);
+        syncSheetData('all', true).then(() => {
+          if (getActiveFirebaseUrl()) startFirebaseRealtimeListener();
+        });
         if (realTimeSyncTimer) clearInterval(realTimeSyncTimer);
-        realTimeSyncTimer = setInterval(() => { if (!document.hidden) syncSheetData('all', true); }, 20000);
+        realTimeSyncTimer = setInterval(() => { if (!document.hidden) syncSheetData('all', true); }, 25000);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) syncSheetData('all', true); });
       }).getAppSettings();
       google.script.run.withSuccessHandler(res => {
