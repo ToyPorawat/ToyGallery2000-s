@@ -485,7 +485,24 @@
           <div class="space-y-4 border-b pb-6 mb-6" style="border-color: var(--border-color);">
             <div><label class="block mb-1 text-sm opacity-80">เบอร์พร้อมเพย์</label><input type="text" id="set-promptpay" class="w-full input-field rounded-xl px-4 py-2.5"></div>
             <div><label class="block mb-1 text-sm opacity-80">ชื่อบัญชีรับเงิน</label><input type="text" id="set-accname" class="w-full input-field rounded-xl px-4 py-2.5"></div>
-            <div class="p-4 border border-dashed rounded-xl" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);"><label class="block mb-2 text-sm opacity-80 font-bold">📷 อัปโหลดรูป QR Code (ถ้ามี)</label><input type="file" id="set-qr-file" accept="image/*" class="w-full text-xs"></div>
+            <div class="p-4 border border-dashed rounded-xl space-y-2.5" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);">
+              <label class="block text-sm opacity-80 font-bold">📷 รูป QR Code รับเงิน (วางลิงก์ Google Drive หรืออัปโหลดไฟล์)</label>
+              <div id="set-qr-preview-wrap" class="hidden p-2.5 rounded-xl bg-white border border-gray-200 text-center space-y-1.5">
+                <img id="set-qr-preview-img" src="" onerror="handleDriveImgError(this, false)" alt="Saved QR Code" class="w-36 h-36 object-contain mx-auto rounded-lg">
+                <div class="flex items-center justify-center gap-2">
+                  <span class="text-[11px] font-bold text-emerald-600">✓ บันทึกรูป QR Code ไว้ในระบบแล้ว</span>
+                  <button type="button" onclick="clearSavedCustomQr()" class="text-[11px] text-red-500 underline font-bold">ลบรูปนี้</button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] opacity-75 mb-1">1. วางลิงก์รูป QR Code จาก Google Drive (แสดงผลตรงกันทุกเครื่อง):</label>
+                <input type="text" id="set-qr-drive-url" oninput="applyDriveQrUrlInput(this.value)" placeholder="วางลิงก์ https://drive.google.com/file/d/... ที่นี่" class="w-full input-field rounded-xl px-3 py-2 text-xs font-mono">
+              </div>
+              <div>
+                <label class="block text-[11px] opacity-75 mb-1">2. หรืออัปโหลดไฟล์รูปจากเครื่อง:</label>
+                <input type="file" id="set-qr-file" accept="image/*" onchange="previewSelectedQrFile(this)" class="w-full text-xs">
+              </div>
+            </div>
             <button onclick="saveAdminSettings()" id="btn-save-settings" class="w-full py-3 btn-accent font-bold rounded-xl">บันทึกการตั้งค่าระบบบัญชี</button>
           </div>
           <h3 class="text-2xl font-serif font-bold mb-3 flex items-center gap-2"><i data-lucide="table" class="w-6 h-6 text-emerald-500"></i> เชื่อมต่อ Google Sheets & Apps Script</h3>
@@ -1727,9 +1744,130 @@
     }
     function doLogout() { SafeSession.removeItem("tg_admin"); document.getElementById("admin-dashboard-view").classList.add("hidden"); document.getElementById("admin-login-view").classList.remove("hidden"); }
 
+    function compressQrImageFile(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const maxDim = 600;
+            let w = img.width || 400, h = img.height || 400;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+              else { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(c.toDataURL('image/jpeg', 0.88));
+          };
+          img.onerror = () => resolve(ev.target.result);
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function getSavedCustomQr() {
+      return SafeStorage.getItem('tg_custom_qr_image') || (appSettings && appSettings.qrImageUrl) || '';
+    }
+
+    function refreshCustomQrPreviewUI() {
+      const savedQr = getSavedCustomQr();
+      const wrap = document.getElementById('set-qr-preview-wrap');
+      const img = document.getElementById('set-qr-preview-img');
+      const urlInput = document.getElementById('set-qr-drive-url');
+      if (urlInput && savedQr && !String(savedQr).startsWith('data:') && document.activeElement !== urlInput) {
+        urlInput.value = savedQr;
+      }
+      if (wrap && img) {
+        if (savedQr) {
+          img.src = normalizeDriveImageUrl(savedQr);
+          wrap.classList.remove('hidden');
+        } else {
+          img.src = '';
+          wrap.classList.add('hidden');
+        }
+      }
+    }
+
+    function applyDriveQrUrlInput(rawVal) {
+      const v = String(rawVal || '').trim();
+      if (!v) return;
+      const norm = normalizeDriveImageUrl(v);
+      SafeStorage.setItem('tg_custom_qr_image', norm);
+      appSettings.qrImageUrl = norm;
+      const curSettings = JSON.parse(SafeStorage.getItem('tg_standalone_settings') || '{}');
+      curSettings.qrImageUrl = norm;
+      SafeStorage.setItem('tg_standalone_settings', JSON.stringify(curSettings));
+      refreshCustomQrPreviewUI();
+    }
+
+    async function previewSelectedQrFile(inputEl) {
+      if (!inputEl || !inputEl.files || inputEl.files.length === 0) return;
+      const compressed = await compressQrImageFile(inputEl.files[0]);
+      if (compressed) {
+        SafeStorage.setItem('tg_custom_qr_image', compressed);
+        appSettings.qrImageUrl = compressed;
+        const curSettings = JSON.parse(SafeStorage.getItem('tg_standalone_settings') || '{}');
+        curSettings.qrImageUrl = compressed;
+        SafeStorage.setItem('tg_standalone_settings', JSON.stringify(curSettings));
+        const urlInput = document.getElementById('set-qr-drive-url');
+        if (urlInput) urlInput.value = '';
+        refreshCustomQrPreviewUI();
+      }
+    }
+
+    function clearSavedCustomQr() {
+      SafeStorage.removeItem('tg_custom_qr_image');
+      appSettings.qrImageUrl = '';
+      const curSettings = JSON.parse(SafeStorage.getItem('tg_standalone_settings') || '{}');
+      curSettings.qrImageUrl = '';
+      SafeStorage.setItem('tg_standalone_settings', JSON.stringify(curSettings));
+      const fileInput = document.getElementById('set-qr-file');
+      if (fileInput) fileInput.value = '';
+      const urlInput = document.getElementById('set-qr-drive-url');
+      if (urlInput) urlInput.value = '';
+      refreshCustomQrPreviewUI();
+      uiAlert('ลบรูป QR Code ที่อัปโหลดเรียบร้อยแล้ว (ระบบจะใช้ QR พร้อมเพย์อัตโนมัติแทน)');
+    }
+
+    function getEffectiveQrImageSrc(amount) {
+      const customQr = getSavedCustomQr();
+      if (customQr && String(customQr).trim() !== '') {
+        return normalizeDriveImageUrl(customQr);
+      }
+      return createPromptPayQrSvg(appSettings.promptPayNum, amount);
+    }
+
     async function saveAdminSettings() {
-      const data = { promptPayNum: document.getElementById('set-promptpay').value, accountName: document.getElementById('set-accname').value, sheetUrl: document.getElementById('set-sheet-url')?.value.trim() || DEFAULT_SHEET_URL, gasWebAppUrl: document.getElementById('set-gas-webapp-url')?.value.trim() || DEFAULT_GAS_WEBAPP_URL, bookingsTab: document.getElementById('set-bookings-tab')?.value.trim() || '', portfolioTab: document.getElementById('set-portfolio-tab')?.value.trim() || '' };
-      google.script.run.withSuccessHandler(res => { appSettings = { ...appSettings, ...data }; uiAlert(res.message); }).saveAppSettings(data);
+      const btn = document.getElementById('btn-save-settings');
+      if (btn) { btn.innerText = 'กำลังบันทึก...'; btn.disabled = true; }
+      const fileInput = document.getElementById('set-qr-file');
+      let qrBase64 = getSavedCustomQr();
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        qrBase64 = await compressQrImageFile(fileInput.files[0]);
+        SafeStorage.setItem('tg_custom_qr_image', qrBase64);
+      }
+      const data = {
+        promptPayNum: document.getElementById('set-promptpay').value,
+        accountName: document.getElementById('set-accname').value,
+        qrBase64: qrBase64 || '',
+        qrImageUrl: qrBase64 || '',
+        sheetUrl: document.getElementById('set-sheet-url')?.value.trim() || DEFAULT_SHEET_URL,
+        gasWebAppUrl: document.getElementById('set-gas-webapp-url')?.value.trim() || DEFAULT_GAS_WEBAPP_URL,
+        bookingsTab: document.getElementById('set-bookings-tab')?.value.trim() || '',
+        portfolioTab: document.getElementById('set-portfolio-tab')?.value.trim() || ''
+      };
+      google.script.run.withSuccessHandler(res => {
+        appSettings = { ...appSettings, ...data, qrImageUrl: qrBase64 || appSettings.qrImageUrl || '' };
+        refreshCustomQrPreviewUI();
+        if (btn) { btn.innerText = 'บันทึกการตั้งค่าระบบบัญชี'; btn.disabled = false; }
+        uiAlert(res.message);
+      }).saveAppSettings(data);
     }
 
     function showQuotationFromAdmin(id) {
@@ -1764,7 +1902,7 @@
       if (document.getElementById('inv-pay-date')) document.getElementById('inv-pay-date').innerText = shortDateStr;
       if (document.getElementById('inv-pay-time')) document.getElementById('inv-pay-time').innerText = formatThaiTime(now);
       if (document.getElementById('inv-sign-date')) document.getElementById('inv-sign-date').innerText = shortDateStr;
-      document.getElementById('inv-qr-image').src = createPromptPayQrSvg(appSettings.promptPayNum, balance > 0 ? balance : deposit);
+      document.getElementById('inv-qr-image').src = getEffectiveQrImageSrc(balance > 0 ? balance : deposit);
       document.getElementById('invoice-modal').classList.add('show');
     }
 
@@ -1784,7 +1922,7 @@
       document.getElementById('qr-deposit-text').innerText = (currentDocData.deposit || 1500).toLocaleString();
       document.getElementById('qr-pp-num').innerText = appSettings.promptPayNum;
       document.getElementById('qr-acc-name').innerText = appSettings.accountName;
-      document.getElementById('qr-image').src = createPromptPayQrSvg(appSettings.promptPayNum, currentDocData.deposit || 1500);
+      document.getElementById('qr-image').src = getEffectiveQrImageSrc(currentDocData.deposit || 1500);
       document.getElementById('qr-modal').classList.add('show');
     }
     function closeQRModal() { document.getElementById("qr-modal").classList.remove("show"); }
@@ -3652,11 +3790,13 @@
     window.addEventListener('DOMContentLoaded', () => {
       injectMoodboardPickerUI();
       syncBeforeAfterSampleImage();
+      refreshCustomQrPreviewUI();
     });
     setTimeout(() => {
       injectMoodboardPickerUI();
       syncBeforeAfterSampleImage();
       renderAnnualAnalyticsChart();
+      refreshCustomQrPreviewUI();
     }, 300);
   </script>
 </body>
