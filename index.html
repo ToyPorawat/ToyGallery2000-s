@@ -233,19 +233,14 @@
       </div>
 
       <div class="pt-14 text-center" style="border-top: 1px solid var(--border-color);">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] font-bold mb-3 border" style="border-color: var(--border-color); background: rgba(16, 185, 129, 0.08); color: #10b981;">
-          <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>
-          <span id="home-drive-stats-badge">Google Drive Live Gallery • ซิงค์รูปภาพโดยตรง</span>
-          <button type="button" onclick="syncSheetData('portfolio', false)" class="ml-1 underline hover:opacity-80" title="รีเฟรชรูปภาพจาก Google Drive">รีเฟรช</button>
-        </div>
         <span class="text-[11px] uppercase tracking-[0.28em] text-accent font-bold block mb-2">Portfolio Showcase</span>
         <h2 class="text-2xl sm:text-3xl font-bold tracking-[0.22em] uppercase mb-3">Our Works</h2>
-        <p class="text-xs sm:text-sm mb-6 font-light" style="color: var(--text-muted);">คลิกที่อัลบั้มหรือรูปภาพเพื่อเปิดดูภาพขนาดเต็มจาก Google Drive หรือเลือกกรองตามหมวดหมู่งาน</p>
+        <p class="text-xs sm:text-sm mb-6 font-light" style="color: var(--text-muted);">คลิกที่อัลบั้มเพื่อชมคอลเลกชันภาพถ่ายเต็มรูปแบบ หรือเลือกกรองตามหมวดหมู่งาน</p>
 
-        <div class="flex flex-wrap justify-center items-center gap-2 mb-5">
-          <div class="inline-flex p-1 rounded-xl border" style="border-color: var(--border-color); background: rgba(0,0,0,0.04);">
-            <button type="button" id="gview-btn-albums" onclick="setHomeGalleryViewMode('albums')" class="px-4 py-1.5 rounded-lg text-xs font-bold btn-accent flex items-center gap-1.5 transition-all"><i data-lucide="folder-heart" class="w-3.5 h-3.5"></i> มุมมองอัลบั้ม</button>
-            <button type="button" id="gview-btn-photos" onclick="setHomeGalleryViewMode('photos')" class="px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all" style="color: var(--text-muted);"><i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> รูปภาพทั้งหมดจาก Drive</button>
+        <div class="flex flex-wrap justify-center items-center gap-2 mb-6">
+          <div class="inline-flex p-1 rounded-sm border" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);">
+            <button type="button" id="gview-btn-albums" onclick="setHomeGalleryViewMode('albums')" class="px-5 py-1.5 rounded-sm text-xs font-bold tracking-wider uppercase btn-accent flex items-center gap-1.5 transition-all"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> อัลบั้มผลงาน</button>
+            <button type="button" id="gview-btn-photos" onclick="setHomeGalleryViewMode('photos')" class="px-5 py-1.5 rounded-sm text-xs font-medium tracking-wider uppercase flex items-center gap-1.5 transition-all" style="color: var(--text-muted);"><i data-lucide="grid" class="w-3.5 h-3.5"></i> ไฮไลต์ภาพถ่าย</button>
           </div>
         </div>
 
@@ -257,7 +252,33 @@
           <button onclick="filterPortfolioByCategory('Graduation')" data-cat="Graduation" class="cat-filter-btn px-5 py-2 rounded-sm text-xs font-medium tracking-widest uppercase input-field hover:opacity-80">รับปริญญา</button>
           <button onclick="filterPortfolioByCategory('Event')" data-cat="Event" class="cat-filter-btn px-5 py-2 rounded-sm text-xs font-medium tracking-widest uppercase input-field hover:opacity-80">งานบวช / Event</button>
         </div>
-        <div id="home-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 text-left"></div>
+        <div id="home-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14 text-center"></div>
+      </div>
+
+      <!-- 🖼️ 2. Before / After Color Grading Slider -->
+      <div class="pt-16 mt-20 text-center" style="border-top: 1px solid var(--border-color);">
+        <span class="text-[11px] uppercase tracking-[0.28em] text-accent font-bold block mb-2">Signature Film Grading</span>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-wide mb-2">เปรียบเทียบโทนสี Before / After</h2>
+        <p class="text-xs sm:text-sm mb-8 font-light" style="color: var(--text-muted);">เลื่อนแถบซ้าย-ขวาเพื่อดูความแตกต่างระหว่างภาพต้นฉบับหลังกล้อง (RAW) กับการปรับโทนฟิล์ม Leica Cinematic ของทางร้าน</p>
+        <div class="max-w-3xl mx-auto glass-card p-3 sm:p-4 rounded-3xl">
+          <div class="flex flex-wrap justify-center gap-2 mb-3 text-xs">
+            <button type="button" onclick="setBeforeAfterPreset('warm')" id="ba-preset-warm" class="px-3.5 py-1.5 rounded-full btn-accent font-bold">Leica Warm Film</button>
+            <button type="button" onclick="setBeforeAfterPreset('clean')" id="ba-preset-clean" class="px-3.5 py-1.5 rounded-full input-field font-medium">Clean Natural</button>
+            <button type="button" onclick="setBeforeAfterPreset('bw')" id="ba-preset-bw" class="px-3.5 py-1.5 rounded-full input-field font-medium">Documentary B&amp;W</button>
+          </div>
+          <div id="ba-slider-box" class="relative w-full aspect-[16/10] rounded-2xl overflow-hidden select-none cursor-ew-resize bg-zinc-900">
+            <img id="ba-after-img" src="" alt="After Grading" class="absolute inset-0 w-full h-full object-cover" style="filter: contrast(1.08) saturate(1.12) sepia(0.18) brightness(1.03);">
+            <div id="ba-before-wrap" class="absolute inset-y-0 left-0 overflow-hidden" style="width: 50%;">
+              <img id="ba-before-img" src="" alt="Before RAW" class="absolute inset-0 h-full max-w-none object-cover" style="filter: saturate(0.68) contrast(0.88) brightness(0.94);">
+            </div>
+            <div class="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/65 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md">BEFORE (RAW FILE)</div>
+            <div class="absolute top-3 right-3 px-3 py-1 rounded-full bg-amber-500 text-white text-[10px] font-bold tracking-wider uppercase shadow-md" id="ba-after-badge">AFTER (LEICA WARM FILM)</div>
+            <div id="ba-handle-line" class="absolute inset-y-0 w-0.5 bg-white shadow-[0_0_12px_rgba(0,0,0,0.8)] pointer-events-none" style="left: 50%;">
+              <div class="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white text-black shadow-xl flex items-center justify-center font-bold text-xs">⇄</div>
+            </div>
+            <input type="range" id="ba-range-input" min="5" max="95" value="50" oninput="updateBeforeAfterPosition(this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20">
+          </div>
+        </div>
       </div>
 
       <div class="text-left pt-16 mt-20" style="border-top: 1px solid var(--border-color);">
@@ -1013,14 +1034,14 @@
       const btnP = document.getElementById('gview-btn-photos');
       if (btnA && btnP) {
         if (homeGalleryViewMode === 'albums') {
-          btnA.className = 'px-4 py-1.5 rounded-lg text-xs font-bold btn-accent flex items-center gap-1.5 transition-all';
+          btnA.className = 'px-5 py-1.5 rounded-sm text-xs font-bold tracking-wider uppercase btn-accent flex items-center gap-1.5 transition-all';
           btnA.style.color = '';
-          btnP.className = 'px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all';
+          btnP.className = 'px-5 py-1.5 rounded-sm text-xs font-medium tracking-wider uppercase flex items-center gap-1.5 transition-all';
           btnP.style.color = 'var(--text-muted)';
         } else {
-          btnP.className = 'px-4 py-1.5 rounded-lg text-xs font-bold btn-accent flex items-center gap-1.5 transition-all';
+          btnP.className = 'px-5 py-1.5 rounded-sm text-xs font-bold tracking-wider uppercase btn-accent flex items-center gap-1.5 transition-all';
           btnP.style.color = '';
-          btnA.className = 'px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all';
+          btnA.className = 'px-5 py-1.5 rounded-sm text-xs font-medium tracking-wider uppercase flex items-center gap-1.5 transition-all';
           btnA.style.color = 'var(--text-muted)';
         }
       }
@@ -1045,9 +1066,8 @@
       const m = src.match(/\/d\/([a-zA-Z0-9_-]{10,})/) || src.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
       if (m && m[1]) {
         const fid = m[1];
-        if (!imgEl.dataset.retriedStep) { imgEl.dataset.retriedStep = '1'; imgEl.src = `about:invalid#zPythonSafez`; return; }
-        if (imgEl.dataset.retriedStep === '1') { imgEl.dataset.retriedStep = '2'; imgEl.src = `https://drive.google.com/thumbnail?id=${fid}&sz=w1000`; return; }
-        if (imgEl.dataset.retriedStep === '2') { imgEl.dataset.retriedStep = '3'; imgEl.src = `https://drive.google.com/uc?export=view&id=${fid}`; return; }
+        if (!imgEl.dataset.retriedStep) { imgEl.dataset.retriedStep = '1'; imgEl.src = `https://drive.google.com/thumbnail?id=${fid}&sz=w1000`; return; }
+        if (imgEl.dataset.retriedStep === '1') { imgEl.dataset.retriedStep = '2'; imgEl.src = `https://drive.google.com/uc?export=view&id=${fid}`; return; }
       }
       if (hideOnFinalFail) imgEl.style.display = 'none';
     }
@@ -1178,14 +1198,7 @@
 
     function renderHomeAlbums() {
       const grid = document.getElementById("home-gallery-grid");
-      const badgeEl = document.getElementById("home-drive-stats-badge");
       const allAlbums = Object.values(groupedAlbums);
-      const totalDrivePhotos = allAlbums.reduce((sum, a) => sum + (a.images ? a.images.length : 0), 0);
-      if (badgeEl) {
-        badgeEl.innerText = totalDrivePhotos > 0
-          ? `Google Drive Live • ${allAlbums.length} อัลบั้ม (${totalDrivePhotos} รูปภาพจาก Drive)`
-          : `Google Drive Live Gallery • ซิงค์รูปภาพโดยตรง`;
-      }
       const albums = allAlbums.filter(a => {
         if (!activePortfolioCategory || activePortfolioCategory === 'all') return true;
         const c = String(a.category || '').toLowerCase(), t = activePortfolioCategory.toLowerCase();
@@ -1196,7 +1209,7 @@
         return c.includes(t);
       });
       if (albums.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center glass-card rounded-2xl"><i data-lucide="hard-drive" class="w-10 h-10 mx-auto mb-3 opacity-40 text-accent"></i><p class="font-bold text-sm mb-1">ยังไม่มีรูปภาพในหมวดหมู่นี้</p><p class="text-xs" style="color: var(--text-muted);">ระบบจะดึงรูปภาพจาก Google Drive และแท็บ Portfolio ใน Google Sheets มาแสดงโดยอัตโนมัติ</p></div>`;
+        grid.innerHTML = `<div class="col-span-full py-12 text-center glass-card rounded-sm"><i data-lucide="camera" class="w-10 h-10 mx-auto mb-3 opacity-40 text-accent"></i><p class="font-bold text-sm mb-1">ยังไม่มีอัลบั้มผลงานในหมวดหมู่นี้</p><p class="text-xs" style="color: var(--text-muted);">สามารถเลือกชมหมวดหมู่อื่นๆ ได้จากแถบด้านบน</p></div>`;
         if (window.lucide) lucide.createIcons();
         return;
       }
@@ -1209,24 +1222,13 @@
           });
         });
         grid.innerHTML = flatPhotos.map((img, idx) => `
-          <div class="stagger-item group glass-card rounded-2xl overflow-hidden p-2.5 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" style="animation-delay: ${Math.min(idx * 45, 500)}ms;" onclick="openDrivePhotoStreamLightbox(${idx})">
-            <div class="relative rounded-xl overflow-hidden aspect-[4/5] bg-zinc-900/10">
-              <img src="${normalizeDriveImageUrl(img.url)}" onerror="handleDriveImgError(this, true)" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-              <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold tracking-wider uppercase border border-white/15">
-                ${img.albumCat}
+          <div class="stagger-item group cursor-pointer" style="animation-delay: ${Math.min(idx * 40, 480)}ms;" onclick="openDrivePhotoStreamLightbox(${idx})">
+            <div class="relative overflow-hidden rounded-sm aspect-[4/5] bg-zinc-900/5 border" style="border-color: var(--border-color);">
+              <img src="${normalizeDriveImageUrl(img.url)}" onerror="handleDriveImgError(this, true)" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-left text-white">
+                <span class="text-[10px] tracking-[0.22em] uppercase text-white/80 mb-0.5">${img.albumCat} • 📍 ${img.albumLoc}</span>
+                <h4 class="font-serif font-bold text-sm truncate">${img.albumTitle}</h4>
               </div>
-              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity px-3.5 py-1.5 rounded-full bg-black/75 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> ขยายดูภาพเต็ม
-                </span>
-              </div>
-            </div>
-            <div class="pt-3 px-1.5 pb-1 flex items-center justify-between gap-2">
-              <div class="min-w-0">
-                <h4 class="font-bold text-sm truncate">${img.albumTitle}</h4>
-                <p class="text-[11px] truncate" style="color: var(--text-muted);">📍 ${img.albumLoc}</p>
-              </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded border shrink-0" style="border-color: var(--border-color); color: var(--text-muted);">DRIVE HD</span>
             </div>
           </div>
         `).join("");
@@ -1236,38 +1238,32 @@
 
       grid.innerHTML = albums.map((album, idx) => {
         const coverUrl = normalizeDriveImageUrl(album.images[0]?.url || '');
-        const subThumbs = album.images.slice(1, 4);
+        const pins = typeof getAlbumPinsMap === 'function' ? getAlbumPinsMap() : {};
+        const isLocked = Boolean(pins[album.title]);
         return `
-          <div class="stagger-item group glass-card rounded-2xl overflow-hidden p-3 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl flex flex-col justify-between" style="animation-delay: ${Math.min(idx * 75, 600)}ms;" data-album="${encodeURIComponent(album.title)}" onclick="openAlbum(decodeURIComponent(this.dataset.album))">
-            <div>
-              <div class="relative rounded-xl overflow-hidden aspect-[4/5] bg-zinc-900/10">
-                <img src="${coverUrl}" onerror="handleDriveImgError(this, false)" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10 opacity-60 group-hover:opacity-80 transition-opacity"></div>
-                <div class="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold tracking-widest uppercase border border-white/15">
-                  ${album.category}
+          <div class="stagger-item group cursor-pointer flex flex-col items-center text-center" style="animation-delay: ${Math.min(idx * 75, 600)}ms;" data-album="${encodeURIComponent(album.title)}" onclick="openAlbum(decodeURIComponent(this.dataset.album))">
+            <div class="w-full p-2.5 sm:p-3 rounded-sm border transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-xl mb-4" style="background: var(--card-bg); border-color: var(--border-color);">
+              <div class="relative overflow-hidden rounded-sm aspect-[4/5] bg-zinc-900/5">
+                <img src="${coverUrl}" onerror="handleDriveImgError(this, false)" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]">
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500"></div>
+                <div class="absolute top-3 right-3 px-2.5 py-1 rounded-sm bg-black/55 backdrop-blur-md text-white text-[10px] font-medium tracking-widest uppercase border border-white/15 flex items-center gap-1">
+                  ${isLocked ? '🔒 PRIVATE' : `<i data-lucide="image" class="w-3 h-3"></i> ${album.images.length}`}
                 </div>
-                <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold border border-white/15 flex items-center gap-1">
-                  <i data-lucide="images" class="w-3 h-3"></i> ${album.images.length} รูป
+                <div class="absolute inset-x-0 bottom-4 flex justify-center opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <span class="px-4 py-1.5 rounded-sm bg-white/95 text-zinc-900 text-[10px] font-bold tracking-[0.2em] uppercase shadow-lg">
+                    View Collection →
+                  </span>
                 </div>
-                ${subThumbs.length > 0 ? `
-                  <div class="absolute bottom-3 left-3 right-3 flex items-center gap-1.5 p-1.5 rounded-xl bg-black/55 backdrop-blur-md border border-white/15">
-                    ${subThumbs.map(th => `<div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-white/20"><img src="${normalizeDriveImageUrl(th.url)}" onerror="handleDriveImgError(this, true)" loading="lazy" class="w-full h-full object-cover"></div>`).join('')}
-                    <span class="text-[10px] text-white/90 font-medium pl-1 truncate">คลิกดูอัลบั้มเต็ม (${album.images.length} ภาพ) →</span>
-                  </div>
-                ` : `
-                  <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between px-3 py-1.5 rounded-xl bg-black/55 backdrop-blur-md border border-white/15 text-white text-[11px]">
-                    <span>เปิดดูอัลบั้มเต็ม</span>
-                    <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-                  </div>
-                `}
               </div>
-              <div class="pt-4 px-1.5 pb-1">
-                <div class="flex items-center justify-between gap-2 text-[11px] mb-1" style="color: var(--text-muted);">
-                  <span class=" truncate">📍 ${album.location}</span>
-                  <span class="font-mono uppercase text-[10px] text-emerald-500 font-bold shrink-0">● Google Drive</span>
-                </div>
-                <h3 class="text-base sm:text-lg font-serif font-bold leading-snug group-hover:text-accent transition-colors">${album.title}</h3>
+            </div>
+            <div class="px-2 space-y-1">
+              <div class="text-[10px] uppercase tracking-[0.22em] font-medium" style="color: var(--text-muted);">
+                ${album.category} &nbsp;•&nbsp; 📍 ${album.location}
               </div>
+              <h3 class="text-base sm:text-lg font-serif font-bold tracking-wide group-hover:text-accent transition-colors">
+                ${album.title}
+              </h3>
+              <div class="w-8 group-hover:w-16 h-px mx-auto pt-0.5 transition-all duration-300" style="border-bottom: 1px solid var(--accent); opacity: 0.45;"></div>
             </div>
           </div>
         `;
@@ -3188,6 +3184,483 @@
       }).getPortfolioFromSheet();
       if (window.lucide) lucide.createIcons();
     };
+    // =========================================================
+    // 🌟 8 PRO STUDIO UPGRADE MODULES (All 8 Requested Systems)
+    // 1. Moodboard & Tone Selector | 2. Before/After Grading Slider
+    // 3. Client Photo Favorites (❤️) | 4. Pre-Shoot Preparation Guide
+    // 5. Shoot Day Run-Down & Call Sheet | 6. 12-Month Annual Analytics Chart
+    // 7. One-Click Client Message Templates | 8. Private Album 4-Digit PIN Lock
+    // =========================================================
+
+    // 🖼️ 2. Before / After Color Grading Slider
+    function updateBeforeAfterPosition(val) {
+      const pct = Math.max(5, Math.min(95, Number(val) || 50));
+      const wrap = document.getElementById('ba-before-wrap');
+      const line = document.getElementById('ba-handle-line');
+      const box = document.getElementById('ba-slider-box');
+      const beforeImg = document.getElementById('ba-before-img');
+      if (wrap) wrap.style.width = pct + '%';
+      if (line) line.style.left = pct + '%';
+      if (box && beforeImg) beforeImg.style.width = box.clientWidth + 'px';
+    }
+    function setBeforeAfterPreset(preset) {
+      const afterImg = document.getElementById('ba-after-img');
+      const badge = document.getElementById('ba-after-badge');
+      ['warm', 'clean', 'bw'].forEach(k => {
+        const b = document.getElementById('ba-preset-' + k);
+        if (b) b.className = k === preset ? 'px-3.5 py-1.5 rounded-full btn-accent font-bold' : 'px-3.5 py-1.5 rounded-full input-field font-medium';
+      });
+      if (!afterImg) return;
+      if (preset === 'warm') {
+        afterImg.style.filter = 'contrast(1.1) saturate(1.15) sepia(0.22) brightness(1.03)';
+        if (badge) badge.innerText = 'AFTER (LEICA WARM FILM)';
+      } else if (preset === 'clean') {
+        afterImg.style.filter = 'contrast(1.06) saturate(1.08) brightness(1.06)';
+        if (badge) badge.innerText = 'AFTER (CLEAN NATURAL)';
+      } else {
+        afterImg.style.filter = 'grayscale(1) contrast(1.22) brightness(1.02)';
+        if (badge) badge.innerText = 'AFTER (DOCUMENTARY B&W)';
+      }
+    }
+    function syncBeforeAfterSampleImage() {
+      const afterImg = document.getElementById('ba-after-img');
+      const beforeImg = document.getElementById('ba-before-img');
+      if (!afterImg || !beforeImg) return;
+      const firstDriveUrl = portfolioData && portfolioData.length > 0 ? normalizeDriveImageUrl(portfolioData[0].url) : '';
+      const fallbackSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d4a373"/><stop offset="50%" stop-color="#8d6e63"/><stop offset="100%" stop-color="#2c2520"/></linearGradient></defs><rect width="800" height="500" fill="url(#g)"/><circle cx="620" cy="130" r="65" fill="#fde68a" opacity="0.75"/><path d="M0,390 Q220,290 420,370 T800,340 L800,500 L0,500 Z" fill="#1c1917" opacity="0.65"/><text x="400" y="255" font-family="sans-serif" font-size="26" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="4">TOY GALLERY 2000's FILM TONE</text></svg>`);
+      const chosen = firstDriveUrl || fallbackSvg;
+      afterImg.src = chosen;
+      beforeImg.src = chosen;
+      setTimeout(() => updateBeforeAfterPosition(document.getElementById('ba-range-input')?.value || 50), 100);
+    }
+    window.addEventListener('resize', () => updateBeforeAfterPosition(document.getElementById('ba-range-input')?.value || 50));
+
+    // 🎨 1. Moodboard & Tone Selector ในฟอร์มจองคิว
+    let selectedMoodTones = new Set();
+    function injectMoodboardPickerUI() {
+      const notesInput = document.getElementById('b-notes');
+      if (!notesInput || document.getElementById('moodboard-picker-box')) return;
+      const box = document.createElement('div');
+      box.id = 'moodboard-picker-box';
+      box.className = 'p-4 rounded-2xl border space-y-2.5 text-xs mb-3';
+      box.style.borderColor = 'var(--border-color)';
+      box.style.background = 'rgba(0,0,0,0.03)';
+      const tones = ['🎞️ โทนฟิล์ม Leica Warm', '✨ โทนสว่าง Clean Natural', '🖤 ขาวดำ Documentary B&W', '🌅 แสงเย็น Golden Hour', '📸 เน้น Candid อารมณ์ธรรมชาติ', '👨‍👩‍👧‍👦 เน้นภาพครอบครัว & พิธีการ', '💑 เน้นพอร์ตเทรตคู่โรแมนติก'];
+      box.innerHTML = `
+        <div class="font-bold flex items-center justify-between">
+          <span class="flex items-center gap-1.5"><i data-lucide="palette" class="w-4 h-4 text-accent"></i> เลือกมู้ดโทนภาพ & สไตล์ที่ชอบ (คลิกเลือกได้หลายข้อ)</span>
+          <span class="text-[10px]" style="color: var(--text-muted);">ใส่ในใบบรีฟอัตโนมัติ</span>
+        </div>
+        <div class="flex flex-wrap gap-1.5 pt-1">
+          ${tones.map(t => `<button type="button" onclick="toggleMoodToneTag(this, '${t}')" class="px-3 py-1.5 rounded-full input-field text-[11px] font-medium transition-all hover:opacity-80">${t}</button>`).join('')}
+        </div>
+      `;
+      notesInput.parentElement.insertBefore(box, notesInput);
+    }
+    function toggleMoodToneTag(btnEl, tagText) {
+      const notesEl = document.getElementById('b-notes');
+      if (selectedMoodTones.has(tagText)) {
+        selectedMoodTones.delete(tagText);
+        btnEl.className = 'px-3 py-1.5 rounded-full input-field text-[11px] font-medium transition-all hover:opacity-80';
+      } else {
+        selectedMoodTones.add(tagText);
+        btnEl.className = 'px-3 py-1.5 rounded-full btn-accent text-[11px] font-bold transition-all shadow-sm';
+      }
+      if (notesEl) {
+        const cleaned = notesEl.value.replace(/\[มู้ดโทน:.*?\]\s*/g, '').trim();
+        const prefix = selectedMoodTones.size > 0 ? `[มู้ดโทน: ${[...selectedMoodTones].join(', ')}] ` : '';
+        notesEl.value = prefix + cleaned;
+      }
+    }
+
+    // ❤️ 3. Client Photo Selection / Favorites & 🔐 8. Private Album PIN Lock
+    function getFavoritePhotosList() {
+      try { return JSON.parse(SafeStorage.getItem('tg_favorite_photos') || '[]'); } catch (e) { return []; }
+    }
+    function toggleFavoritePhoto(albumTitle, idx, event) {
+      if (event) event.stopPropagation();
+      const key = `${albumTitle} #รูปที่ ${idx + 1}`;
+      let list = getFavoritePhotosList();
+      if (list.includes(key)) list = list.filter(x => x !== key);
+      else list.push(key);
+      SafeStorage.setItem('tg_favorite_photos', JSON.stringify(list));
+      if (document.getElementById('album-modal')?.classList.contains('show')) openAlbum(albumTitle, true);
+    }
+    function copyFavoritePhotosList() {
+      const list = getFavoritePhotosList();
+      if (!list.length) { uiAlert('กรุณากดปุ่มหัวใจ (❤️) บนรูปภาพที่ชอบก่อนครับ'); return; }
+      const text = `❤️ รายการรูปภาพที่ลูกค้าชื่นชอบ (${list.length} รูป):\n` + list.map((x, i) => `${i + 1}. ${x}`).join('\n');
+      copyTextSafe(text, `คัดลอกรายการรูปที่ชอบ (${list.length} รูป) เรียบร้อยแล้ว! สามารถส่งให้ช่างภาพทาง LINE ได้เลยครับ`);
+    }
+    function getAlbumPinsMap() {
+      try { return JSON.parse(SafeStorage.getItem('tg_album_pins') || '{}'); } catch (e) { return {}; }
+    }
+    function promptSetAlbumPin() {
+      if (!currentManageAlbumObj) return;
+      const title = currentManageAlbumObj.title;
+      const pins = getAlbumPinsMap();
+      const curPin = pins[title] || '';
+      const modal = document.getElementById('custom-dialog-modal');
+      document.getElementById('dialog-msg').innerHTML = `
+        <div class="text-left space-y-2.5 text-xs">
+          <h4 class="font-bold text-sm flex items-center gap-1.5">🔐 ตั้งรหัส PIN 4 หลักสำหรับอัลบั้มส่วนตัว</h4>
+          <p style="color: var(--text-muted);">อัลบั้ม: <b>${title}</b> (เว้นว่างหากต้องการเปิดเป็นสาธารณะ)</p>
+          <input type="text" id="set-album-pin-input" maxlength="8" value="${curPin}" placeholder="เช่น 2569 (เว้นว่าง = ไม่ล็อก)" class="w-full input-field rounded-xl px-3.5 py-2.5 text-center font-mono text-base font-bold tracking-widest">
+        </div>
+      `;
+      document.getElementById('dialog-actions').innerHTML = `
+        <button id="dlg-cancel-btn" class="flex-1 py-2.5 rounded-xl input-field font-bold text-xs">ยกเลิก</button>
+        <button id="dlg-save-pin" class="flex-1 py-2.5 rounded-xl btn-accent font-bold text-xs">บันทึกรหัส PIN</button>
+      `;
+      modal.classList.add('show');
+      document.getElementById('dlg-cancel-btn').onclick = () => modal.classList.remove('show');
+      document.getElementById('dlg-save-pin').onclick = () => {
+        const val = (document.getElementById('set-album-pin-input')?.value || '').trim();
+        if (val) pins[title] = val;
+        else delete pins[title];
+        SafeStorage.setItem('tg_album_pins', JSON.stringify(pins));
+        pushToGasWebhook('saveSettings', { albumPins: JSON.stringify(pins) });
+        modal.classList.remove('show');
+        renderHomeAlbums();
+        uiAlert(val ? `ล็อกรหัส PIN (${val}) สำหรับอัลบั้ม "${title}" เรียบร้อยแล้ว!` : `ปลดล็อกอัลบั้ม "${title}" เป็นสาธารณะเรียบร้อยแล้ว!`);
+      };
+    }
+
+    const origOpenAlbum = openAlbum;
+    openAlbum = function(albumName, skipPinCheck = false) {
+      const pins = getAlbumPinsMap();
+      const reqPin = pins[albumName];
+      if (reqPin && !skipPinCheck && SafeSession.getItem('tg_admin') !== 'true' && SafeSession.getItem('tg_unlocked_' + albumName) !== 'true') {
+        const modal = document.getElementById('custom-dialog-modal');
+        document.getElementById('dialog-msg').innerHTML = `
+          <div class="space-y-3 text-xs">
+            <div class="w-12 h-12 rounded-full bg-amber-500/15 text-amber-500 flex items-center justify-center mx-auto font-bold text-lg">🔒</div>
+            <h4 class="font-bold text-base">อัลบั้มส่วนตัว (Private Gallery)</h4>
+            <p style="color: var(--text-muted);">กรุณากรอกรหัส PIN เพื่อเปิดดูอัลบั้ม <b>"${albumName}"</b></p>
+            <input type="password" id="enter-album-pin-input" maxlength="8" placeholder="กรอกรหัส PIN..." class="w-full input-field rounded-xl px-4 py-2.5 text-center font-mono text-base font-bold tracking-widest">
+          </div>
+        `;
+        document.getElementById('dialog-actions').innerHTML = `
+          <button id="dlg-cancel-btn" class="flex-1 py-2.5 rounded-xl input-field font-bold text-xs">ยกเลิก</button>
+          <button id="dlg-unlock-btn" class="flex-1 py-2.5 rounded-xl btn-accent font-bold text-xs">ปลดล็อกอัลบั้ม</button>
+        `;
+        modal.classList.add('show');
+        document.getElementById('dlg-cancel-btn').onclick = () => modal.classList.remove('show');
+        document.getElementById('dlg-unlock-btn').onclick = () => {
+          const entered = (document.getElementById('enter-album-pin-input')?.value || '').trim();
+          if (entered === String(reqPin)) {
+            SafeSession.setItem('tg_unlocked_' + albumName, 'true');
+            modal.classList.remove('show');
+            openAlbum(albumName, true);
+          } else {
+            uiAlert('รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่อีกครั้งครับ');
+          }
+        };
+        return;
+      }
+      origOpenAlbum(albumName);
+      const album = groupedAlbums[albumName];
+      if (!album) return;
+      const favs = getFavoritePhotosList();
+      const gridEl = document.getElementById("modal-image-grid");
+      if (gridEl) {
+        const albumFavCount = favs.filter(k => k.startsWith(album.title + ' #')).length;
+        const favBarHtml = `
+          <div class="col-span-full flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-700 text-white text-xs mb-2">
+            <span>❤️ เลือกรูปที่ชอบไว้แล้ว <b>${favs.length} รูป</b> (ในอัลบั้มนี้ ${albumFavCount} รูป) — กดหัวใจมุมขวาบนของรูปเพื่อเลือก</span>
+            <button type="button" onclick="copyFavoritePhotosList()" class="px-4 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow">📋 คัดลอกรายการรูปที่ชอบส่งช่างภาพ</button>
+          </div>
+        `;
+        gridEl.innerHTML = favBarHtml + album.images.map((img, idx) => {
+          const favKey = `${album.title} #รูปที่ ${idx + 1}`;
+          const isFav = favs.includes(favKey);
+          const safeTitle = encodeURIComponent(album.title);
+          return `
+            <div class="stagger-item group relative overflow-hidden rounded-xl mb-4 shadow-lg border border-zinc-800 cursor-pointer" style="animation-delay: ${Math.min(idx * 55, 500)}ms;" onclick="openLightbox(${idx})">
+              <img src="${normalizeDriveImageUrl(img.url)}" onerror="handleDriveImgError(this, true)" class="w-full transition-transform duration-500 group-hover:scale-[1.03]">
+              <button type="button" onclick="toggleFavoritePhoto(decodeURIComponent('${safeTitle}'), ${idx}, event)" class="absolute top-3 right-3 z-20 px-3 py-1.5 rounded-full ${isFav ? 'bg-rose-500 text-white' : 'bg-black/60 text-white/80 hover:bg-black/80'} backdrop-blur-md text-xs font-bold flex items-center gap-1 shadow-lg transition-all">
+                <span>${isFav ? '❤️ ชอบแล้ว' : '🤍 เลือกรูปนี้'}</span>
+              </button>
+              <div class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-black/60 text-white/90 text-[10px] font-mono backdrop-blur-sm">#รูปที่ ${idx + 1}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    };
+
+    const origOpenManageAlbum = openManageAlbum;
+    openManageAlbum = function(title) {
+      origOpenManageAlbum(title);
+      const modal = document.getElementById('manage-album-modal');
+      if (modal && !document.getElementById('btn-set-album-pin')) {
+        const editBtn = modal.querySelector('button[onclick="openEditAlbumDetails()"]');
+        if (editBtn && editBtn.parentElement) {
+          const pinBtn = document.createElement('button');
+          pinBtn.type = 'button';
+          pinBtn.id = 'btn-set-album-pin';
+          pinBtn.onclick = promptSetAlbumPin;
+          pinBtn.className = 'px-2 sm:px-3 py-1.5 sm:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-[10px] sm:text-xs font-bold shadow-md';
+          pinBtn.innerHTML = '🔐 ตั้งรหัส PIN';
+          editBtn.parentElement.insertBefore(pinBtn, editBtn);
+        }
+      }
+    };
+
+    // 📋 4. คู่มือเตรียมตัวก่อนวันถ่ายทำอัตโนมัติ (Pre-Shoot Preparation Guide)
+    function getPreShootChecklistHtml(pkgName) {
+      const p = String(pkgName || '');
+      let items = [
+        'พักผ่อนให้เพียงพออย่างน้อย 6–8 ชั่วโมงก่อนวันถ่าย เพื่อให้ผิวหน้าสดใสเป็นธรรมชาติ',
+        'เตรียม Reference ท่าโพสหรือมุมที่ชอบไว้ในมือถือ สามารถเปิดให้ช่างภาพดูหน้างานได้เลยครับ',
+        'หากมีอุปกรณ์ประกอบฉาก (Props) เช่น ดอกไม้ กล้องฟิล์ม หรือป้ายข้อความ สามารถเตรียมมาเข้าฉากได้'
+      ];
+      if (/รับปริญญา|Grad/i.test(p)) {
+        items = [
+          '🎓 เตรียมชุดครุย เข็มวิทยฐานะ หมวก และรองเท้าให้พร้อม (แนะนำพกทิชชู่ซับหน้าและพัดลมพกพา)',
+          '💄 แนะนำแต่งหน้าโทนละมุน (Clean / Warm Glow) จะเข้ากับโทนฟิล์มของทางร้านมากที่สุด',
+          '💐 นัดหมายจุดรวมพลกับครอบครัวและเพื่อนๆ ล่วงหน้า เพื่อเก็บภาพหมู่ช่วงแสงสวยได้ครบถ้วน'
+        ];
+      } else if (/Wedding|Pre-Wedding/i.test(p)) {
+        items = [
+          '💍 เตรียมชุดบ่าวสาว แหวนหมั้น รองเท้า และชุดลำลองให้พร้อมก่อนเวลาเริ่มงาน 30 นาที',
+          '👗 โทนสีเสื้อผ้าที่เข้ากับโทนฟิล์ม Leica ของร้าน: ขาวครีม, เบจ, เอิร์ธโทน, น้ำตาลอ่อน หรือพาสเทล',
+          '✨ ช่วงพิธีการไม่ต้องเกร็งครับ ช่างภาพจะคอยช่วยจัดระเบียบท่าทางและเก็บโมเมนต์ Candid ให้ตลอดงาน'
+        ];
+      } else if (/บวช/i.test(p)) {
+        items = [
+          '🙏 เตรียมชุดนาค ผ้าไตร อัฐบริขาร และเหรียญโปรยทานให้พร้อมก่อนขบวนแห่เริ่ม',
+          '☀️ ช่วงแห่รอบอุโบสถ แนะนำให้ญาติพี่น้องเดินเว้นระยะเล็กน้อย เพื่อให้ได้ภาพขบวนที่สวยงามและเห็นใบหน้าชัดเจน'
+        ];
+      }
+      return `
+        <div class="p-4 rounded-2xl border space-y-2 text-xs" style="border-color: var(--border-color); background: rgba(16, 185, 129, 0.05);">
+          <div class="font-bold text-emerald-600 flex items-center gap-1.5">📋 คู่มือเตรียมตัวก่อนวันถ่ายทำ (${pkgName || 'สำหรับลูกค้า'})</div>
+          <ul class="list-disc list-inside space-y-1 text-[11px] leading-relaxed" style="color: var(--text-muted);">
+            ${items.map(i => `<li>${i}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+    const prevHandleTrackSearch = handleTrackSearch;
+    handleTrackSearch = function(e) {
+      prevHandleTrackSearch(e);
+      const area = document.getElementById('track-results-area');
+      if (!area) return;
+      const cards = area.querySelectorAll('.glass-card.rounded-3xl');
+      cards.forEach(card => {
+        if (!card.querySelector('.pre-shoot-guide-box')) {
+          const pkgText = card.querySelector('.text-accent')?.innerText || '';
+          const div = document.createElement('div');
+          div.className = 'pre-shoot-guide-box';
+          div.innerHTML = getPreShootChecklistHtml(pkgText);
+          card.appendChild(div);
+        }
+      });
+    };
+
+    // 🗓️ 5. ตารางกำหนดการพิธีการวันงาน & ใบบรีฟหน้างาน (Shoot Day Run-Down & Call Sheet)
+    function getRunDownMap() {
+      try { return JSON.parse(SafeStorage.getItem('tg_rundown_sheets') || '{}'); } catch (e) { return {}; }
+    }
+    function openRunDownModal(id) {
+      const b = allBookings.find(x => String(x.id) === String(id));
+      if (!b) return;
+      currentBookingId = b.id;
+      const map = getRunDownMap();
+      const defaultTimeline = /บวช/.test(b.packageName)
+        ? "07:30 - ถ่ายภาพนาคพร้อมครอบครัวที่บ้าน/วัด\n08:30 - ตั้งขบวนแห่นาค\n09:30 - แห่นาครอบพระอุโบสถ 3 รอบ & โปรยทาน\n10:30 - พิธีอุปสมบทในพระอุโบสถ\n11:30 - ถวายภัตตาหารเพล & ถ่ายภาพหมู่ร่วมกับพระใหม่"
+        : (/รับปริญญา/.test(b.packageName)
+          ? "07:30 - นัดเจอกันจุดนัดพบที่ 1 (ถ่ายเดี่ยวแสงเช้า)\n09:30 - ถ่ายภาพร่วมกับครอบครัวและญาติ\n11:00 - พักทานอาหารกลางวัน / ซับหน้า\n13:30 - ถ่ายภาพกับกลุ่มเพื่อนและซุ้มคณะ\n16:00 - ไฮไลต์แสงเย็น Golden Hour"
+          : "07:09 - พิธีสงฆ์ & ตักบาตรเช้า\n08:29 - ตั้งขบวนแห่ขันหมาก\n09:09 - พิธีสวมแหวนหมั้น & รับไหว้ผู้ใหญ่\n10:19 - พิธีหลั่งน้ำพระพุทธมนต์ (รดน้ำสังข์)\n11:30 - ถ่ายภาพหมู่ครอบครัว & แขกผู้มีเกียรติ");
+      const savedTimeline = map[b.id] || defaultTimeline;
+
+      let modal = document.getElementById('rundown-callsheet-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'rundown-callsheet-modal';
+        modal.className = 'edit-modal';
+        modal.style.zIndex = '1092';
+        modal.innerHTML = `
+          <div class="glass-card p-6 rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color);">
+              <h3 class="font-bold text-lg flex items-center gap-2">🗓️ ตารางกำหนดการวันงาน & ใบบรีฟหน้างาน (Call Sheet)</h3>
+              <button onclick="document.getElementById('rundown-callsheet-modal').classList.remove('show')" class="p-1.5 rounded-lg input-field">✕</button>
+            </div>
+            <div class="text-xs space-y-2">
+              <label class="font-bold block">แก้ไขกำหนดการพิธีการ / ลำดับเวลาถ่ายทำ:</label>
+              <textarea id="rd-timeline-input" rows="5" oninput="refreshCallSheetPreview()" class="w-full input-field rounded-xl p-3 font-mono text-xs leading-relaxed"></textarea>
+            </div>
+            <div id="printable-callsheet" class="p-6 rounded-2xl bg-white text-black border border-gray-200 space-y-3 text-xs">
+              <div class="flex justify-between items-start border-b border-gray-300 pb-3">
+                <div>
+                  <div class="text-base font-bold">TOY GALLERY 2000's • SHOOT CALL SHEET</div>
+                  <div class="text-gray-500 text-[11px]">ใบบรีฟคิวงานและตารางกำหนดการถ่ายภาพ</div>
+                </div>
+                <span id="cs-id" class="px-2.5 py-1 rounded bg-black text-white font-mono font-bold text-xs"></span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                <div><span class="text-gray-500 block text-[10px]">ลูกค้า:</span><b id="cs-name" class="text-sm"></b></div>
+                <div><span class="text-gray-500 block text-[10px]">เบอร์โทร:</span><b id="cs-tel" class="text-sm"></b></div>
+                <div><span class="text-gray-500 block text-[10px]">วันที่ & ช่วงเวลา:</span><b id="cs-date"></b></div>
+                <div><span class="text-gray-500 block text-[10px]">สถานที่:</span><b id="cs-loc"></b></div>
+                <div class="col-span-2"><span class="text-gray-500 block text-[10px]">แพ็กเกจ:</span><b id="cs-pkg"></b></div>
+              </div>
+              <div>
+                <div class="font-bold mb-1.5 text-black">⏱️ ลำดับกำหนดการถ่ายทำ (Run-Down Schedule):</div>
+                <div id="cs-timeline-view" class="whitespace-pre-line bg-amber-50/70 border border-amber-200 rounded-xl p-3 font-mono text-xs leading-relaxed text-gray-800"></div>
+              </div>
+              <div id="cs-notes" class="text-[11px] text-gray-600 border-t pt-2"></div>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button type="button" onclick="saveRunDownSchedule()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">💾 บันทึกกำหนดการ</button>
+              <button type="button" onclick="downloadJPG('printable-callsheet', 'CallSheet_' + currentBookingId)" class="flex-1 py-2.5 rounded-xl btn-accent font-bold text-xs">📸 บันทึกใบบรีฟเป็น JPG</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      document.getElementById('rd-timeline-input').value = savedTimeline;
+      document.getElementById('cs-id').innerText = b.id;
+      document.getElementById('cs-name').innerText = b.customerName;
+      document.getElementById('cs-tel').innerText = formatPhone(b.tel);
+      document.getElementById('cs-date').innerText = `${b.date} (${b.timeSlot})`;
+      document.getElementById('cs-loc').innerText = b.location;
+      document.getElementById('cs-pkg').innerText = b.packageName;
+      document.getElementById('cs-notes').innerText = b.notes ? `📝 บรีฟเพิ่มเติม: ${b.notes}` : '📝 ช่างภาพ: ปรวรรตน์ แสนใหญ่ (Toy Gallery 2000\'s • 062-607-9030)';
+      refreshCallSheetPreview();
+      modal.classList.add('show');
+    }
+    function refreshCallSheetPreview() {
+      const val = document.getElementById('rd-timeline-input')?.value || '';
+      const view = document.getElementById('cs-timeline-view');
+      if (view) view.innerText = val;
+    }
+    function saveRunDownSchedule() {
+      const map = getRunDownMap();
+      map[currentBookingId] = document.getElementById('rd-timeline-input')?.value || '';
+      SafeStorage.setItem('tg_rundown_sheets', JSON.stringify(map));
+      uiAlert('บันทึกตารางกำหนดการวันงานเรียบร้อยแล้ว!');
+    }
+
+    // 💬 7. ระบบสร้างข้อความแจ้งเตือนลูกค้าอัตโนมัติ (One-Click Client Message Templates)
+    function openClientMessageModal(id) {
+      const b = allBookings.find(x => String(x.id) === String(id));
+      if (!b) return;
+      const price = Number(b.price) || 0, paid = Number(b.depositAmount) || 0, bal = Math.max(0, price - paid);
+      const msg1 = `สวัสดีครับคุณ ${b.customerName} 📸\nToy Gallery 2000's ขอแจ้งยืนยันการล็อคคิวถ่ายภาพเรียบร้อยแล้วครับ\n\n• รหัสคิว: ${b.id}\n• วันที่ถ่าย: ${b.date} (${b.timeSlot})\n• สถานที่: ${b.location}\n• แพ็กเกจ: ${b.packageName}\n• รับมัดจำแล้ว: ฿${paid.toLocaleString()} (คงเหลือวันงาน ฿${bal.toLocaleString()})\n\nขอบคุณที่ไว้วางใจให้เราบันทึกความทรงจำสำคัญครับ 🙏✨`;
+      const msg2 = `สวัสดีครับคุณ ${b.customerName} 🌤️\nแจ้งเตือนนัดหมายคิวถ่ายภาพกับ Toy Gallery 2000's ในวันที่ ${b.date} (${b.timeSlot}) ณ ${b.location} ครับ\n\nแนะนำพักผ่อนให้เพียงพอ และหากมีมุมหรือท่าโพสที่อยากได้เป็นพิเศษสามารถส่งให้ช่างภาพดูได้เลยนะครับ แล้วพบกันครับ! 📸`;
+      const msg3 = `สวัสดีครับคุณ ${b.customerName} 🎉\nไฟล์ภาพความละเอียดสูงโทนฟิล์ม Cinematic ของคุณพร้อมส่งมอบแล้วครับ!\n\n📂 ลิงก์รับรูปภาพ: ${b.driveLink || b.photosLink || 'https://toyporawat.github.io/toy-gallery/'}\n(สำรองไฟล์บนระบบคลาวด์ไว้ให้ดาวน์โหลด 60 วันครับ)\n\nฝากแวะเขียนรีวิวความประทับใจบนหน้าเว็บให้ช่างภาพด้วยนะครับ ขอบคุณมากๆ ครับ ❤️🙏`;
+
+      const modal = document.getElementById('custom-dialog-modal');
+      document.getElementById('dialog-msg').innerHTML = `
+        <div class="text-left space-y-2.5 text-xs">
+          <h4 class="font-bold text-sm">💬 คัดลอกข้อความส่งลูกค้า: ${b.customerName} (${b.id})</h4>
+          <button type="button" onclick="copyTextSafe(decodeURIComponent('${encodeURIComponent(msg1)}'), 'คัดลอกข้อความยืนยันมัดจำแล้ว!')" class="w-full p-2.5 rounded-xl input-field hover:opacity-80 text-left font-bold flex items-center justify-between"><span>1. ✅ ข้อความยืนยันรับมัดจำ & ล็อคคิว</span><span class="text-accent underline">คัดลอก</span></button>
+          <button type="button" onclick="copyTextSafe(decodeURIComponent('${encodeURIComponent(msg2)}'), 'คัดลอกข้อความแจ้งเตือนก่อนวันถ่ายแล้ว!')" class="w-full p-2.5 rounded-xl input-field hover:opacity-80 text-left font-bold flex items-center justify-between"><span>2. ⏰ ข้อความแจ้งเตือนนัดหมายก่อนวันถ่าย</span><span class="text-accent underline">คัดลอก</span></button>
+          <button type="button" onclick="copyTextSafe(decodeURIComponent('${encodeURIComponent(msg3)}'), 'คัดลอกข้อความส่งมอบงานแล้ว!')" class="w-full p-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-left font-bold flex items-center justify-between"><span>3. 📦 ข้อความส่งมอบลิงก์รูปภาพ + ชวนรีวิว</span><span class="underline">คัดลอก</span></button>
+        </div>
+      `;
+      document.getElementById('dialog-actions').innerHTML = `<button id="dlg-ok-btn" class="w-full py-2.5 rounded-xl btn-accent font-bold text-xs">ปิดหน้าต่าง</button>`;
+      modal.classList.add('show');
+      document.getElementById('dlg-ok-btn').onclick = () => modal.classList.remove('show');
+    }
+
+    // 📊 6. กราฟวิเคราะห์รายได้ กำไร และต้นทุนรายปี 12 เดือน (Annual Analytics Chart)
+    function renderAnnualAnalyticsChart() {
+      const monthInput = document.getElementById('revenue-month')?.value || new Date().toISOString().slice(0, 7);
+      const year = monthInput.split('-')[0] || String(new Date().getFullYear());
+      let chartBox = document.getElementById('annual-analytics-box');
+      if (!chartBox) {
+        const dashCard = document.querySelector('#admin-sub-list .glass-card.rounded-3xl.p-6');
+        if (!dashCard) return;
+        chartBox = document.createElement('div');
+        chartBox.id = 'annual-analytics-box';
+        chartBox.className = 'mt-6 pt-5 border-t';
+        chartBox.style.borderColor = 'var(--border-color)';
+        dashCard.appendChild(chartBox);
+      }
+      const thM = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+      const expAll = getExpensesList();
+      const monthly = Array.from({ length: 12 }, (_, idx) => {
+        const ym = `${year}-${String(idx + 1).padStart(2, '0')}`;
+        const rev = (allBookings || [])
+          .filter(b => b.date && b.date.startsWith(ym) && (b.status === 'ยืนยันแล้ว' || b.status === 'เสร็จสิ้น'))
+          .reduce((s, b) => s + (Number(b.price) || 0), 0);
+        const exp = expAll.filter(x => String(x.month || '').startsWith(ym)).reduce((s, x) => s + (Number(x.amount) || 0), 0);
+        return { label: thM[idx], ym, rev, exp, net: Math.max(0, rev - exp) };
+      });
+      const maxVal = Math.max(10000, ...monthly.map(m => m.rev));
+      const yearRev = monthly.reduce((s, m) => s + m.rev, 0);
+      const yearNet = monthly.reduce((s, m) => s + (m.rev - m.exp), 0);
+      chartBox.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 text-xs">
+          <span class="font-bold flex items-center gap-1.5"><i data-lucide="bar-chart-3" class="w-4 h-4 text-accent"></i> กราฟสรุปรายได้ & กำไรสุทธิรายปี ${year}</span>
+          <span class="font-mono">รวมทั้งปี: <b class="text-emerald-500">฿${yearRev.toLocaleString()}</b> • กำไรสุทธิ: <b class="text-accent">฿${yearNet.toLocaleString()}</b></span>
+        </div>
+        <div class="grid grid-cols-12 gap-1.5 items-end h-28 pt-4 px-2 rounded-2xl border" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);">
+          ${monthly.map(m => {
+            const hPct = Math.max(6, Math.round((m.rev / maxVal) * 100));
+            return `
+              <div onclick="selectAdminMonthFilter('${m.ym}')" class="flex flex-col items-center cursor-pointer group h-full justify-end" title="${m.label} ${year}: รายได้ ฿${m.rev.toLocaleString()} | กำไร ฿${(m.rev - m.exp).toLocaleString()}">
+                <span class="text-[9px] font-mono opacity-0 group-hover:opacity-100 transition-opacity mb-0.5">${m.rev > 0 ? (m.rev / 1000).toFixed(1) + 'k' : ''}</span>
+                <div class="w-full max-w-[22px] rounded-t-md transition-all ${m.rev > 0 ? 'bg-emerald-500 group-hover:bg-amber-500' : 'bg-zinc-500/20'}" style="height: ${hPct}%;"></div>
+                <span class="text-[9px] mt-1 opacity-75">${m.label}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    const prevUpdateStats = updateDashboardStats;
+    updateDashboardStats = function() {
+      prevUpdateStats();
+      renderAnnualAnalyticsChart();
+    };
+
+    const prevRenderAdminTable = renderAdminTable;
+    renderAdminTable = function() {
+      prevRenderAdminTable();
+      const rows = document.querySelectorAll('#admin-table-body tr');
+      const displayBookings = (adminTableMonthFilter ? allBookings.filter(b => (b.date || '').startsWith(adminTableMonthFilter)) : [...allBookings]).sort((a, b) => String(a.date || '9999').localeCompare(String(b.date || '9999')));
+      rows.forEach((tr, idx) => {
+        const b = displayBookings[idx];
+        const btnWrap = tr.querySelector('td:last-child .flex');
+        if (b && btnWrap && !btnWrap.querySelector('.btn-rundown-extra')) {
+          const safeId = encodeURIComponent(b.id);
+          const rdBtn = document.createElement('button');
+          rdBtn.type = 'button';
+          rdBtn.className = 'btn-rundown-extra px-2 py-1 input-field rounded text-xs font-bold';
+          rdBtn.title = 'ตารางกำหนดการวันงาน & ใบบรีฟ (Call Sheet)';
+          rdBtn.innerText = '🗓️ กำหนดการ';
+          rdBtn.onclick = () => openRunDownModal(decodeURIComponent(safeId));
+          const msgBtn = document.createElement('button');
+          msgBtn.type = 'button';
+          msgBtn.className = 'px-2 py-1 input-field rounded text-xs font-bold';
+          msgBtn.title = 'คัดลอกข้อความแจ้งลูกค้า';
+          msgBtn.innerText = '💬 แจ้งลูกค้า';
+          msgBtn.onclick = () => openClientMessageModal(decodeURIComponent(safeId));
+          btnWrap.appendChild(rdBtn);
+          btnWrap.appendChild(msgBtn);
+        }
+      });
+    };
+
+    const prevRenderHomeAlbums = renderHomeAlbums;
+    renderHomeAlbums = function() {
+      prevRenderHomeAlbums();
+      syncBeforeAfterSampleImage();
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      injectMoodboardPickerUI();
+      syncBeforeAfterSampleImage();
+    });
+    setTimeout(() => {
+      injectMoodboardPickerUI();
+      syncBeforeAfterSampleImage();
+      renderAnnualAnalyticsChart();
+    }, 300);
   </script>
 </body>
 </html>
