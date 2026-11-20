@@ -3174,9 +3174,6 @@
         document.getElementById('set-sheet-url').value = appSettings.sheetUrl || DEFAULT_SHEET_URL;
         document.getElementById('set-gas-webapp-url').value = appSettings.gasWebAppUrl || DEFAULT_GAS_WEBAPP_URL;
         syncSheetData('all', true);
-        if (realTimeSyncTimer) clearInterval(realTimeSyncTimer);
-        realTimeSyncTimer = setInterval(() => { if (!document.hidden) syncSheetData('all', true); }, 20000);
-        document.addEventListener('visibilitychange', () => { if (!document.hidden) syncSheetData('all', true); });
       }).getAppSettings();
       google.script.run.withSuccessHandler(res => {
         if (res.success) { portfolioData = res.data; processAlbums(); renderHomeAlbums(); renderManagePortfolio(); }
