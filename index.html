@@ -784,28 +784,50 @@
       payload += '6304';
       return payload + crc16PromptPay(payload);
     }
-    function encodeQrMatrixV5L(textStr) {
-      const bytes = [];
-      for (let i = 0; i < textStr.length; i++) bytes.push(textStr.charCodeAt(i) & 0xFF);
-      const totalData = 108, ecLen = 26, size = 37, bits = [];
+    function encodeQrMatrixV5L(rawTextStr) {
+      let cleanStr = String(rawTextStr || 'https://toyporawat.github.io/toy-gallery/').trim();
+      if (cleanStr.length > 100 && cleanStr.includes('?usp=')) {
+        cleanStr = cleanStr.split('?usp=')[0];
+      }
+      let bytes = [];
+      if (typeof TextEncoder !== 'undefined') {
+        bytes = Array.from(new TextEncoder().encode(cleanStr));
+      } else {
+        for (let i = 0; i < cleanStr.length; i++) bytes.push(cleanStr.charCodeAt(i) & 0xFF);
+      }
+      if (bytes.length > 106) bytes = bytes.slice(0, 106);
+
+      // เลือกขนาด QR Version อัตโนมัติตามความยาวลิงก์ เพื่อให้จุดสี่เหลี่ยมใหญ่ คมชัด และสแกนติดง่ายที่สุด
+      let ver = { size: 37, totalData: 108, ecLen: 26, align: 30 };
+      if (bytes.length <= 32) ver = { size: 25, totalData: 34, ecLen: 10, align: 18 };
+      else if (bytes.length <= 53) ver = { size: 29, totalData: 55, ecLen: 15, align: 22 };
+      else if (bytes.length <= 78) ver = { size: 33, totalData: 80, ecLen: 20, align: 26 };
+
+      const { size, totalData, ecLen, align } = ver;
+      const bits = [];
       const pushBits = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >> i) & 1); };
-      pushBits(0b0100, 4); pushBits(bytes.length, 8);
+      pushBits(0b0100, 4);
+      pushBits(bytes.length, 8);
       bytes.forEach(b => pushBits(b, 8));
       pushBits(0, Math.min(4, totalData * 8 - bits.length));
       while (bits.length % 8 !== 0) bits.push(0);
+
       const codewords = [];
       for (let i = 0; i < bits.length; i += 8) {
         let v = 0;
         for (let j = 0; j < 8; j++) v = (v << 1) | bits[i + j];
         codewords.push(v);
       }
-      const pad = [0xEC, 0x11]; let pi = 0;
+      const pad = [0xEC, 0x11];
+      let pi = 0;
       while (codewords.length < totalData) codewords.push(pad[(pi++) % 2]);
+
       const gfExp = new Array(512).fill(0), gfLog = new Array(256).fill(0);
       let x = 1;
       for (let i = 0; i < 255; i++) { gfExp[i] = x; gfLog[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
       for (let i = 255; i < 512; i++) gfExp[i] = gfExp[i - 255];
       const gfMul = (a, b) => (a === 0 || b === 0) ? 0 : gfExp[gfLog[a] + gfLog[b]];
+
       let gen = [1];
       for (let i = 0; i < ecLen; i++) {
         const nxt = new Array(gen.length + 1).fill(0), root = gfExp[i];
@@ -814,9 +836,11 @@
       }
       let ec = new Array(ecLen).fill(0);
       for (const cw of codewords) {
-        const factor = cw ^ ec[0]; ec = ec.slice(1).concat([0]);
+        const factor = cw ^ ec[0];
+        ec = ec.slice(1).concat([0]);
         if (factor !== 0) { for (let j = 0; j < ecLen; j++) ec[j] ^= gfMul(gen[j + 1], factor); }
       }
+
       const allCw = codewords.concat(ec);
       const mat = Array.from({ length: size }, () => new Array(size).fill(0));
       const isFunc = Array.from({ length: size }, () => new Array(size).fill(false));
@@ -831,14 +855,16 @@
         }
       };
       drawFinder(0, 0); drawFinder(0, size - 7); drawFinder(size - 7, 0);
-      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) setFunc(30 + dr, 30 + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1);
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) setFunc(align + dr, align + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1);
       for (let i = 8; i < size - 8; i++) { setFunc(6, i, i % 2 === 0); setFunc(i, 6, i % 2 === 0); }
       setFunc(size - 8, 8, true);
       for (let i = 0; i < 9; i++) { if (!isFunc[8][i]) setFunc(8, i, false); if (!isFunc[i][8]) setFunc(i, 8, false); }
       for (let i = 0; i < 8; i++) { setFunc(8, size - 1 - i, false); setFunc(size - 1 - i, 8, false); }
+
       const dataBits = [];
       allCw.forEach(cw => { for (let i = 7; i >= 0; i--) dataBits.push((cw >> i) & 1); });
       for (let i = 0; i < 7; i++) dataBits.push(0);
+
       let bi = 0, up = true;
       for (let col = size - 1; col > 0; col -= 2) {
         if (col === 6) col--;
@@ -848,8 +874,11 @@
         }
         up = !up;
       }
+
       for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) if (!isFunc[r][c] && ((r + c) % 2 === 0)) mat[r][c] ^= 1;
-      const fmtData = (0b01 << 3) | 0; let rem = fmtData << 10;
+
+      const fmtData = (0b01 << 3) | 0;
+      let rem = fmtData << 10;
       for (let i = 14; i >= 10; i--) if ((rem >> i) & 1) rem ^= (0x537 << (i - 10));
       const fmtBits = ((fmtData << 10) | rem) ^ 0x5412;
       const coords1 = [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
@@ -4183,7 +4212,487 @@
       injectPackageRecommenderQuiz();
       injectTravelZoneCalculator();
       renderAdminTable();
+      injectPhase3MarketingModules();
     }, 350);
+
+    // =========================================================
+    // 🌟 PHASE 3: CLIENT & VIRAL MARKETING MODULES
+    // 1. 🖼️ Custom Event Photo Card Generator ("Thank You / Save the Date" + QR)
+    // 2. 📐 Interactive Posing Guide & Reference
+    // =========================================================
+    let currentPosingCat = 'wedding';
+    let customEventCardImgData = '';
+
+    const POSING_GUIDE_DATA = {
+      wedding: [
+        { title: '1. เดินจูงมือหันมองกันเบาๆ (The Walking Glance)', tag: 'Pre-Wedding / Outdoor', desc: 'เดินจับมือกันช้าๆ ก้าวขาสบายๆ แล้วหันมามองตากันพร้อมยิ้มมุมปาก ช่วยลดอาการเกร็งหน้ากล้องและได้จังหวะก้าวเดินที่ดูมีชีวิตชีวา', tip: 'แนะนำช่วงแสงเย็น 16:30 น. ย้อนแสงริมไลท์เส้นผมจะละมุนที่สุด' },
+        { title: '2. หน้าผากแตะกันหลับตาพริ้ม (Intimate Forehead Touch)', tag: 'Bride & Groom Close-up', desc: 'ยืนใกล้กัน โน้มหน้าผากแตะกันเบาๆ หลับตาหรือมองต่ำลงที่ปลายจมูก มือเจ้าบ่าวประคองเอวหรือแก้มเจ้าสาวอย่างทะนุถนอม', tip: 'เหมาะกับโทนฟิล์ม Leica Warm และขาวดำ Documentary B&W' },
+        { title: '3. กระซิบข้างหูให้หัวเราะจริง (The Secret Whisper)', tag: 'Candid Moment', desc: 'ให้เจ้าบ่าวกระซิบคำพูดตลกๆ หรือความในใจข้างหูเจ้าสาว จังหวะที่หลุดหัวเราะออกมาจะได้รอยยิ้มที่เป็นธรรมชาติ 100%', tip: 'ช่างภาพจะรัวชัตเตอร์จังหวะหัวเราะต่อเนื่องเพื่อคัดช็อตที่ธรรมชาติที่สุด' },
+        { title: '4. มองผ่านไหล่ / กอดจากด้านหลัง (Back Hug & Veil)', tag: 'Romantic Portrait', desc: 'เจ้าบ่าวสวมกอดจากด้านหลัง เจ้าสาวเอียงหน้าพิงไหล่หรือจับมือเจ้าบ่าวไว้ ให้ความรู้สึกอบอุ่นและปลอดภัย', tip: 'หากมีเวลล์คลุมผมเจ้าสาว (Veil) ลมพัดเบาๆ จะช่วยเพิ่มมู้ดภาพยนตร์' }
+      ],
+      graduation: [
+        { title: '1. หันกลับมามองกล้องจังหวะก้าวเดิน (The Look Back)', tag: 'Graduation Solo', desc: 'เดินหันหลังไปข้างหน้า 2–3 ก้าว แล้วหันหน้ากลับมามองกล้องพร้อมสะบัดชายครุยเบาๆ ให้ภาพดูเคลื่อนไหวไม่แข็งทื่อ', tip: 'ถือช่อดอกไม้ระดับเอวหรือพาดบ่าจะช่วยให้ช่วงไหล่ดูผ่อนคลาย' },
+        { title: '2. โยนหมวก / ชูปริญญาพร้อมแก๊งเพื่อน (Celebration Jump)', tag: 'Friends Group', desc: 'ยืนเรียงแถวหน้ากระดานหรือสลับฟันปลากับเพื่อนๆ นับ 1-2-3 แล้วโยนหมวกหรือหัวเราะหันหน้าเข้าหากัน', tip: 'แนะนำถ่ายมุมเสยเล็กน้อยโดยมีฉากหลังเป็นตึกคณะหรือท้องฟ้าเปิด' },
+        { title: '3. กอดคุณพ่อคุณแม่แบบอบอุ่น (Family Pride)', tag: 'Family Moment', desc: 'ยืนตรงกลางระหว่างคุณพ่อคุณแม่ โอบกอดหรือซบไหล่ท่านพร้อมรอยยิ้มแห่งความภาคภูมิใจ ไม่จำเป็นต้องมองกล้องทุกคน', tip: 'ช็อตที่คุณพ่อคุณแม่มองบัณฑิตด้วยความตื้นตันเป็นภาพที่ทรงคุณค่าที่สุด' },
+        { title: '4. นั่งบันไดตึกคณะเผลอๆ (Campus Stairs Editorial)', tag: 'Editorial Mood', desc: 'นั่งบนขั้นบันได วางมือบนเข่าหรือถือใบปริญญาไว้ข้างตัว เหม่อมองด้านข้างรับแสงธรรมชาติที่ส่องเฉียงเข้ามา', tip: 'ให้ฟีลภาพปกนิตยสารยุค 2000s เข้ากับโทนฟิล์มของร้านมากที่สุด' }
+      ],
+      candid: [
+        { title: '1. จัดปอยผมทัดหูรับลม (Wind in the Hair)', tag: 'Film Portrait', desc: 'ใช้มือข้างหนึ่งค่อยๆ เสยผมหรือทัดหูเบาๆ ขณะหันข้างรับแสง ปล่อยให้ปอยผมปลิวตามลมธรรมชาติ', tip: 'ไม่ต้องเกร็งนิ้วมือ ปล่อยข้อมือให้โค้งตามธรรมชาติ' },
+        { title: '2. มองลอดไหล่ / หันข้าง 45 องศา (Over the Shoulder)', tag: 'Leica Editorial', desc: 'หันลำตัวเฉียง 45 องศาออกจากกล้อง แล้วค่อยๆ หันใบหน้ากลับมามองเลนส์ ช่วยให้กรอบหน้าชัดและดูมีมิติ', tip: 'กดคางลงเล็กน้อยและผ่อนคลายหัวไหล่ทั้งสองข้าง' },
+        { title: '3. เล่นกับอุปกรณ์ประกอบฉาก (Props Interaction)', tag: 'Lifestyle Film', desc: 'ถือกล้องฟิล์ม ช่อดอกไม้ แก้วกาแฟ หรือหนังสือ ใช้สายตามองไปที่สิ่งของสลับกับเงยหน้ามายิ้มให้กล้อง', tip: 'เหมาะสำหรับคนที่เขินกล้อง ไม่รู้จะวางมือไว้ตรงไหน' },
+        { title: '4. วิ่งหรือหมุนตัวช้าๆ (Slow Motion Spin)', tag: 'Dynamic Shot', desc: 'หมุนตัวช้าๆ ให้กระโปรงหรือชุดครุยพลิ้วไหว ช่างภาพจะจับจังหวะที่ชุดกางสวยและรอยยิ้มสดใสพอดี', tip: 'ได้ภาพสไตล์ Cinematic ที่มีพลังและเต็มไปด้วยความสุข' }
+      ]
+    };
+
+    function injectPhase3MarketingModules() {
+      // 1. แสดงส่วน "คู่มือไกด์ท่าโพสยอดฮิต (Posing Guide)" ด้านล่างถัดจากส่วนคำถามที่พบบ่อย (FAQ) ในหน้าแรก
+      const faqAcc = document.getElementById('faq-accordion');
+      const faqSection = faqAcc ? faqAcc.closest('.text-left.pt-16') : null;
+      if (faqSection && !document.getElementById('home-posing-guide-section')) {
+        const pgSec = document.createElement('div');
+        pgSec.id = 'home-posing-guide-section';
+        pgSec.className = 'text-left pt-16 mt-20';
+        pgSec.style.borderTop = '1px solid var(--border-color)';
+        pgSec.innerHTML = `
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+              <span class="text-[11px] uppercase tracking-[0.28em] text-accent font-bold block mb-1">Posing Guide &amp; Reference</span>
+              <h2 class="text-2xl sm:text-3xl font-bold tracking-wide mb-1">คู่มือไกด์ท่าโพสยอดฮิต</h2>
+              <p class="text-sm font-light" style="color: var(--text-muted);">เทคนิคการจัดระเบียบร่างกายและจังหวะการโพสที่ถ่ายออกมาดูเป็นธรรมชาติ ไม่เกร็งหน้ากล้อง</p>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <button type="button" id="home-pg-tab-wedding" onclick="renderInlinePosingGuide('wedding')" class="px-4 py-2 rounded-full btn-accent font-bold">💍 คู่บ่าวสาว (Wedding &amp; Pre-Wedding)</button>
+              <button type="button" id="home-pg-tab-graduation" onclick="renderInlinePosingGuide('graduation')" class="px-4 py-2 rounded-full input-field font-medium">🎓 รับปริญญา (Graduation)</button>
+              <button type="button" id="home-pg-tab-candid" onclick="renderInlinePosingGuide('candid')" class="px-4 py-2 rounded-full input-field font-medium">🎞️ เผลอๆ สไตล์ฟิล์ม (Candid)</button>
+            </div>
+          </div>
+          <div id="home-posing-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 text-xs"></div>
+        `;
+        faqSection.parentElement.appendChild(pgSec);
+        renderInlinePosingGuide('wedding');
+      }
+
+      // 2. เพิ่มปุ่มเปิดไกด์ท่าโพสในหน้าจองคิว (ข้างกล่อง Moodboard)
+      const moodBox = document.getElementById('moodboard-picker-box');
+      if (moodBox && !document.getElementById('btn-open-posing-in-booking')) {
+        const pBtn = document.createElement('button');
+        pBtn.type = 'button';
+        pBtn.id = 'btn-open-posing-in-booking';
+        pBtn.onclick = () => openPosingGuideModal('wedding');
+        pBtn.className = 'w-full mt-2 py-2 px-3 rounded-xl input-field text-xs font-bold flex items-center justify-center gap-1.5 hover:opacity-80';
+        pBtn.innerHTML = '📐 เปิดดู "คู่มือไกด์ท่าโพสยอดฮิต" เพื่อเลือกท่าโพสที่ชอบใส่ใบบรีฟ';
+        moodBox.appendChild(pBtn);
+      }
+
+      // 3. เพิ่มปุ่มสร้างการ์ดในแถบเมนูแอดมิน
+      const qrAdminBtn = document.querySelector('button[onclick="openScanQrDeliveryModal()"]');
+      if (qrAdminBtn && !document.getElementById('admin-btn-event-card')) {
+        const ecBtn = document.createElement('button');
+        ecBtn.type = 'button';
+        ecBtn.id = 'admin-btn-event-card';
+        ecBtn.onclick = () => openEventPhotoCardModal();
+        ecBtn.className = 'px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field border-rose-500/40 text-rose-500 hover:bg-rose-500/10 inline-flex items-center gap-1.5';
+        ecBtn.innerHTML = '🖼️ สร้างการ์ด Thank You / Save the Date';
+        qrAdminBtn.parentElement.insertBefore(ecBtn, qrAdminBtn.nextSibling);
+      }
+    }
+
+    function renderInlinePosingGuide(cat = 'wedding') {
+      currentPosingCat = cat || 'wedding';
+      ['wedding', 'graduation', 'candid'].forEach(k => {
+        const b = document.getElementById('home-pg-tab-' + k);
+        if (b) b.className = k === currentPosingCat ? 'px-4 py-2 rounded-full btn-accent font-bold' : 'px-4 py-2 rounded-full input-field font-medium';
+      });
+      const list = POSING_GUIDE_DATA[currentPosingCat] || POSING_GUIDE_DATA.wedding;
+      const grid = document.getElementById('home-posing-cards-grid');
+      if (grid) {
+        grid.innerHTML = list.map(item => `
+          <div class="glass-card p-5 rounded-2xl flex flex-col justify-between space-y-4">
+            <div class="space-y-2.5">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 inline-block">${item.tag}</span>
+              <h4 class="font-bold text-sm sm:text-base leading-snug">${item.title}</h4>
+              <p class="leading-relaxed text-xs" style="color: var(--text-muted);">${item.desc}</p>
+              <div class="p-2.5 rounded-xl text-[11px] border" style="border-color: var(--border-color); background: rgba(16, 185, 129, 0.06);">
+                <b class="text-emerald-600">💡 ทริคจากช่างภาพ:</b> ${item.tip}
+              </div>
+            </div>
+            <button type="button" onclick="selectPoseIntoBookingBrief('${item.title.replace(/'/g, '')}')" class="w-full py-2.5 rounded-xl btn-accent font-bold text-xs shadow-sm">📌 เลือกท่าโพสนี้ใส่ใบบรีฟจองคิว</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    // 📐 2. คู่มือไกด์ท่าโพสยอดฮิต (Interactive Posing Guide & Reference)
+    function openPosingGuideModal(cat = 'wedding') {
+      currentPosingCat = cat || 'wedding';
+      let modal = document.getElementById('posing-guide-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'posing-guide-modal';
+        modal.className = 'edit-modal';
+        modal.style.zIndex = '1120';
+        modal.innerHTML = `
+          <div class="glass-card p-6 sm:p-8 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl space-y-5">
+            <div class="flex justify-between items-start gap-3 border-b pb-4" style="border-color: var(--border-color);">
+              <div>
+                <span class="text-[10px] uppercase tracking-widest text-accent font-bold block">Toy Gallery 2000's • Posing Reference</span>
+                <h3 class="text-xl sm:text-2xl font-serif font-bold">📐 คู่มือไกด์ท่าโพสยอดฮิต (ถ่ายออกมาดูเป็นธรรมชาติ ไม่เกร็ง)</h3>
+              </div>
+              <button type="button" onclick="document.getElementById('posing-guide-modal').classList.remove('show')" class="p-2 rounded-xl input-field font-bold">✕</button>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <button type="button" id="pg-tab-wedding" onclick="openPosingGuideModal('wedding')" class="px-4 py-2 rounded-full btn-accent font-bold">💍 คู่บ่าวสาว (Wedding & Pre-Wedding)</button>
+              <button type="button" id="pg-tab-graduation" onclick="openPosingGuideModal('graduation')" class="px-4 py-2 rounded-full input-field font-medium">🎓 รับปริญญา (Graduation & Family)</button>
+              <button type="button" id="pg-tab-candid" onclick="openPosingGuideModal('candid')" class="px-4 py-2 rounded-full input-field font-medium">🎞️ เผลอๆ สไตล์ฟิล์ม (Candid & Editorial)</button>
+            </div>
+            <div id="posing-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs"></div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      ['wedding', 'graduation', 'candid'].forEach(k => {
+        const b = document.getElementById('pg-tab-' + k);
+        if (b) b.className = k === currentPosingCat ? 'px-4 py-2 rounded-full btn-accent font-bold' : 'px-4 py-2 rounded-full input-field font-medium';
+      });
+      const list = POSING_GUIDE_DATA[currentPosingCat] || POSING_GUIDE_DATA.wedding;
+      const grid = document.getElementById('posing-cards-grid');
+      if (grid) {
+        grid.innerHTML = list.map(item => `
+          <div class="p-4 rounded-2xl border flex flex-col justify-between space-y-3" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);">
+            <div class="space-y-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 inline-block">${item.tag}</span>
+              <h4 class="font-bold text-sm sm:text-base">${item.title}</h4>
+              <p class="leading-relaxed text-xs" style="color: var(--text-muted);">${item.desc}</p>
+              <div class="p-2.5 rounded-xl text-[11px] border" style="border-color: var(--border-color); background: rgba(16, 185, 129, 0.06);">
+                <b class="text-emerald-600">💡 ทริคจากช่างภาพ:</b> ${item.tip}
+              </div>
+            </div>
+            <button type="button" onclick="selectPoseIntoBookingBrief('${item.title.replace(/'/g, '')}')" class="w-full py-2 rounded-xl btn-accent font-bold text-xs shadow-sm">📌 เลือกท่าโพสนี้ใส่ใบบรีฟจองคิว</button>
+          </div>
+        `).join('');
+      }
+      modal.classList.add('show');
+    }
+    function selectPoseIntoBookingBrief(poseTitle) {
+      const notesEl = document.getElementById('b-notes');
+      if (notesEl) {
+        notesEl.value = (notesEl.value ? notesEl.value + ' • ' : '') + `อยากได้ท่าโพส: ${poseTitle}`;
+      }
+      document.getElementById('posing-guide-modal')?.classList.remove('show');
+      switchTab('booking');
+      document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      uiAlert(`เพิ่ม "${poseTitle}" ลงในช่องบรีฟงานหน้าจองคิวเรียบร้อยแล้วครับ!`);
+    }
+
+    // 🖼️ 1. ระบบสร้างการ์ด "Thank You / Save the Date" พร้อมคิวอาร์โค้ดรับรูป (Custom Event Photo Card Generator)
+    function openEventPhotoCardModal(preselectBookingId = '') {
+      let modal = document.getElementById('event-photo-card-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'event-photo-card-modal';
+        modal.className = 'edit-modal';
+        modal.style.zIndex = '1125';
+        modal.innerHTML = `
+          <div class="glass-card p-6 sm:p-8 rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl">
+            <div class="flex justify-between items-center mb-5 border-b pb-3" style="border-color: var(--border-color);">
+              <div>
+                <span class="text-[10px] uppercase tracking-widest text-accent font-bold block">Fine-Art Card & QR Studio</span>
+                <h3 class="text-lg sm:text-xl font-serif font-bold">🖼️ สร้างการ์ด "Thank You / Save the Date" พร้อม QR รับรูปหน้างาน</h3>
+              </div>
+              <button type="button" onclick="document.getElementById('event-photo-card-modal').classList.remove('show')" class="p-2 rounded-xl input-field font-bold">✕</button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div class="lg:col-span-6 space-y-3.5 text-xs">
+                <div>
+                  <label class="block mb-1 font-bold opacity-80">1. ดึงข้อมูลจากคิวงานลูกค้า (หรือพิมพ์เองด้านล่าง)</label>
+                  <select id="ec-select-booking" onchange="onSelectEventCardBooking(this.value)" class="w-full input-field rounded-xl px-3 py-2.5 text-xs"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block mb-1 font-bold opacity-80">2. รูปแบบหัวข้อการ์ด</label>
+                    <select id="ec-template-type" onchange="refreshEventPhotoCardPreview()" class="w-full input-field rounded-xl px-3 py-2 text-xs font-bold">
+                      <option value="THANK YOU FOR SHARING OUR DAY">THANK YOU (ตั้งโต๊ะรับรูป)</option>
+                      <option value="SAVE THE DATE">SAVE THE DATE (การ์ดวันงาน)</option>
+                      <option value="CONGRATULATIONS • GRADUATION">GRADUATION (การ์ดรับปริญญา)</option>
+                      <option value="OUR SPECIAL MEMORIES">OUR MEMORIES (การ์ดที่ระลึก)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block mb-1 font-bold opacity-80">3. วันที่ & สถานที่บนการ์ด</label>
+                    <input type="text" id="ec-date-loc" oninput="refreshEventPhotoCardPreview()" value="14 MARCH 2026 • NAN" class="w-full input-field rounded-xl px-3 py-2 text-xs">
+                  </div>
+                </div>
+                <div>
+                  <label class="block mb-1 font-bold opacity-80">4. ชื่อบ่าวสาว / ชื่อบัณฑิต / ชื่องาน</label>
+                  <input type="text" id="ec-names" oninput="refreshEventPhotoCardPreview()" value="คุณเมย์ & คุณต้น" class="w-full input-field rounded-xl px-3.5 py-2 text-xs font-bold">
+                </div>
+                <div>
+                  <label class="block mb-1 font-bold opacity-80">5. ลิงก์สำหรับสร้าง QR Code บนการ์ด (Google Drive / Photos / Gallery)</label>
+                  <input type="text" id="ec-qr-link" oninput="refreshEventPhotoCardPreview()" value="https://toyporawat.github.io/toy-gallery/" class="w-full input-field rounded-xl px-3.5 py-2 text-xs font-mono">
+                </div>
+                <div class="p-3.5 rounded-2xl border space-y-2" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);">
+                  <label class="block font-bold">6. เลือกรูปภาพไฮไลต์บนการ์ด (วางลิงก์ Google Drive หรืออัปโหลดไฟล์)</label>
+                  <input type="text" id="ec-img-url" oninput="onEventCardUrlInput(this.value)" placeholder="วางลิงก์รูปจาก Google Drive ที่นี่..." class="w-full input-field rounded-xl px-3 py-2 text-xs font-mono">
+                  <input type="file" id="ec-img-file" accept="image/*" onchange="onEventCardFileChange(this)" class="w-full text-xs">
+                </div>
+                <button type="button" onclick="downloadEventCardAsJPG()" class="w-full py-3.5 rounded-xl btn-accent font-bold text-xs sm:text-sm shadow-xl flex items-center justify-center gap-2">
+                  📸 บันทึกการ์ดเป็นไฟล์ JPG (สำหรับโพสต์ IG Story / ตั้งโต๊ะหน้างาน)
+                </button>
+              </div>
+              <div class="lg:col-span-6 flex justify-center">
+                <div id="printable-event-photo-card" class="w-full max-w-[380px] bg-[#fbfbfa] text-[#111111] p-6 rounded-2xl border border-zinc-300 shadow-2xl flex flex-col items-center text-center space-y-4">
+                  <div class="w-full flex items-center justify-between text-[9px] tracking-[0.25em] uppercase text-zinc-500 border-b border-zinc-200 pb-2">
+                    <span>TOY GALLERY 2000's</span>
+                    <span>FINE ART FILM</span>
+                  </div>
+                  <div class="w-full aspect-[4/4.3] rounded-sm overflow-hidden bg-zinc-200 border border-zinc-300 shadow-inner">
+                    <img id="ec-preview-photo" src="" onerror="handleDriveImgError(this, false)" class="w-full h-full object-cover" alt="Highlight">
+                  </div>
+                  <div class="space-y-1 pt-1">
+                    <div id="ec-preview-type" class="text-[10px] tracking-[0.24em] uppercase text-zinc-500 font-bold">THANK YOU FOR SHARING OUR DAY</div>
+                    <div id="ec-preview-names" class="text-xl font-serif font-bold tracking-wide text-zinc-900">คุณเมย์ & คุณต้น</div>
+                    <div id="ec-preview-dateloc" class="text-[11px] tracking-[0.15em] uppercase text-zinc-500">14 MARCH 2026 • NAN</div>
+                  </div>
+                  <div class="w-full pt-3.5 border-t border-zinc-200 flex items-center justify-between gap-4 text-left">
+                    <div class="space-y-1 flex-1 min-w-0">
+                      <div class="text-[11px] font-bold uppercase tracking-wider text-zinc-900">SCAN FOR PHOTO GALLERY</div>
+                      <div class="text-[11px] text-zinc-600 leading-snug">สแกน QR Code ด้วยกล้องมือถือหรือ LINE เพื่อชมและดาวน์โหลดภาพถ่ายความละเอียดสูง</div>
+                      <div class="text-[10px] text-zinc-500 font-mono pt-1">Toy Gallery 2000's • 062-607-9030</div>
+                    </div>
+                    <div id="ec-qr-holder" class="p-2 bg-white rounded-xl border-2 border-zinc-900 shrink-0 shadow-md"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      const sel = document.getElementById('ec-select-booking');
+      if (sel) {
+        sel.innerHTML = '<option value="">-- กำหนดชื่อและรายละเอียดเอง --</option>' +
+          (allBookings || []).map(b => `<option value="${encodeURIComponent(b.id)}">${b.date || ''} • ${b.customerName} (${b.id})</option>`).join('');
+      }
+      if (!customEventCardImgData) {
+        customEventCardImgData = (portfolioData && portfolioData.length > 0)
+          ? normalizeDriveImageUrl(portfolioData[0].url)
+          : document.getElementById('ba-after-img')?.src || '';
+      }
+      if (preselectBookingId) {
+        if (sel) sel.value = encodeURIComponent(preselectBookingId);
+        onSelectEventCardBooking(encodeURIComponent(preselectBookingId));
+      } else {
+        refreshEventPhotoCardPreview();
+      }
+      modal.classList.add('show');
+    }
+
+    function onSelectEventCardBooking(encId) {
+      if (!encId) { refreshEventPhotoCardPreview(); return; }
+      const b = (allBookings || []).find(x => String(x.id) === String(decodeURIComponent(encId)));
+      if (!b) return;
+      document.getElementById('ec-names').value = b.customerName && b.customerName !== '-' && b.customerName !== '*' ? b.customerName : "Toy Gallery 2000's";
+      document.getElementById('ec-date-loc').value = `${b.date || ''} • ${b.location || 'จ.น่าน'}`;
+      document.getElementById('ec-qr-link').value = b.driveLink || b.photosLink || 'https://toyporawat.github.io/toy-gallery/';
+      refreshEventPhotoCardPreview();
+    }
+
+    function onEventCardUrlInput(rawUrl) {
+      if (!rawUrl || !rawUrl.trim()) return;
+      customEventCardImgData = normalizeDriveImageUrl(rawUrl.trim());
+      refreshEventPhotoCardPreview();
+    }
+
+    async function onEventCardFileChange(inputEl) {
+      if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
+      customEventCardImgData = await compressQrImageFile(inputEl.files[0]);
+      refreshEventPhotoCardPreview();
+    }
+
+    function createCrispScannableQrCanvas(urlText, displaySizePx = 132) {
+      const mat = encodeQrMatrixV5L(urlText || 'https://toyporawat.github.io/toy-gallery/');
+      const n = mat.length;
+      const quiet = 4;
+      const cell = 14;
+      const totalPx = (n + quiet * 2) * cell;
+      const c = document.createElement('canvas');
+      c.width = totalPx;
+      c.height = totalPx;
+      c.style.width = displaySizePx + 'px';
+      c.style.height = displaySizePx + 'px';
+      c.style.display = 'block';
+      c.style.imageRendering = 'pixelated';
+      const ctx = c.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, totalPx, totalPx);
+      ctx.fillStyle = '#000000';
+      for (let r = 0; r < n; r++) {
+        for (let col = 0; col < n; col++) {
+          if (mat[r][col]) {
+            ctx.fillRect((quiet + col) * cell, (quiet + r) * cell, cell, cell);
+          }
+        }
+      }
+      return c;
+    }
+
+    function refreshEventPhotoCardPreview() {
+      const t = document.getElementById('ec-template-type')?.value || 'THANK YOU FOR SHARING OUR DAY';
+      const n = document.getElementById('ec-names')?.value || "Toy Gallery 2000's";
+      const dl = document.getElementById('ec-date-loc')?.value || 'FINE ART PHOTOGRAPHY';
+      const link = document.getElementById('ec-qr-link')?.value || 'https://toyporawat.github.io/toy-gallery/';
+
+      if (document.getElementById('ec-preview-type')) document.getElementById('ec-preview-type').innerText = t;
+      if (document.getElementById('ec-preview-names')) document.getElementById('ec-preview-names').innerText = n;
+      if (document.getElementById('ec-preview-dateloc')) document.getElementById('ec-preview-dateloc').innerText = dl;
+      const photoEl = document.getElementById('ec-preview-photo');
+      if (photoEl && customEventCardImgData) photoEl.src = customEventCardImgData;
+
+      const qrHolder = document.getElementById('ec-qr-holder');
+      if (qrHolder) {
+        qrHolder.innerHTML = '';
+        const qrCanvas = createCrispScannableQrCanvas(link, 132);
+        qrHolder.appendChild(qrCanvas);
+      }
+    }
+
+    async function downloadEventCardAsJPG() {
+      const t = document.getElementById('ec-template-type')?.value || 'THANK YOU FOR SHARING OUR DAY';
+      const n = document.getElementById('ec-names')?.value || "Toy Gallery 2000's";
+      const dl = document.getElementById('ec-date-loc')?.value || 'FINE ART PHOTOGRAPHY';
+      const link = document.getElementById('ec-qr-link')?.value || 'https://toyporawat.github.io/toy-gallery/';
+
+      // วาดการ์ดความละเอียดสูงระดับสตูดิโอ (Ultra-HD 1600 x 2200 px) ลงบน Canvas โดยตรง เพื่อให้ตัวอักษรและ QR Code คมชัด 100% สแกนติดทันที
+      const W = 1600, H = 2200;
+      const outCanvas = document.createElement('canvas');
+      outCanvas.width = W;
+      outCanvas.height = H;
+      const ctx = outCanvas.getContext('2d');
+
+      // พื้นหลังกระดาษอาร์ต Fine-Art Matte White
+      ctx.fillStyle = '#fbfbfa';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#d4d4d8';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(48, 48, W - 96, H - 96);
+
+      // ส่วนหัวการ์ด
+      ctx.fillStyle = '#71717a';
+      ctx.font = 'bold 26px "Josefin Sans", "Prompt", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText("TOY GALLERY 2000's", 110, 130);
+      ctx.textAlign = 'right';
+      ctx.fillText('FINE ART FILM', W - 110, 130);
+      ctx.strokeStyle = '#e4e4e7';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(110, 162);
+      ctx.lineTo(W - 110, 162);
+      ctx.stroke();
+
+      // กรอบรูปไฮไลต์
+      const imgX = 110, imgY = 205, imgW = W - 220, imgH = 1220;
+      ctx.fillStyle = '#e4e4e7';
+      ctx.fillRect(imgX, imgY, imgW, imgH);
+      const photoEl = document.getElementById('ec-preview-photo');
+      if (photoEl && photoEl.complete && photoEl.naturalWidth > 0) {
+        try {
+          const iw = photoEl.naturalWidth, ih = photoEl.naturalHeight;
+          const targetRatio = imgW / imgH, srcRatio = iw / ih;
+          let sx = 0, sy = 0, sw = iw, sh = ih;
+          if (srcRatio > targetRatio) { sw = ih * targetRatio; sx = (iw - sw) / 2; }
+          else { sh = iw / targetRatio; sy = (ih - sh) / 2; }
+          ctx.drawImage(photoEl, sx, sy, sw, sh, imgX, imgY, imgW, imgH);
+        } catch (e) {}
+      }
+      ctx.strokeStyle = '#d4d4d8';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(imgX, imgY, imgW, imgH);
+
+      // ข้อความกลางการ์ด
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#71717a';
+      ctx.font = 'bold 30px "Josefin Sans", "Prompt", sans-serif';
+      ctx.fillText(t, W / 2, 1505);
+
+      ctx.fillStyle = '#111111';
+      ctx.font = 'bold 68px "Josefin Sans", "Prompt", sans-serif';
+      ctx.fillText(n, W / 2, 1595);
+
+      ctx.fillStyle = '#71717a';
+      ctx.font = '500 32px "Josefin Sans", "Prompt", sans-serif';
+      ctx.fillText(dl, W / 2, 1658);
+
+      // เส้นคั่นส่วน QR Code ด้านล่าง
+      ctx.strokeStyle = '#e4e4e7';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(110, 1715);
+      ctx.lineTo(W - 110, 1715);
+      ctx.stroke();
+
+      // วาด QR Code ขนาดใหญ่คมชัดสูง (380 x 380 px) ที่มุมขวาล่าง พร้อม Quiet Zone มาตรฐาน
+      const qrSize = 370;
+      const qrX = W - 110 - qrSize;
+      const qrY = 1750;
+      const hiResQr = createCrispScannableQrCanvas(link, qrSize);
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
+      ctx.strokeStyle = '#18181b';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
+      ctx.drawImage(hiResQr, qrX, qrY, qrSize, qrSize);
+
+      // ข้อความคำแนะนำสแกน QR ด้านซ้ายล่าง
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#111111';
+      ctx.font = 'bold 38px "Josefin Sans", "Prompt", sans-serif';
+      ctx.fillText('SCAN FOR PHOTO GALLERY', 110, 1855);
+
+      ctx.fillStyle = '#52525b';
+      ctx.font = '400 32px "Prompt", sans-serif';
+      ctx.fillText('สแกน QR Code ด้วยกล้องมือถือหรือ LINE', 110, 1920);
+      ctx.fillText('เพื่อชมและดาวน์โหลดภาพถ่ายความละเอียดสูง', 110, 1972);
+
+      ctx.fillStyle = '#71717a';
+      ctx.font = 'bold 28px "Josefin Sans", "Prompt", sans-serif';
+      ctx.fillText("Toy Gallery 2000's • Tel: 062-607-9030", 110, 2055);
+
+      try {
+        const jpgDataUrl = outCanvas.toDataURL('image/jpeg', 0.98);
+        const safeName = 'ThankYou_Card_' + n.replace(/\s+/g, '_') + '_UltraHD.jpg';
+        try {
+          const a = document.createElement('a');
+          a.download = safeName;
+          a.href = jpgDataUrl;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } catch (e) {}
+
+        const modal = document.getElementById('custom-dialog-modal');
+        document.getElementById('dialog-msg').innerHTML = `
+          <div class="space-y-2.5 text-center">
+            <span class="font-bold text-sm text-emerald-500 block">✅ สร้างการ์ดความละเอียดสูง (Ultra-HD 1600×2200px) สำเร็จ!</span>
+            <p class="text-[11px]" style="color: var(--text-muted);">QR Code ถูกเรนเดอร์แบบคมชัดพิเศษ สามารถสแกนด้วยกล้องมือถือหรือแอป LINE ได้ทันที (คลิกขวาหรือแตะค้างที่ภาพเพื่อบันทึกได้เลยครับ)</p>
+            <div class="max-h-[55vh] overflow-y-auto rounded-xl border p-1.5 bg-white" style="border-color: var(--border-color);">
+              <img src="${jpgDataUrl}" alt="${safeName}" class="w-full h-auto rounded-lg mx-auto shadow-sm">
+            </div>
+          </div>
+        `;
+        document.getElementById('dialog-actions').innerHTML = `
+          <a href="${jpgDataUrl}" download="${safeName}" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">ดาวน์โหลดการ์ด Ultra-HD (JPG)</a>
+          <button id="dlg-ok-btn" class="flex-1 py-2.5 rounded-xl btn-accent font-bold text-xs">ปิดหน้าต่าง</button>
+        `;
+        modal.classList.add('show');
+        document.getElementById('dlg-ok-btn').onclick = () => modal.classList.remove('show');
+      } catch (err) {
+        downloadJPG('printable-event-photo-card', 'ThankYou_Card_' + n.replace(/\s+/g, '_'));
+      }
+    }
   </script>
 </body>
 </html>
