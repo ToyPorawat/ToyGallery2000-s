@@ -3798,6 +3798,392 @@
       renderAnnualAnalyticsChart();
       refreshCustomQrPreviewUI();
     }, 300);
+    // =========================================================
+    // 🚀 PHASE 2: 8 NEW STUDIO & CLIENT UPGRADE MODULES
+    // 1. Package Recommender Quiz | 2. Travel Zone Fee Calculator
+    // 3. Fullscreen Slideshow Mode | 4. Album Color Palette & Outfit Guide
+    // 5. Photographer Gear Checklist | 6. 5-Step Post-Processing Progress Bar
+    // 7. Split Deposit vs Final Paid Receipt + Stamp | 8. Venue Map Helper
+    // =========================================================
+
+    // 🧭 1. แบบทดสอบช่วยเลือกแพ็กเกจที่ใช่ (Interactive Package Recommender Quiz)
+    let quizState = { type: 'Wedding', region: 'nan', duration: 'full' };
+    function injectPackageRecommenderQuiz() {
+      const formCard = document.getElementById('booking-form')?.closest('.glass-card');
+      if (!formCard || document.getElementById('pkg-recommender-card')) return;
+      const card = document.createElement('div');
+      card.id = 'pkg-recommender-card';
+      card.className = 'glass-card rounded-3xl p-6 sm:p-8 mb-8 max-w-3xl mx-auto border';
+      card.style.borderColor = 'var(--border-color)';
+      card.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4 border-b pb-3" style="border-color: var(--border-color);">
+          <div>
+            <span class="text-[10px] uppercase tracking-widest text-accent font-bold block">Smart Package Finder</span>
+            <h3 class="text-lg sm:text-xl font-serif font-bold">🧭 ไม่แน่ใจว่าควรเลือกแพ็กเกจไหน? ให้ระบบช่วยแนะนำใน 3 คลิก</h3>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs mb-4">
+          <div>
+            <label class="block mb-1 opacity-75 font-bold">1. ประเภทงานของคุณ</label>
+            <select id="qz-type" onchange="updateQuizRecommendation()" class="w-full input-field rounded-xl px-3 py-2.5 text-xs">
+              <option value="Wedding">💍 งานแต่งงาน (Wedding Day)</option>
+              <option value="Pre-Wedding">💑 พรีเวดดิ้ง (Pre-Wedding)</option>
+              <option value="Graduation">🎓 งานรับปริญญา</option>
+              <option value="Ordination">🙏 งานบวช / อุปสมบท</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 opacity-75 font-bold">2. จังหวัดที่จัดงาน</label>
+            <select id="qz-region" onchange="updateQuizRecommendation()" class="w-full input-field rounded-xl px-3 py-2.5 text-xs">
+              <option value="nan">📍 ในจังหวัดน่าน</option>
+              <option value="north">⛰️ ต่างจังหวัดภาคเหนือ</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 opacity-75 font-bold">3. ระยะเวลาถ่ายทำ</label>
+            <select id="qz-duration" onchange="updateQuizRecommendation()" class="w-full input-field rounded-xl px-3 py-2.5 text-xs">
+              <option value="half">🌤️ ครึ่งวัน (เช้า หรือ บ่าย)</option>
+              <option value="full" selected>☀️ เต็มวัน (เช้า-เย็น / บ่าย-ดึก)</option>
+              <option value="1.5">✨ 1 วันครึ่ง (งานบวช)</option>
+              <option value="hour">⏱️ รายชั่วโมง</option>
+            </select>
+          </div>
+        </div>
+        <div class="p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);">
+          <div class="text-center sm:text-left">
+            <span class="text-[11px] opacity-70 block">แพ็กเกจที่แนะนำสำหรับคุณ:</span>
+            <div id="qz-result-text" class="text-sm sm:text-base font-bold text-accent">Wedding น่าน เต็มวัน (9,500 บาท)</div>
+          </div>
+          <button type="button" onclick="applyQuizRecommendedPackage()" class="px-5 py-2.5 rounded-xl btn-accent font-bold text-xs shadow-md shrink-0">✓ เลือกแพ็กเกจนี้ลงฟอร์มจอง</button>
+        </div>
+      `;
+      formCard.parentElement.insertBefore(card, formCard);
+      updateQuizRecommendation();
+    }
+    function updateQuizRecommendation() {
+      const t = document.getElementById('qz-type')?.value || 'Wedding';
+      const r = document.getElementById('qz-region')?.value || 'nan';
+      const d = document.getElementById('qz-duration')?.value || 'full';
+      let pkg = 'Wedding น่าน เต็มวัน (9,500 บาท)';
+      if (t === 'Wedding') {
+        if (r === 'nan') pkg = d === 'half' ? 'Wedding น่าน ครึ่งวัน (5,000 บาท)' : 'Wedding น่าน เต็มวัน (9,500 บาท)';
+        else pkg = d === 'half' ? 'Wedding ภาคเหนือ ครึ่งวัน (6,500 บาท)' : 'Wedding ภาคเหนือ เต็มวัน (11,500 บาท)';
+      } else if (t === 'Ordination') {
+        pkg = d === 'half' ? 'งานบวช ครึ่งวัน (4,500 บาท)' : (d === '1.5' ? 'งานบวช 1 วันครึ่ง (12,000 บาท)' : 'งานบวช เต็มวัน (9,000 บาท)');
+      } else if (t === 'Graduation') {
+        pkg = d === 'half' ? 'รับปริญญา ครึ่งวัน 4 ชม. (3,500 บาท)' : 'รับปริญญา เต็มวัน 8 ชม. (7,000 บาท)';
+      } else {
+        pkg = d === 'hour' ? 'Pre-Wedding รายชั่วโมง (เริ่มต้น 1,500 บาท)' : (d === 'half' ? 'Pre-Wedding ครึ่งวัน 4 ชม. (3,500 บาท)' : 'Pre-Wedding เต็มวัน 8 ชม. (7,000 บาท)');
+      }
+      const resEl = document.getElementById('qz-result-text');
+      if (resEl) resEl.innerText = pkg;
+      return pkg;
+    }
+    function applyQuizRecommendedPackage() {
+      const pkg = updateQuizRecommendation();
+      const sel = document.getElementById('b-package');
+      if (sel) {
+        sel.value = pkg;
+        const d = document.getElementById('qz-duration')?.value || 'full';
+        const slotEl = document.getElementById('b-slot');
+        if (slotEl) slotEl.value = d === 'half' ? 'ครึ่งวันเช้า' : (d === 'hour' ? 'รายชั่วโมง' : 'เต็มวัน');
+        recalcBookingPrice();
+        document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // 🚗 2. ระบบคำนวณค่าเดินทางนอกสถานที่อัตโนมัติ (Travel & Distance Fee Calculator)
+    function injectTravelZoneCalculator() {
+      const expressAddon = document.getElementById('addon-express')?.closest('label');
+      if (!expressAddon || document.getElementById('addon-travel-zone')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl border';
+      wrap.style.borderColor = 'var(--border-color)';
+      wrap.innerHTML = `
+        <span class="flex items-center gap-2 text-xs sm:text-sm">🚗 โซนพื้นที่จัดงาน & ค่าเดินทางนอกสถานที่</span>
+        <select id="addon-travel-zone" onchange="recalcBookingPrice()" class="input-field rounded-lg px-2.5 py-1 text-xs">
+          <option value="0">ในเขต อ.เมืองน่าน / ภูเพียง (ฟรี ฿0)</option>
+          <option value="500">ต่างอำเภอใน จ.น่าน เช่น ปัว, เวียงสา, ท่าวังผา (+฿500)</option>
+          <option value="1000">โซนดอย / บ่อเกลือ / เฉลิมพระเกียรติ (+฿1,000)</option>
+          <option value="1500">แพร่ / พะเยา (+฿1,500)</option>
+          <option value="2500">เชียงราย / เชียงใหม่ / ลำปาง (+฿2,500)</option>
+        </select>
+      `;
+      expressAddon.parentElement.appendChild(wrap);
+    }
+    const prevGetCalcP2 = getBookingCalculatedSummary;
+    getBookingCalculatedSummary = function() {
+      const base = prevGetCalcP2();
+      const travelSelect = document.getElementById('addon-travel-zone');
+      const travelFee = travelSelect ? (parseInt(travelSelect.value || '0', 10) || 0) : 0;
+      if (travelFee <= 0) return base;
+      const travelText = travelSelect.options[travelSelect.selectedIndex]?.text || `ค่าเดินทาง +฿${travelFee}`;
+      const newTotal = base.total + travelFee;
+      const newBalance = Math.max(0, newTotal - base.deposit);
+      return {
+        ...base,
+        total: newTotal,
+        balance: newBalance,
+        fullPkgLabel: `${base.fullPkgLabel} + [ค่าเดินทาง: ${travelText}]`
+      };
+    };
+
+    // 🎞️ 3. โหมดสไลด์โชว์พรีเซนเทชัน (Cinematic Fullscreen Slideshow Mode)
+    let lbSlideshowTimer = null;
+    function toggleLightboxSlideshow() {
+      const btn = document.getElementById('btn-lb-slideshow');
+      if (lbSlideshowTimer) {
+        clearInterval(lbSlideshowTimer);
+        lbSlideshowTimer = null;
+        if (btn) btn.innerHTML = '▶ สไลด์โชว์';
+      } else {
+        if (btn) btn.innerHTML = '⏸ หยุดสไลด์';
+        lbSlideshowTimer = setInterval(() => {
+          const lb = document.getElementById('lightbox-modal');
+          if (!lb || !lb.classList.contains('show')) {
+            clearInterval(lbSlideshowTimer);
+            lbSlideshowTimer = null;
+            return;
+          }
+          changeLightboxSlide(1);
+        }, 3000);
+      }
+    }
+    const prevOpenLightbox = openLightbox;
+    openLightbox = function(idx) {
+      prevOpenLightbox(idx);
+      const lb = document.getElementById('lightbox-modal');
+      if (lb && !document.getElementById('btn-lb-slideshow')) {
+        const zoomBtn = lb.querySelector('button[onclick="toggleLightboxZoom()"]');
+        if (zoomBtn && zoomBtn.parentElement) {
+          const sBtn = document.createElement('button');
+          sBtn.type = 'button';
+          sBtn.id = 'btn-lb-slideshow';
+          sBtn.onclick = toggleLightboxSlideshow;
+          sBtn.className = 'px-3 h-9 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center';
+          sBtn.innerHTML = '▶ สไลด์โชว์';
+          zoomBtn.parentElement.insertBefore(sBtn, zoomBtn);
+        }
+      }
+    };
+
+    // 🎨 4. แถบวิเคราะห์พาเลตสีประจำอัลบั้ม & แนะนำสีชุดลูกค้า (Color Palette & Outfit Guide)
+    const prevOpenAlbumP2 = openAlbum;
+    openAlbum = function(albumName, skipPinCheck = false) {
+      prevOpenAlbumP2(albumName, skipPinCheck);
+      const gridEl = document.getElementById('modal-image-grid');
+      const album = groupedAlbums[albumName];
+      if (!gridEl || !album || gridEl.querySelector('.palette-guide-bar')) return;
+      const cat = String(album.category || '');
+      const swatches = /รับปริญญา|Grad/i.test(cat)
+        ? [{ c: '#F8F5F0', n: 'Ivory Cream' }, { c: '#D4A373', n: 'Warm Gold' }, { c: '#52796F', n: 'Campus Sage' }, { c: '#2F3E46', n: 'Academic Navy' }, { c: '#1B1B1B', n: 'Gown Black' }]
+        : [{ c: '#FAF6F0', n: 'Bridal Silk' }, { c: '#E6CCB2', n: 'Champagne Beige' }, { c: '#C8A97E', n: 'Leica Warm Ochre' }, { c: '#7F5539', n: 'Vintage Earth' }, { c: '#27272A', n: 'Graphite Tuxedo' }];
+      const bar = document.createElement('div');
+      bar.className = 'palette-guide-bar col-span-full flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-white text-xs mb-1';
+      bar.innerHTML = `
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-bold text-amber-400">🎨 Film Tone & Outfit Palette:</span>
+          <span class="text-zinc-300 text-[11px]">โทนสีเสื้อผ้าที่เข้ากับมู้ดภาพเซ็ตนี้ที่สุด</span>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          ${swatches.map(s => `<div class="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10"><span class="w-3.5 h-3.5 rounded-full border border-white/30" style="background:${s.c};"></span><span class="text-[10px] text-zinc-200">${s.n}</span></div>`).join('')}
+        </div>
+      `;
+      gridEl.insertBefore(bar, gridEl.firstChild);
+    };
+
+    // 🎒 5. เช็กลิสต์เตรียมอุปกรณ์ก่อนออกกองถ่าย (Photographer Gear Checklist)
+    function getGearMap() { try { return JSON.parse(SafeStorage.getItem('tg_gear_checklists') || '{}'); } catch (e) { return {}; } }
+    function openGearChecklistModal(id) {
+      const b = allBookings.find(x => String(x.id) === String(id));
+      if (!b) return;
+      const map = getGearMap();
+      const saved = map[b.id] || {};
+      const gears = [
+        { k: 'bat', t: '🔋 ชาร์จแบตเตอรี่กล้องหลัก + กล้องสำรองครบ 4 ก้อน' },
+        { k: 'sd', t: '💾 ฟอร์แมตและเช็คพื้นที่การ์ด SD / CFexpress ทั้ง 2 ช่อง (Dual Slot)' },
+        { k: 'lens', t: '📷 เตรียมเลนส์ระยะ 35mm + 85mm + ซูมมุมกว้าง พร้อมผ้าเช็ดหน้าเลนส์' },
+        { k: 'flash', t: '⚡ แฟลชแยก (Speedlight / Trigger) + ถ่านชาร์จสำรองครบชุด' },
+        { k: 'light', t: '💡 ไฟต่อเนื่องพกพา / แผ่นรีเฟล็กซ์ สำหรับช่วงแสงน้อย' },
+        { k: ' step', t: `🎞️ อัปเดตขั้นตอนการแต่งรูปของคิวนี้ (สำหรับแสดงให้ลูกค้าเห็นในหน้าเช็คสถานะ)` }
+      ];
+      const curStep = Number(saved.workflowStep || (b.status === 'เสร็จสิ้น' ? 5 : (b.status === 'ยืนยันแล้ว' ? 1 : 0)));
+      const modal = document.getElementById('custom-dialog-modal');
+      document.getElementById('dialog-msg').innerHTML = `
+        <div class="text-left space-y-2.5 text-xs">
+          <h4 class="font-bold text-sm">🎒 เช็กลิสต์อุปกรณ์ & ขั้นตอนแต่งรูป: ${b.customerName} (${b.id})</h4>
+          <div class="space-y-1.5">
+            ${gears.slice(0, 5).map(g => `<label class="flex items-center gap-2 p-2 rounded-xl border cursor-pointer" style="border-color:var(--border-color);"><input type="checkbox" class="gear-chk w-4 h-4 accent-emerald-500" data-key="${g.k}" ${saved[g.k] ? 'checked' : ''}><span>${g.t}</span></label>`).join('')}
+          </div>
+          <div class="pt-2 border-t" style="border-color:var(--border-color);">
+            <label class="font-bold block mb-1">📸 ขั้นตอนการแต่งรูป 5 ขั้นตอน (แสดงในหน้าเช็คสถานะลูกค้า):</label>
+            <select id="gear-workflow-step" class="w-full input-field rounded-xl px-3 py-2 text-xs font-bold">
+              <option value="1" ${curStep === 1 ? 'selected' : ''}>ขั้นตอนที่ 1: ล็อคคิวถ่ายภาพสำเร็จ</option>
+              <option value="2" ${curStep === 2 ? 'selected' : ''}>ขั้นตอนที่ 2: ถ่ายทำเสร็จสิ้น & สำรองไฟล์ RAW</option>
+              <option value="3" ${curStep === 3 ? 'selected' : ''}>ขั้นตอนที่ 3: กำลังคัดรูป & เกรดสีโทนฟิล์ม Leica</option>
+              <option value="4" ${curStep === 4 ? 'selected' : ''}>ขั้นตอนที่ 4: กำลังอัปโหลดไฟล์ความละเอียดสูงขึ้น Cloud</option>
+              <option value="5" ${curStep === 5 ? 'selected' : ''}>ขั้นตอนที่ 5: ส่งมอบงานเรียบร้อย พร้อมดาวน์โหลด</option>
+            </select>
+          </div>
+        </div>
+      `;
+      document.getElementById('dialog-actions').innerHTML = `
+        <button id="dlg-cancel-btn" class="flex-1 py-2.5 rounded-xl input-field font-bold text-xs">ปิด</button>
+        <button id="dlg-save-gear" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">บันทึกเช็กลิสต์</button>
+      `;
+      modal.classList.add('show');
+      document.getElementById('dlg-cancel-btn').onclick = () => modal.classList.remove('show');
+      document.getElementById('dlg-save-gear').onclick = () => {
+        const obj = { workflowStep: Number(document.getElementById('gear-workflow-step')?.value || 1) };
+        modal.querySelectorAll('.gear-chk').forEach(chk => { obj[chk.dataset.key] = chk.checked; });
+        map[b.id] = obj;
+        SafeStorage.setItem('tg_gear_checklists', JSON.stringify(map));
+        modal.classList.remove('show');
+        uiAlert('บันทึกเช็กลิสต์อุปกรณ์และขั้นตอนการแต่งรูปเรียบร้อยแล้ว!');
+      };
+    }
+
+    // 📸 6. ตัวติดตามสถานะขั้นตอนการแต่งรูป 5 ขั้นตอน (5-Step Post-Processing Progress Bar)
+    function get5StepProgressHtml(b) {
+      if (!b || b.status === 'ยกเลิก') return '';
+      const gearMap = getGearMap();
+      const customStep = gearMap[b.id]?.workflowStep;
+      const step = customStep || (b.status === 'เสร็จสิ้น' ? 5 : (b.status === 'ยืนยันแล้ว' ? 1 : 0));
+      const labels = ['1. ล็อคคิว', '2. ถ่ายทำเสร็จ', '3. เกรดสีฟิล์ม', '4. อัปโหลด Cloud', '5. ส่งมอบงาน'];
+      return `
+        <div class="p-4 rounded-2xl border space-y-2.5 text-xs" style="border-color: var(--border-color); background: rgba(0,0,0,0.02);">
+          <div class="flex items-center justify-between font-bold">
+            <span>📸 สถานะการดำเนินงาน & แต่งโทนภาพ (Workflow Progress)</span>
+            <span class="text-accent">${step}/5 ขั้นตอน</span>
+          </div>
+          <div class="grid grid-cols-5 gap-1.5 text-center">
+            ${labels.map((lb, idx) => {
+              const active = (idx + 1) <= step;
+              return `
+                <div class="space-y-1">
+                  <div class="h-2 rounded-full ${active ? 'bg-emerald-500' : 'bg-zinc-500/20'}"></div>
+                  <span class="block text-[10px] ${active ? 'font-bold text-emerald-600' : 'opacity-50'}">${lb}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+    const prevTrackSearchP2 = handleTrackSearch;
+    handleTrackSearch = function(e) {
+      prevTrackSearchP2(e);
+      const area = document.getElementById('track-results-area');
+      if (!area) return;
+      const rawQ = (document.getElementById('track-query')?.value || '').trim().toLowerCase();
+      const qDigits = rawQ.replace(/\D/g, ''), qTail = qDigits.length >= 8 ? qDigits.slice(-8) : '';
+      const matches = allBookings.filter(b => String(b.id || '').toLowerCase().includes(rawQ) || (qTail && String(b.tel || '').replace(/\D/g, '').slice(-8) === qTail));
+      const cards = area.querySelectorAll('.glass-card.rounded-3xl');
+      matches.forEach((b, idx) => {
+        const card = cards[idx];
+        if (card && !card.querySelector('.workflow-5step-box')) {
+          const div = document.createElement('div');
+          div.className = 'workflow-5step-box';
+          div.innerHTML = get5StepProgressHtml(b);
+          card.insertBefore(div, card.querySelector('.grid'));
+        }
+      });
+    };
+
+    // 🧾 7. ระบบสลับใบเสร็จรับเงินมัดจำ vs ใบเสร็จรับเงินครบเต็มจำนวน + ตราประทับ PAID
+    function setInvoiceMode(mode) {
+      const b = allBookings.find(x => String(x.id) === String(currentBookingId));
+      const price = b ? (Number(b.price) || 0) : (Number(currentDocData.price) || 0);
+      const dep = b ? (Number(b.depositAmount) || 0) : (Number(currentDocData.deposit) || 0);
+      const headerP = document.querySelector('#printable-invoice .doc-header p');
+      let stamp = document.getElementById('inv-paid-stamp');
+      if (!stamp) {
+        const bodyEl = document.querySelector('#printable-invoice .doc-body');
+        if (bodyEl) {
+          stamp = document.createElement('div');
+          stamp.id = 'inv-paid-stamp';
+          stamp.style.cssText = 'position:absolute; top:125px; right:40px; border:3px solid #10b981; color:#10b981; padding:6px 16px; border-radius:8px; font-weight:bold; font-size:15px; transform:rotate(-8deg); letter-spacing:2px; background:rgba(16,185,129,0.06); pointer-events:none;';
+          bodyEl.appendChild(stamp);
+        }
+      }
+      if (mode === 'final') {
+        if (headerP) headerP.innerText = 'ใบเสร็จรับเงินฉบับสมบูรณ์ (ชำระครบเต็มจำนวน)';
+        document.getElementById('inv-deposit').innerText = price.toLocaleString();
+        document.getElementById('inv-balance').innerText = '0';
+        document.getElementById('inv-pay-amount').innerText = price.toLocaleString();
+        document.getElementById('inv-baht-text').innerText = ThaiBahtText(0);
+        if (stamp) { stamp.innerText = '✓ PAID IN FULL • ชำระครบแล้ว'; stamp.style.borderColor = '#10b981'; stamp.style.color = '#10b981'; }
+      } else {
+        if (headerP) headerP.innerText = 'ใบแจ้งหนี้ / ใบเสร็จรับเงินมัดจำ (Deposit Receipt)';
+        const actualPaid = dep > 0 ? dep : Math.min(1500, price);
+        const bal = Math.max(0, price - actualPaid);
+        document.getElementById('inv-deposit').innerText = actualPaid.toLocaleString();
+        document.getElementById('inv-balance').innerText = bal.toLocaleString();
+        document.getElementById('inv-pay-amount').innerText = actualPaid.toLocaleString();
+        document.getElementById('inv-baht-text').innerText = ThaiBahtText(bal);
+        if (stamp) { stamp.innerText = '✓ DEPOSIT PAID • รับมัดจำแล้ว'; stamp.style.borderColor = '#f59e0b'; stamp.style.color = '#d97706'; }
+      }
+    }
+    const prevShowInvAdminP2 = showInvoiceFromAdmin;
+    showInvoiceFromAdmin = function(id) {
+      prevShowInvAdminP2(id);
+      const invDoc = document.getElementById('printable-invoice');
+      if (invDoc && !document.getElementById('inv-mode-switcher')) {
+        const bar = document.createElement('div');
+        bar.id = 'inv-mode-switcher';
+        bar.className = 'no-print bg-zinc-900 text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs';
+        bar.innerHTML = `
+          <span class="font-bold">🧾 เลือกรูปแบบใบเสร็จรับเงิน:</span>
+          <div class="flex gap-2">
+            <button type="button" onclick="setInvoiceMode('deposit')" class="px-3 py-1 rounded-lg bg-amber-500 text-black font-bold">ใบเสร็จมัดจำ (Deposit)</button>
+            <button type="button" onclick="setInvoiceMode('final')" class="px-3 py-1 rounded-lg bg-emerald-500 text-white font-bold">ใบเสร็จรับยอดครบ 100% (PAID)</button>
+          </div>
+        `;
+        invDoc.insertBefore(bar, invDoc.firstChild);
+      }
+      const b = allBookings.find(x => String(x.id) === String(id));
+      const isFull = b && Number(b.price) > 0 && Number(b.depositAmount) >= Number(b.price);
+      setInvoiceMode(isFull ? 'final' : 'deposit');
+    };
+
+    // 📍 8. ปุ่มปักหมุดแผนที่สถานที่จัดงาน & ปุ่มอุปกรณ์ในตารางแอดมิน
+    function openVenueMapHelper(id) {
+      const b = allBookings.find(x => String(x.id) === String(id));
+      if (!b) return;
+      const locText = `${b.location || 'จ.น่าน'}`;
+      copyTextSafe(locText, `📍 คัดลอกชื่อสถานที่จัดงาน "${locText}" สำหรับค้นหาใน Google Maps เรียบร้อยแล้ว!`);
+    }
+    const prevRenderAdminTableP2 = renderAdminTable;
+    renderAdminTable = function() {
+      prevRenderAdminTableP2();
+      const rows = document.querySelectorAll('#admin-table-body tr');
+      const displayBookings = (adminTableMonthFilter ? allBookings.filter(b => (b.date || '').startsWith(adminTableMonthFilter)) : [...allBookings]).sort((a, b) => String(a.date || '9999').localeCompare(String(b.date || '9999')));
+      rows.forEach((tr, idx) => {
+        const b = displayBookings[idx];
+        const btnWrap = tr.querySelector('td:last-child .flex');
+        if (b && btnWrap && !btnWrap.querySelector('.btn-gear-extra')) {
+          const safeId = encodeURIComponent(b.id);
+          const gearBtn = document.createElement('button');
+          gearBtn.type = 'button';
+          gearBtn.className = 'btn-gear-extra px-2 py-1 input-field rounded text-xs font-bold';
+          gearBtn.innerText = '🎒 อุปกรณ์/ขั้นตอน';
+          gearBtn.onclick = () => openGearChecklistModal(decodeURIComponent(safeId));
+          const mapBtn = document.createElement('button');
+          mapBtn.type = 'button';
+          mapBtn.className = 'px-2 py-1 input-field rounded text-xs font-bold';
+          mapBtn.innerText = '📍 พิกัด';
+          mapBtn.onclick = () => openVenueMapHelper(decodeURIComponent(safeId));
+          btnWrap.appendChild(gearBtn);
+          btnWrap.appendChild(mapBtn);
+        }
+      });
+    };
+
+    setTimeout(() => {
+      injectPackageRecommenderQuiz();
+      injectTravelZoneCalculator();
+      renderAdminTable();
+    }, 350);
   </script>
 </body>
 </html>
