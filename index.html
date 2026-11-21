@@ -651,8 +651,14 @@
 
     const SafeStorage = {
       mem: {},
-      getItem(k) { try { const v = localStorage.getItem(k); return v !== null ? v : (this.mem[k] ?? null); } catch(e) { return this.mem[k] ?? null; } },
-      setItem(k, v) { this.mem[k] = String(v); try { localStorage.setItem(k, String(v)); } catch(e) {} },
+      getItem(k) {
+        if (this.mem[k] !== undefined) return this.mem[k];
+        try { const v = localStorage.getItem(k); return v !== null ? v : null; } catch(e) { return null; }
+      },
+      setItem(k, v) {
+        this.mem[k] = String(v);
+        try { localStorage.setItem(k, String(v)); } catch(e) { try { localStorage.removeItem(k); } catch(e2) {} }
+      },
       removeItem(k) { delete this.mem[k]; try { localStorage.removeItem(k); } catch(e) {} }
     };
     const SafeSession = {
@@ -1193,12 +1199,56 @@
       try { return JSON.parse(SafeStorage.getItem('tg_custom_album_covers') || '{}'); } catch (e) { return {}; }
     }
 
+    function sanitizePortfolioItem(p) {
+      if (!p) return null;
+      const isImgUrl = v => /^https?:\/\/|^data:image\/|drive\.google\.com|googleusercontent\.com/i.test(String(v || '').trim());
+      let title = String(p.title || '').trim();
+      let category = String(p.category || '').trim();
+      let location = String(p.location || '').trim();
+      let url = String(p.url || '').trim();
+
+      // หากช่อง location หรือ category เผลอเก็บลิงก์รูปภาพ Google Drive ให้ย้ายกลับมาที่ช่อง url ทันที
+      if (!isImgUrl(url)) {
+        if (isImgUrl(location)) {
+          const oldUrlText = url;
+          url = location;
+          location = (oldUrlText && !/^(true|false|1|0)$/i.test(oldUrlText)) ? oldUrlText : 'จ.น่าน';
+        } else if (isImgUrl(category)) {
+          url = category;
+          category = 'Wedding';
+        } else if (isImgUrl(title)) {
+          url = title;
+          title = 'Portfolio Album';
+        }
+      }
+      if (isImgUrl(location)) {
+        if (!isImgUrl(url)) url = location;
+        location = 'จ.น่าน';
+      }
+      if (!location || /^(true|false)$/i.test(location)) location = 'จ.น่าน';
+      if (!category || isImgUrl(category)) category = 'Wedding';
+      if (!title || isImgUrl(title)) title = 'Portfolio Album';
+      if (!url || !isImgUrl(url)) return null;
+
+      return {
+        ...p,
+        title,
+        category,
+        location,
+        url: normalizeDriveImageUrl(url)
+      };
+    }
+
     function processAlbums() {
       const savedCovers = getSavedAlbumCoversMap();
       groupedAlbums = {};
+      portfolioData = (portfolioData || []).map(sanitizePortfolioItem).filter(Boolean);
       portfolioData.forEach(p => {
         const name = p.title;
         if (!groupedAlbums[name]) groupedAlbums[name] = { title: name, category: p.category, location: p.location, images: [] };
+        if (groupedAlbums[name].location === 'จ.น่าน' && p.location && p.location !== 'จ.น่าน') {
+          groupedAlbums[name].location = p.location;
+        }
         groupedAlbums[name].images.push(p);
       });
       Object.values(groupedAlbums).forEach(album => {
@@ -2589,6 +2639,11 @@
 
     function mapGridToPortfolio(grid) {
       if (!grid || grid.length === 0) return [];
+      const isUrlCell = v => /^https?:\/\/|^data:image\/|drive\.google\.com|googleusercontent\.com/i.test(String(v || '').trim());
+      const isCatCell = v => /^(Wedding|Pre-Wedding|Portrait|Graduation|รับปริญญา|Event|Event\/งานบวช|งานบวช|Photography)$/i.test(String(v || '').trim());
+      const isBoolCell = v => /^(true|false|1|0|yes|no|cover|หน้าปก|ใช่)$/i.test(String(v || '').trim());
+      const isIdOrTsCell = v => /^(PF-\d+|IMG[-_]?\d+|\d{1,16}|[a-f0-9-]{12,}|\d{4}[-/]\d{1,2}[-/]\d{1,2}.*|\d{1,2}[-/]\d{1,2}[-/]\d{2,4}.*)$/i.test(String(v || '').trim());
+
       const info = classifyGrid(grid);
       let headerIdx = info.headerIdx;
       if (headerIdx >= 0 && scoreHeaderRow(grid[headerIdx], PORTFOLIO_HEADER_ALIASES) === 0 && rowLooksLikeData(grid[0])) {
@@ -2597,51 +2652,51 @@
       const headers = headerIdx >= 0 ? grid[headerIdx] : [];
       const dataRows = headerIdx >= 0 ? grid.slice(headerIdx + 1) : grid;
       const getByHeader = headerIdx >= 0 ? buildColumnResolver(headers, PORTFOLIO_HEADER_ALIASES) : null;
-      const extraUrlIndices = [];
-      if (headerIdx >= 0) {
-        headers.forEach((h, idx) => {
-          const nk = normKey(h);
-          if (/(url|image|img|photo|pic|รูป|ภาพ|ลิงก์)/.test(nk)) {
-            extraUrlIndices.push(idx);
-          }
-        });
-      }
       const items = [];
+
       dataRows.forEach((row, rowIdx) => {
         if (!row || row.every(c => !String(c).trim())) return;
+        const cells = row.map(c => String(c ?? '').trim());
+
         let baseId = getByHeader ? getByHeader(row, 'id') : '';
         let title = getByHeader ? getByHeader(row, 'title') : '';
         let category = getByHeader ? getByHeader(row, 'category') : '';
         let location = getByHeader ? getByHeader(row, 'location') : '';
         let rawUrl = getByHeader ? getByHeader(row, 'url') : '';
         let rawCover = getByHeader ? getByHeader(row, 'isCover') : '';
-        if (!getByHeader) {
-          const urlIdx = row.findIndex(c => /^https?:\/\/|^data:image\/|drive\.google|googleusercontent/i.test(String(c || '').trim()));
-          if (row.length >= 5 && urlIdx === 4) {
-            baseId = row[0]; title = row[1]; category = row[2]; location = row[3]; rawUrl = row[4]; rawCover = row[5] || '';
-          } else if (row.length >= 4 && urlIdx === 3) {
-            title = row[0]; category = row[1]; location = row[2]; rawUrl = row[3];
-          } else if (urlIdx !== -1) {
-            rawUrl = row[urlIdx];
-            const nonUrl = row.filter((_, i) => i !== urlIdx && String(row[i] || '').trim() !== '');
-            title = nonUrl[0] || `Album ${rowIdx + 1}`;
-            category = nonUrl[1] || 'Portfolio';
-            location = nonUrl[2] || 'จ.น่าน';
-          }
-        }
+
+        // 1. รวบรวมลิงก์รูปภาพทั้งหมดในแถวนี้ (ไม่ว่าจะอยู่ในคอลัมน์ URL หรือเลื่อนไปอยู่คอลัมน์ Location)
         const urlCandidates = [];
-        if (rawUrl) urlCandidates.push(rawUrl);
-        extraUrlIndices.forEach(idx => {
-          if (row[idx] && !urlCandidates.includes(row[idx])) urlCandidates.push(row[idx]);
+        if (rawUrl && isUrlCell(rawUrl)) urlCandidates.push(rawUrl);
+        cells.forEach(cell => {
+          if (isUrlCell(cell) && !urlCandidates.includes(cell)) {
+            urlCandidates.push(cell);
+          }
         });
-        if (urlCandidates.length === 0) {
-          row.forEach(cell => {
-            const v = String(cell || '').trim();
-            if (/^https?:\/\/|^data:image\/|drive\.google\.com|googleusercontent\.com/i.test(v)) {
-              urlCandidates.push(v);
-            }
-          });
+
+        // 2. ป้องกันไม่ให้ลิงก์รูปภาพ รหัส PF- หรือค่า TRUE/FALSE หลุดเข้าไปอยู่ในช่อง Title / Category / Location
+        if (isUrlCell(title) || isIdOrTsCell(title) || isBoolCell(title) || isCatCell(title)) title = '';
+        if (isUrlCell(category) || isIdOrTsCell(category) || isBoolCell(category)) category = '';
+        if (isUrlCell(location) || isIdOrTsCell(location) || isBoolCell(location) || isCatCell(location)) location = '';
+
+        if (!category) {
+          category = cells.find(isCatCell) || 'Wedding';
         }
+        if (!rawCover || !isBoolCell(rawCover)) {
+          rawCover = cells.find(isBoolCell) || '';
+        }
+
+        const textCells = cells.filter(c => c && c !== '-' && !isUrlCell(c) && !isCatCell(c) && !isBoolCell(c) && !isIdOrTsCell(c));
+        if (!title) {
+          title = textCells[0] || `Album ${rowIdx + 1}`;
+        }
+        if (!location || location === title) {
+          location = textCells.find(t => t !== title) || 'จ.น่าน';
+        }
+        if (!baseId || isUrlCell(baseId) || baseId === title) {
+          baseId = cells.find(c => /^PF-\d+/i.test(c)) || `PF-${rowIdx + 1}`;
+        }
+
         const expandedUrls = [];
         urlCandidates.forEach(chunk => {
           String(chunk)
@@ -2653,18 +2708,16 @@
             });
         });
         if (expandedUrls.length === 0) return;
-        const finalTitle = title || category || `อัลบั้มผลงาน #${rowIdx + 1}`;
-        const finalCat = category || 'Photography';
-        const finalLoc = location || 'จ.น่าน';
+
         const isCoverFlag = /^(true|1|yes|cover|หน้าปก|ใช่)$/i.test(String(rawCover || '').trim());
         expandedUrls.forEach((u, uIdx) => {
           items.push({
             id: `PF-${rowIdx + 1}-${uIdx + 1}`,
-            sheetId: baseId || `PF-${rowIdx + 1}`,
-            rawUrl: rawUrl || u,
-            title: finalTitle,
-            category: finalCat,
-            location: finalLoc,
+            sheetId: baseId,
+            rawUrl: u,
+            title: title,
+            category: category,
+            location: location || 'จ.น่าน',
             url: u,
             isCover: uIdx === 0 && isCoverFlag
           });
