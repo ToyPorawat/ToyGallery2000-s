@@ -403,7 +403,7 @@
   </section>
 
   <section id="tab-admin" class="tab-content w-full flex-1 no-print">
-    <div class="max-w-6xl mx-auto px-4 py-12">
+    <div class="max-w-7xl mx-auto px-4 py-12">
       <div id="admin-login-view" class="max-w-md mx-auto glass-card p-8 rounded-3xl text-center">
         <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-accent" style="background: rgba(0,0,0,0.08);"><i data-lucide="lock" class="w-8 h-8"></i></div>
         <h2 class="text-2xl font-bold mb-6">เข้าสู่ระบบหลังบ้าน</h2>
@@ -414,16 +414,19 @@
         <button onclick="doLogin()" id="btn-login" class="w-full py-3 btn-accent font-bold rounded-xl">เข้าสู่ระบบ</button>
       </div>
       <div id="admin-dashboard-view" class="hidden">
-        <div class="flex gap-2 mb-6 overflow-x-auto pb-2 items-center">
-          <button onclick="switchAdminTab('list')" id="sub-btn-list" class="px-5 py-2 rounded-xl btn-accent font-bold text-sm whitespace-nowrap">ตารางคิวงาน</button>
-          <button onclick="switchAdminTab('deliver')" id="sub-btn-deliver" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10">ส่งงานลูกค้า</button>
-          <a href="https://toyporawat.github.io/toy-gallery/" target="_blank" rel="noopener" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field text-accent hover:opacity-80 inline-flex items-center gap-1.5" style="border-color: var(--accent);"><i data-lucide="external-link" class="w-4 h-4"></i>ระบบ Gallery ส่งงาน</a>
-          <button onclick="openScanQrDeliveryModal()" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field border-amber-500/40 text-amber-500 hover:bg-amber-500/10 inline-flex items-center gap-1.5"><i data-lucide="qr-code" class="w-4 h-4"></i>ระบบ Scan QR-Code รับรูป</button>
-          <button onclick="switchAdminTab('upload')" id="sub-btn-upload" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field">อัปโหลดผลงานใหม่</button>
-          <button onclick="switchAdminTab('manage')" id="sub-btn-manage" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field">จัดการผลงาน</button>
-          <button onclick="switchAdminTab('settings')" id="sub-btn-settings" class="px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field">ตั้งค่าระบบ</button>
-          <button onclick="doLogout()" class="px-5 py-2 rounded-xl border border-red-500 text-red-500 font-medium text-sm ml-auto whitespace-nowrap">ออกจากระบบ</button>
-        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-[270px_minmax(0,1fr)] gap-6 items-start">
+        <aside class="glass-card p-3.5 rounded-3xl flex flex-col gap-2 lg:sticky lg:top-20">
+          <button onclick="switchAdminTab('list')" id="sub-btn-list" class="w-full text-left px-4 py-3 rounded-xl btn-accent font-bold text-xs sm:text-sm flex items-center gap-2.5 transition-all"><i data-lucide="calendar-days" class="w-4 h-4 shrink-0"></i><span>ตารางคิวงาน</span></button>
+          <button onclick="switchAdminTab('deliver')" id="sub-btn-deliver" class="w-full text-left px-4 py-3 rounded-xl font-medium text-xs sm:text-sm input-field border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 flex items-center gap-2.5 transition-all"><i data-lucide="send" class="w-4 h-4 shrink-0"></i><span>ส่งงานลูกค้า</span></button>
+          <a href="https://toyporawat.github.io/toy-gallery/" target="_blank" rel="noopener" class="w-full text-left px-4 py-3 rounded-xl font-medium text-xs sm:text-sm input-field text-accent hover:opacity-80 flex items-center gap-2.5 transition-all" style="border-color: var(--accent);"><i data-lucide="external-link" class="w-4 h-4 shrink-0"></i><span>ระบบ Gallery ส่งงาน</span></a>
+          <button onclick="openScanQrDeliveryModal()" class="w-full text-left px-4 py-3 rounded-xl font-medium text-xs sm:text-sm input-field border-amber-500/40 text-amber-500 hover:bg-amber-500/10 flex items-center gap-2.5 transition-all"><i data-lucide="qr-code" class="w-4 h-4 shrink-0"></i><span>ระบบ Scan QR-Code รับรูป</span></button>
+          <button onclick="switchAdminTab('upload')" id="sub-btn-upload" class="w-full text-left px-4 py-3 rounded-xl font-medium text-xs sm:text-sm input-field flex items-center gap-2.5 transition-all"><i data-lucide="image-plus" class="w-4 h-4 shrink-0"></i><span>อัปโหลดผลงานใหม่</span></button>
+          <button onclick="switchAdminTab('manage')" id="sub-btn-manage" class="w-full text-left px-4 py-3 rounded-xl font-medium text-xs sm:text-sm input-field flex items-center gap-2.5 transition-all"><i data-lucide="folder-kanban" class="w-4 h-4 shrink-0"></i><span>จัดการผลงาน</span></button>
+          <button onclick="switchAdminTab('settings')" id="sub-btn-settings" class="w-full text-left px-4 py-3 rounded-xl font-medium text-xs sm:text-sm input-field flex items-center gap-2.5 transition-all"><i data-lucide="settings" class="w-4 h-4 shrink-0"></i><span>ตั้งค่าระบบ</span></button>
+          <hr class="my-1" style="border-color: var(--border-color);">
+          <button onclick="doLogout()" class="w-full text-left px-4 py-3 rounded-xl border border-red-500/60 text-red-500 hover:bg-red-500/10 font-medium text-xs sm:text-sm flex items-center gap-2.5 transition-all"><i data-lucide="log-out" class="w-4 h-4 shrink-0"></i><span>ออกจากระบบ</span></button>
+        </aside>
+        <div class="min-w-0 w-full">
 
         <div id="admin-sub-list">
           <div id="upcoming-shoots-card" class="glass-card rounded-3xl p-5 sm:p-6 mb-6 border-l-4" style="border-left-color: var(--accent);">
@@ -477,10 +480,10 @@
            </div>
         </div>
 
-        <div id="admin-sub-upload" class="hidden glass-card p-6 sm:p-8 rounded-2xl max-w-2xl mx-auto"><h3 class="text-2xl font-serif font-bold mb-6">สร้างอัลบั้มผลงานใหม่</h3><form id="portfolio-form" onsubmit="handleAddPortfolio(event)" class="space-y-5"><div><label class="text-xs block mb-1" style="color: var(--text-muted);">ชื่ออัลบั้ม *</label><input type="text" id="p-title" required class="w-full input-field rounded-xl px-4 py-2.5"></div><div class="grid grid-cols-2 gap-4"><div><label class="text-xs block mb-1" style="color: var(--text-muted);">หมวดหมู่ *</label><select id="p-cat" class="w-full input-field rounded-xl px-4 py-2.5"><option value="Wedding">Wedding</option><option value="Pre-Wedding">Pre-Wedding</option><option value="Portrait">Portrait</option><option value="Graduation">Graduation</option><option value="Event">Event/งานบวช</option></select></div><div><label class="text-xs block mb-1" style="color: var(--text-muted);">สถานที่ *</label><input type="text" id="p-loc" required class="w-full input-field rounded-xl px-4 py-2.5"></div></div><div class="p-4 border border-dashed rounded-xl" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);"><label class="text-xs block mb-2" style="color: var(--text-muted);">อัปโหลดรูปภาพ (เลือกหลายไฟล์ได้) *</label><input type="file" id="p-file" accept="image/*" multiple required class="w-full text-sm"></div><button type="submit" id="btn-upload" class="w-full py-3 btn-accent font-bold rounded-xl">เริ่มอัปโหลด</button></form></div>
+        <div id="admin-sub-upload" class="hidden glass-card p-6 sm:p-8 rounded-3xl w-full"><h3 class="text-2xl font-serif font-bold mb-6">สร้างอัลบั้มผลงานใหม่</h3><form id="portfolio-form" onsubmit="handleAddPortfolio(event)" class="space-y-5"><div><label class="text-xs block mb-1" style="color: var(--text-muted);">ชื่ออัลบั้ม *</label><input type="text" id="p-title" required class="w-full input-field rounded-xl px-4 py-2.5"></div><div class="grid grid-cols-2 gap-4"><div><label class="text-xs block mb-1" style="color: var(--text-muted);">หมวดหมู่ *</label><select id="p-cat" class="w-full input-field rounded-xl px-4 py-2.5"><option value="Wedding">Wedding</option><option value="Pre-Wedding">Pre-Wedding</option><option value="Portrait">Portrait</option><option value="Graduation">Graduation</option><option value="Event">Event/งานบวช</option></select></div><div><label class="text-xs block mb-1" style="color: var(--text-muted);">สถานที่ *</label><input type="text" id="p-loc" required class="w-full input-field rounded-xl px-4 py-2.5"></div></div><div class="p-4 border border-dashed rounded-xl" style="border-color: var(--border-color); background: rgba(0,0,0,0.03);"><label class="text-xs block mb-2" style="color: var(--text-muted);">อัปโหลดรูปภาพ (เลือกหลายไฟล์ได้) *</label><input type="file" id="p-file" accept="image/*" multiple required class="w-full text-sm"></div><button type="submit" id="btn-upload" class="w-full py-3 btn-accent font-bold rounded-xl">เริ่มอัปโหลด</button></form></div>
         <div id="admin-sub-manage" class="hidden"><p class="mb-4 text-sm opacity-80">* คลิกที่อัลบั้มเพื่อจัดการ</p><div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="admin-manage-grid"></div></div>
 
-        <div id="admin-sub-settings" class="hidden glass-card p-6 sm:p-8 rounded-2xl max-w-lg mx-auto">
+        <div id="admin-sub-settings" class="hidden glass-card p-6 sm:p-8 rounded-3xl w-full">
           <h3 class="text-2xl font-serif font-bold mb-6"><i data-lucide="settings" class="w-6 h-6 inline mr-2 text-accent"></i>ตั้งค่าระบบบัญชี</h3>
           <div class="space-y-4 border-b pb-6 mb-6" style="border-color: var(--border-color);">
             <div><label class="block mb-1 text-sm opacity-80">เบอร์พร้อมเพย์</label><input type="text" id="set-promptpay" class="w-full input-field rounded-xl px-4 py-2.5"></div>
@@ -569,6 +572,7 @@
             </div>
             <button type="button" onclick="saveCustomTermsAndCredentials()" class="w-full py-3.5 btn-accent font-bold rounded-xl shadow-md text-sm">บันทึกข้อมูลข้อตกลง & รหัสผ่านแอดมิน</button>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -1065,11 +1069,11 @@
       ["list", "deliver", "upload", "manage", "settings"].forEach(t => {
         document.getElementById("admin-sub-" + t).classList.add("hidden");
         const b = document.getElementById("sub-btn-" + t);
-        if (b) b.className = t === 'deliver' ? "px-5 py-2 rounded-xl input-field font-medium text-sm whitespace-nowrap border-emerald-500/30 text-emerald-500" : "px-5 py-2 rounded-xl input-field font-medium text-sm whitespace-nowrap";
+        if (b) b.className = t === 'deliver' ? "w-full text-left px-4 py-2.5 rounded-xl input-field font-medium text-sm whitespace-nowrap border-emerald-500/30 text-emerald-500" : "w-full text-left px-4 py-2.5 rounded-xl input-field font-medium text-sm whitespace-nowrap";
       });
       document.getElementById("admin-sub-" + subTab).classList.remove("hidden");
       const act = document.getElementById("sub-btn-" + subTab);
-      if (act) act.className = subTab === 'deliver' ? "px-5 py-2 rounded-xl font-bold text-sm whitespace-nowrap bg-emerald-500 text-white shadow-lg" : "px-5 py-2 rounded-xl btn-accent font-bold text-sm whitespace-nowrap";
+      if (act) act.className = subTab === 'deliver' ? "w-full text-left px-4 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap bg-emerald-500 text-white shadow-lg" : "w-full text-left px-4 py-2.5 rounded-xl btn-accent font-bold text-sm whitespace-nowrap";
     }
 
     let homeGalleryViewMode = 'albums';
@@ -4291,8 +4295,8 @@
         ecBtn.type = 'button';
         ecBtn.id = 'admin-btn-event-card';
         ecBtn.onclick = () => openEventPhotoCardModal();
-        ecBtn.className = 'px-5 py-2 rounded-xl font-medium text-sm whitespace-nowrap input-field border-rose-500/40 text-rose-500 hover:bg-rose-500/10 inline-flex items-center gap-1.5';
-        ecBtn.innerHTML = '🖼️ สร้างการ์ด Thank You / Save the Date';
+        ecBtn.className = 'w-full text-left px-4 py-3 rounded-xl font-medium text-xs sm:text-sm input-field border-rose-500/40 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2.5 transition-all';
+        ecBtn.innerHTML = '<span>🖼️ สร้างการ์ด Thank You / Save the Date</span>';
         qrAdminBtn.parentElement.insertBefore(ecBtn, qrAdminBtn.nextSibling);
       }
     }
@@ -4500,13 +4504,19 @@
 
     function onEventCardUrlInput(rawUrl) {
       if (!rawUrl || !rawUrl.trim()) return;
-      customEventCardImgData = normalizeDriveImageUrl(rawUrl.trim());
+      customEventCardImgData = normalizeDriveImageUrl(rawUrl.trim()).replace('&sz=w1600', '&sz=w4000');
       refreshEventPhotoCardPreview();
     }
 
     async function onEventCardFileChange(inputEl) {
       if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
-      customEventCardImgData = await compressQrImageFile(inputEl.files[0]);
+      const file = inputEl.files[0];
+      // ใช้ไฟล์ภาพต้นฉบับความละเอียดเต็ม 100% โดยไม่บีบอัดหรือย่อขนาด
+      customEventCardImgData = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve(ev.target.result);
+        reader.readAsDataURL(file);
+      });
       refreshEventPhotoCardPreview();
     }
 
@@ -4564,106 +4574,121 @@
       const dl = document.getElementById('ec-date-loc')?.value || 'FINE ART PHOTOGRAPHY';
       const link = document.getElementById('ec-qr-link')?.value || 'https://toyporawat.github.io/toy-gallery/';
 
-      // วาดการ์ดความละเอียดสูงระดับสตูดิโอ (Ultra-HD 1600 x 2200 px) ลงบน Canvas โดยตรง เพื่อให้ตัวอักษรและ QR Code คมชัด 100% สแกนติดทันที
-      const W = 1600, H = 2200;
+      const photoEl = document.getElementById('ec-preview-photo');
+      let fullResImg = photoEl;
+      if (customEventCardImgData && String(customEventCardImgData).startsWith('data:')) {
+        fullResImg = await new Promise((resolve) => {
+          const im = new Image();
+          im.onload = () => resolve(im);
+          im.onerror = () => resolve(photoEl);
+          im.src = customEventCardImgData;
+        });
+      }
+
+      // ปรับสเกลความละเอียดของการ์ดตามความละเอียดภาพต้นฉบับ (อย่างน้อย 2400x3300 px จนถึง 3200x4400 px ระดับไฟล์ต้นฉบับ 100%)
+      const natW = (fullResImg && fullResImg.naturalWidth) ? fullResImg.naturalWidth : 1600;
+      const S = Math.max(1.5, Math.min(2.25, natW / 1380));
+      const W = Math.round(1600 * S), H = Math.round(2200 * S);
       const outCanvas = document.createElement('canvas');
       outCanvas.width = W;
       outCanvas.height = H;
       const ctx = outCanvas.getContext('2d');
 
-      // พื้นหลังกระดาษอาร์ต Fine-Art Matte White
+      // พื้นหลังกระดาษอาร์ต Fine-Art Matte White (คงดีไซน์และสัดส่วนเดิมทุกประการ)
       ctx.fillStyle = '#fbfbfa';
       ctx.fillRect(0, 0, W, H);
       ctx.strokeStyle = '#d4d4d8';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(48, 48, W - 96, H - 96);
+      ctx.lineWidth = Math.round(4 * S);
+      ctx.strokeRect(Math.round(48 * S), Math.round(48 * S), W - Math.round(96 * S), H - Math.round(96 * S));
 
       // ส่วนหัวการ์ด
       ctx.fillStyle = '#71717a';
-      ctx.font = 'bold 26px "Josefin Sans", "Prompt", sans-serif';
+      ctx.font = `bold ${Math.round(26 * S)}px "Josefin Sans", "Prompt", sans-serif`;
       ctx.textAlign = 'left';
-      ctx.fillText("TOY GALLERY 2000's", 110, 130);
+      ctx.fillText("TOY GALLERY 2000's", Math.round(110 * S), Math.round(130 * S));
       ctx.textAlign = 'right';
-      ctx.fillText('FINE ART FILM', W - 110, 130);
+      ctx.fillText('FINE ART FILM', W - Math.round(110 * S), Math.round(130 * S));
       ctx.strokeStyle = '#e4e4e7';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = Math.round(3 * S);
       ctx.beginPath();
-      ctx.moveTo(110, 162);
-      ctx.lineTo(W - 110, 162);
+      ctx.moveTo(Math.round(110 * S), Math.round(162 * S));
+      ctx.lineTo(W - Math.round(110 * S), Math.round(162 * S));
       ctx.stroke();
 
-      // กรอบรูปไฮไลต์
-      const imgX = 110, imgY = 205, imgW = W - 220, imgH = 1220;
+      // กรอบรูปไฮไลต์ (วาดด้วยความละเอียดเต็มของภาพต้นฉบับ + High Quality Interpolation)
+      const imgX = Math.round(110 * S), imgY = Math.round(205 * S), imgW = W - Math.round(220 * S), imgH = Math.round(1220 * S);
       ctx.fillStyle = '#e4e4e7';
       ctx.fillRect(imgX, imgY, imgW, imgH);
-      const photoEl = document.getElementById('ec-preview-photo');
-      if (photoEl && photoEl.complete && photoEl.naturalWidth > 0) {
+      if (fullResImg && fullResImg.naturalWidth > 0) {
         try {
-          const iw = photoEl.naturalWidth, ih = photoEl.naturalHeight;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          const iw = fullResImg.naturalWidth, ih = fullResImg.naturalHeight;
           const targetRatio = imgW / imgH, srcRatio = iw / ih;
           let sx = 0, sy = 0, sw = iw, sh = ih;
           if (srcRatio > targetRatio) { sw = ih * targetRatio; sx = (iw - sw) / 2; }
           else { sh = iw / targetRatio; sy = (ih - sh) / 2; }
-          ctx.drawImage(photoEl, sx, sy, sw, sh, imgX, imgY, imgW, imgH);
+          ctx.drawImage(fullResImg, sx, sy, sw, sh, imgX, imgY, imgW, imgH);
         } catch (e) {}
       }
       ctx.strokeStyle = '#d4d4d8';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = Math.round(3 * S);
       ctx.strokeRect(imgX, imgY, imgW, imgH);
 
       // ข้อความกลางการ์ด
       ctx.textAlign = 'center';
       ctx.fillStyle = '#71717a';
-      ctx.font = 'bold 30px "Josefin Sans", "Prompt", sans-serif';
-      ctx.fillText(t, W / 2, 1505);
+      ctx.font = `bold ${Math.round(30 * S)}px "Josefin Sans", "Prompt", sans-serif`;
+      ctx.fillText(t, W / 2, Math.round(1505 * S));
 
       ctx.fillStyle = '#111111';
-      ctx.font = 'bold 68px "Josefin Sans", "Prompt", sans-serif';
-      ctx.fillText(n, W / 2, 1595);
+      ctx.font = `bold ${Math.round(68 * S)}px "Josefin Sans", "Prompt", sans-serif`;
+      ctx.fillText(n, W / 2, Math.round(1595 * S));
 
       ctx.fillStyle = '#71717a';
-      ctx.font = '500 32px "Josefin Sans", "Prompt", sans-serif';
-      ctx.fillText(dl, W / 2, 1658);
+      ctx.font = `500 ${Math.round(32 * S)}px "Josefin Sans", "Prompt", sans-serif`;
+      ctx.fillText(dl, W / 2, Math.round(1658 * S));
 
       // เส้นคั่นส่วน QR Code ด้านล่าง
       ctx.strokeStyle = '#e4e4e7';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = Math.round(3 * S);
       ctx.beginPath();
-      ctx.moveTo(110, 1715);
-      ctx.lineTo(W - 110, 1715);
+      ctx.moveTo(Math.round(110 * S), Math.round(1715 * S));
+      ctx.lineTo(W - Math.round(110 * S), Math.round(1715 * S));
       ctx.stroke();
 
-      // วาด QR Code ขนาดใหญ่คมชัดสูง (380 x 380 px) ที่มุมขวาล่าง พร้อม Quiet Zone มาตรฐาน
-      const qrSize = 370;
-      const qrX = W - 110 - qrSize;
-      const qrY = 1750;
+      // วาด QR Code ขนาดใหญ่คมชัดสูงที่มุมขวาล่าง (คงตำแหน่งและสัดส่วนเดิม)
+      const qrSize = Math.round(370 * S);
+      const qrX = W - Math.round(110 * S) - qrSize;
+      const qrY = Math.round(1750 * S);
+      const padBox = Math.round(10 * S);
       const hiResQr = createCrispScannableQrCanvas(link, qrSize);
       ctx.imageSmoothingEnabled = false;
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
+      ctx.fillRect(qrX - padBox, qrY - padBox, qrSize + padBox * 2, qrSize + padBox * 2);
       ctx.strokeStyle = '#18181b';
-      ctx.lineWidth = 6;
-      ctx.strokeRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
+      ctx.lineWidth = Math.round(6 * S);
+      ctx.strokeRect(qrX - padBox, qrY - padBox, qrSize + padBox * 2, qrSize + padBox * 2);
       ctx.drawImage(hiResQr, qrX, qrY, qrSize, qrSize);
 
       // ข้อความคำแนะนำสแกน QR ด้านซ้ายล่าง
       ctx.textAlign = 'left';
       ctx.fillStyle = '#111111';
-      ctx.font = 'bold 38px "Josefin Sans", "Prompt", sans-serif';
-      ctx.fillText('SCAN FOR PHOTO GALLERY', 110, 1855);
+      ctx.font = `bold ${Math.round(38 * S)}px "Josefin Sans", "Prompt", sans-serif`;
+      ctx.fillText('SCAN FOR PHOTO GALLERY', Math.round(110 * S), Math.round(1855 * S));
 
       ctx.fillStyle = '#52525b';
-      ctx.font = '400 32px "Prompt", sans-serif';
-      ctx.fillText('สแกน QR Code ด้วยกล้องมือถือหรือ LINE', 110, 1920);
-      ctx.fillText('เพื่อชมและดาวน์โหลดภาพถ่ายความละเอียดสูง', 110, 1972);
+      ctx.font = `400 ${Math.round(32 * S)}px "Prompt", sans-serif`;
+      ctx.fillText('สแกน QR Code ด้วยกล้องมือถือหรือ LINE', Math.round(110 * S), Math.round(1920 * S));
+      ctx.fillText('เพื่อชมและดาวน์โหลดภาพถ่ายความละเอียดสูง', Math.round(110 * S), Math.round(1972 * S));
 
       ctx.fillStyle = '#71717a';
-      ctx.font = 'bold 28px "Josefin Sans", "Prompt", sans-serif';
-      ctx.fillText("Toy Gallery 2000's • Tel: 062-607-9030", 110, 2055);
+      ctx.font = `bold ${Math.round(28 * S)}px "Josefin Sans", "Prompt", sans-serif`;
+      ctx.fillText("Toy Gallery 2000's • Tel: 062-607-9030", Math.round(110 * S), Math.round(2055 * S));
 
       try {
-        const jpgDataUrl = outCanvas.toDataURL('image/jpeg', 0.98);
-        const safeName = 'ThankYou_Card_' + n.replace(/\s+/g, '_') + '_UltraHD.jpg';
+        const jpgDataUrl = outCanvas.toDataURL('image/jpeg', 1.0);
+        const safeName = 'ThankYou_Card_' + n.replace(/\s+/g, '_') + '_OriginalHD.jpg';
         try {
           const a = document.createElement('a');
           a.download = safeName;
@@ -4676,15 +4701,15 @@
         const modal = document.getElementById('custom-dialog-modal');
         document.getElementById('dialog-msg').innerHTML = `
           <div class="space-y-2.5 text-center">
-            <span class="font-bold text-sm text-emerald-500 block">✅ สร้างการ์ดความละเอียดสูง (Ultra-HD 1600×2200px) สำเร็จ!</span>
-            <p class="text-[11px]" style="color: var(--text-muted);">QR Code ถูกเรนเดอร์แบบคมชัดพิเศษ สามารถสแกนด้วยกล้องมือถือหรือแอป LINE ได้ทันที (คลิกขวาหรือแตะค้างที่ภาพเพื่อบันทึกได้เลยครับ)</p>
+            <span class="font-bold text-sm text-emerald-500 block">✅ สร้างการ์ดความละเอียดต้นฉบับ (${W}×${H} px, Quality 100%) สำเร็จ!</span>
+            <p class="text-[11px]" style="color: var(--text-muted);">ใช้ความละเอียดภาพถ่ายต้นฉบับเต็ม 100% โดยไม่ย่อหรือบีบอัดภาพ (คลิกขวาหรือแตะค้างที่ภาพเพื่อบันทึกได้เลยครับ)</p>
             <div class="max-h-[55vh] overflow-y-auto rounded-xl border p-1.5 bg-white" style="border-color: var(--border-color);">
               <img src="${jpgDataUrl}" alt="${safeName}" class="w-full h-auto rounded-lg mx-auto shadow-sm">
             </div>
           </div>
         `;
         document.getElementById('dialog-actions').innerHTML = `
-          <a href="${jpgDataUrl}" download="${safeName}" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">ดาวน์โหลดการ์ด Ultra-HD (JPG)</a>
+          <a href="${jpgDataUrl}" download="${safeName}" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">ดาวน์โหลดการ์ด (${W}×${H}px)</a>
           <button id="dlg-ok-btn" class="flex-1 py-2.5 rounded-xl btn-accent font-bold text-xs">ปิดหน้าต่าง</button>
         `;
         modal.classList.add('show');
